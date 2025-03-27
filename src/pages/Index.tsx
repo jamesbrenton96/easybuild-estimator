@@ -12,7 +12,7 @@ const Index = () => {
           <motion.img
             src="/lovable-uploads/bee065c6-a438-40bf-b1e3-4e1183bbda1d.png"
             alt="Brenton Building Estimator"
-            className="h-16 sm:h-20 w-auto"
+            className="h-24 sm:h-32 w-auto" // Increased height from h-16 sm:h-20 to h-24 sm:h-32
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
