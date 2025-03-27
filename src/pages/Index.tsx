@@ -10,8 +10,8 @@ const Index = () => {
       <header className="w-full py-6 px-4">
         <div className="container mx-auto flex justify-center items-center">
           <motion.img
-            src="/lovable-uploads/d3498cf4-8a5c-497e-a463-cb5240526bb3.png"
-            alt="Easy Build Estimator"
+            src="/lovable-uploads/bee065c6-a438-40bf-b1e3-4e1183bbda1d.png"
+            alt="Brenton Building Estimator"
             className="h-16 sm:h-20 w-auto"
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -27,7 +27,7 @@ const Index = () => {
       </main>
       
       <footer className="mt-16 text-center text-white/50 text-sm">
-        <p>© {new Date().getFullYear()} Easy Build Estimator. All rights reserved.</p>
+        <p>© {new Date().getFullYear()} Brenton Building Estimator. All rights reserved.</p>
       </footer>
     </div>
   );
