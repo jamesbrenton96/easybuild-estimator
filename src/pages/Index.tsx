@@ -20,7 +20,7 @@ const Index = () => {
         </div>
       </header>
       
-      <main className="container mx-auto px-4">
+      <main className="container mx-auto px-4 pt-4">
         <EstimatorProvider>
           <CostEstimator />
         </EstimatorProvider>

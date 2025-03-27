@@ -16,20 +16,20 @@ export default function StepIndicator() {
   ];
 
   return (
-    <div className="mb-8">
-      <div className="hidden sm:flex justify-center items-center space-x-2 mb-1">
+    <div className="mb-12">
+      <div className="hidden sm:flex justify-center items-center mb-8">
         {steps.map((step, index) => (
           <React.Fragment key={step.number}>
             {index > 0 && (
               <div
                 className={cn(
-                  "step-line",
+                  "step-line w-16 md:w-24 lg:w-32",
                   currentStep >= step.number && "step-line-active"
                 )}
               />
             )}
             <motion.div
-              className="relative"
+              className="relative flex flex-col items-center"
               initial={{ scale: 0.9, opacity: 0.7 }}
               animate={{ 
                 scale: currentStep === step.number ? 1.1 : 1,
@@ -39,7 +39,7 @@ export default function StepIndicator() {
             >
               <div
                 className={cn(
-                  "h-7 w-7 rounded-full flex items-center justify-center text-xs font-medium transition-colors",
+                  "h-10 w-10 rounded-full flex items-center justify-center text-sm font-medium transition-colors",
                   currentStep === step.number
                     ? "bg-construction-orange text-white ring-2 ring-offset-2 ring-construction-orange"
                     : currentStep > step.number
@@ -48,7 +48,7 @@ export default function StepIndicator() {
                 )}
               >
                 {currentStep > step.number ? (
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                     <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                   </svg>
                 ) : (
@@ -56,7 +56,7 @@ export default function StepIndicator() {
                 )}
               </div>
               <span className={cn(
-                "absolute -bottom-6 left-1/2 transform -translate-x-1/2 text-xs whitespace-nowrap",
+                "absolute -bottom-8 text-sm whitespace-nowrap px-2",
                 currentStep === step.number ? "text-construction-orange font-medium" : "text-white/70"
               )}>
                 {step.label}
@@ -67,7 +67,7 @@ export default function StepIndicator() {
       </div>
       
       {/* Mobile stepper (dots only) */}
-      <div className="flex sm:hidden justify-center items-center space-x-2 mb-6">
+      <div className="flex sm:hidden justify-center items-center space-x-3 mb-6">
         {steps.map((step, index) => (
           <React.Fragment key={step.number}>
             {index > 0 && (
