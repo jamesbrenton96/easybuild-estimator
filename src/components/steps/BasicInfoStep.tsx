@@ -37,12 +37,52 @@ export default function BasicInfoStep() {
           <label htmlFor="description" className="form-label">
             Describe the scope of work
           </label>
+          <div className="mb-2 text-white/70 text-sm italic">
+            Provide as much detail as possible for accurate estimates. Please include information on:
+          </div>
+          <div className="bg-white/5 rounded-md p-3 mb-3 text-white/80 text-xs space-y-2">
+            <div>
+              <p className="font-medium text-construction-orange">Project Overview</p>
+              <p>What is the overall scope of the project? (e.g., Building a deck, renovating a bathroom, installing new plumbing)</p>
+            </div>
+            <div>
+              <p className="font-medium text-construction-orange">Dimensions</p>
+              <p>Include the exact measurements (e.g., length, width, height, area in square meters, volume in cubic meters).</p>
+            </div>
+            <div>
+              <p className="font-medium text-construction-orange">Materials</p>
+              <p>Specify the type of materials you're planning to use (e.g., timber type for decking, tile material for bathroom, concrete grade for flooring).</p>
+            </div>
+            <div>
+              <p className="font-medium text-construction-orange">Finish and Details</p>
+              <p>Describe any specific finishes, textures, or styles (e.g., polished concrete, matte paint finish, modern tiling pattern, gloss varnish).</p>
+            </div>
+            <div>
+              <p className="font-medium text-construction-orange">Location-Specific Details</p>
+              <p>Are there any location-specific factors that could affect the project? (e.g., access to the site, difficult terrain, proximity to services).</p>
+            </div>
+            <div>
+              <p className="font-medium text-construction-orange">Timeframe</p>
+              <p>Include your estimated timeline for the project (e.g., do you need it completed in a specific number of days or weeks?).</p>
+            </div>
+            <div>
+              <p className="font-medium text-construction-orange">Additional Work</p>
+              <p>Are there any additional tasks or components that should be included in the project? (e.g., electrical work, plumbing installation, landscaping after construction).</p>
+            </div>
+            <div>
+              <p className="font-medium text-construction-orange">Hourly Rates (Optional)</p>
+              <p>If you'd like to include information about your company's hourly rates, please specify them here (e.g., carpenter rates, labor costs, subcontractor fees).</p>
+            </div>
+          </div>
+          <div className="mb-3 text-white/70 text-sm italic">
+            <span className="font-medium">Example for a Deck:</span> I want to build a 3x2 meter deck using treated pine timber for the framework and composite decking boards for the surface. The deck will have a low-pitched roof with a polycarbonate sheet for roofing. The deck will be built at the back of the house with easy access, and I expect the job to be completed in 2 weeks.
+          </div>
           <Textarea
             id="description"
             value={formData.description}
             onChange={handleDescriptionChange}
-            className="bg-white/10 border-white/20 text-white resize-none min-h-[150px]"
-            placeholder="Describe what you need done. Be as specific as possible about dimensions, materials, finishes, etc."
+            className="bg-white/10 border-white/20 text-white resize-none min-h-[200px]"
+            placeholder="Enter details about your project following the guidelines above..."
           />
         </div>
         
