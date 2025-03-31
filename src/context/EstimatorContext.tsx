@@ -32,22 +32,31 @@ export type ProjectType =
   | "Smart Home / Automation"
   | "Site Prep & Cleanup";
 
+type FormDataType = {
+  projectType: ProjectType | null;
+  description: string;
+  location: string;
+  files: File[];
+};
+
 type EstimatorContextProps = {
   currentStep: number;
   nextStep: () => void;
   prevStep: () => void;
   setStep: (step: number) => void;
-  formData: {
-    projectType: ProjectType | null;
-    description: string;
-    location: string;
-    files: File[];
-  };
-  updateFormData: (data: Partial<typeof formData>) => void;
+  formData: FormDataType;
+  updateFormData: (data: Partial<FormDataType>) => void;
   isLoading: boolean;
   setIsLoading: (loading: boolean) => void;
   estimationResults: any | null;
   setEstimationResults: (results: any) => void;
+};
+
+const defaultFormData: FormDataType = {
+  projectType: null,
+  description: "",
+  location: "",
+  files: [],
 };
 
 const defaultContextValue: EstimatorContextProps = {
@@ -55,12 +64,7 @@ const defaultContextValue: EstimatorContextProps = {
   nextStep: () => {},
   prevStep: () => {},
   setStep: () => {},
-  formData: {
-    projectType: null,
-    description: "",
-    location: "",
-    files: [],
-  },
+  formData: defaultFormData,
   updateFormData: () => {},
   isLoading: false,
   setIsLoading: () => {},
@@ -74,7 +78,7 @@ export const useEstimator = () => useContext(EstimatorContext);
 
 export const EstimatorProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [currentStep, setCurrentStep] = useState(1);
-  const [formData, setFormData] = useState(defaultContextValue.formData);
+  const [formData, setFormData] = useState(defaultFormData);
   const [isLoading, setIsLoading] = useState(false);
   const [estimationResults, setEstimationResults] = useState<any | null>(null);
 
@@ -96,7 +100,7 @@ export const EstimatorProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     }
   };
 
-  const updateFormData = (data: Partial<typeof formData>) => {
+  const updateFormData = (data: Partial<FormDataType>) => {
     setFormData((prev) => ({ ...prev, ...data }));
   };
 
