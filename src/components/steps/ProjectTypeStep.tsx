@@ -1,7 +1,6 @@
 
-import React from "react";
-import { useEstimator } from "@/context/EstimatorContext";
-import { ProjectType } from "@/context/EstimatorContext";
+import React, { useState, useEffect } from "react";
+import { useEstimator, getSubcategoriesForProjectType, ProjectType, Subcategory } from "@/context/EstimatorContext";
 import { motion } from "framer-motion";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
@@ -39,15 +38,58 @@ const projectTypes: ProjectType[] = [
 
 export default function ProjectTypeStep() {
   const { formData, updateFormData, nextStep } = useEstimator();
+  const [subcategories, setSubcategories] = useState<Subcategory[]>([]);
+  const [selectedSubcategories, setSelectedSubcategories] = useState<Record<string, string>>({});
+  const [showSubcategories, setShowSubcategories] = useState(false);
   
+  useEffect(() => {
+    if (formData.projectType) {
+      const newSubcategories = getSubcategoriesForProjectType(formData.projectType);
+      setSubcategories(newSubcategories);
+      
+      // Initialize subcategory values if they don't exist
+      const initialSubcategories = { ...formData.subcategories };
+      newSubcategories.forEach(subcat => {
+        if (!initialSubcategories[subcat.name] && subcat.options.length > 0) {
+          initialSubcategories[subcat.name] = '';
+        }
+      });
+      
+      setSelectedSubcategories(initialSubcategories);
+      setShowSubcategories(newSubcategories.length > 0);
+    } else {
+      setSubcategories([]);
+      setSelectedSubcategories({});
+      setShowSubcategories(false);
+    }
+  }, [formData.projectType]);
+
   const handleSelectChange = (value: string) => {
-    updateFormData({ projectType: value as ProjectType });
+    updateFormData({ 
+      projectType: value as ProjectType,
+      subcategories: {} // Reset subcategories when project type changes
+    });
+  };
+
+  const handleSubcategoryChange = (subcategoryName: string, value: string) => {
+    const updatedSubcategories = { ...selectedSubcategories, [subcategoryName]: value };
+    setSelectedSubcategories(updatedSubcategories);
+    updateFormData({ subcategories: updatedSubcategories });
   };
 
   const handleNext = () => {
     if (formData.projectType) {
+      updateFormData({ subcategories: selectedSubcategories });
       nextStep();
     }
+  };
+
+  const allSubcategoriesSelected = () => {
+    if (!showSubcategories) return true;
+    
+    return subcategories.every(subcat => {
+      return !!selectedSubcategories[subcat.name];
+    });
   };
 
   return (
@@ -81,10 +123,47 @@ export default function ProjectTypeStep() {
           </SelectContent>
         </Select>
         
+        {showSubcategories && (
+          <motion.div 
+            className="mt-8 space-y-4"
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            transition={{ duration: 0.3 }}
+          >
+            <h2 className="text-lg font-medium text-white">Additional Details</h2>
+            
+            {subcategories.map((subcategory) => (
+              <div key={subcategory.name} className="space-y-1.5">
+                <label htmlFor={`subcategory-${subcategory.name}`} className="form-label">
+                  {subcategory.name}
+                </label>
+                <Select 
+                  onValueChange={(value) => handleSubcategoryChange(subcategory.name, value)} 
+                  value={selectedSubcategories[subcategory.name] || undefined}
+                >
+                  <SelectTrigger 
+                    id={`subcategory-${subcategory.name}`} 
+                    className="w-full bg-white/10 border-white/20 text-white"
+                  >
+                    <SelectValue placeholder={`Select ${subcategory.name}`} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {subcategory.options.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            ))}
+          </motion.div>
+        )}
+        
         <div className="mt-10 flex justify-center">
           <button
             onClick={handleNext}
-            disabled={!formData.projectType}
+            disabled={!formData.projectType || !allSubcategoriesSelected()}
             className="btn-next w-full max-w-xs disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Continue
