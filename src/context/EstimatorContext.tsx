@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState } from "react";
 
 export type ProjectType = 
@@ -243,7 +242,6 @@ export const getSubcategoriesForProjectType = (projectType: ProjectType | null):
           ]
         }
       ];
-    // Add all other project types with their subcategories
     case "Plumbing":
       return [
         {
@@ -356,7 +354,474 @@ export const getSubcategoriesForProjectType = (projectType: ProjectType | null):
           ]
         }
       ];
-    // Add remaining project types with subcategories here...
+    case "Roofing":
+      return [
+        {
+          name: "Type of Roof",
+          options: [
+            { value: "gable", label: "Gable" },
+            { value: "hip", label: "Hip" },
+            { value: "flat", label: "Flat" },
+            { value: "other", label: "Other" }
+          ]
+        },
+        {
+          name: "Roof Pitch",
+          options: [
+            { value: "steep", label: "Steep" },
+            { value: "low_slope", label: "Low Slope" },
+            { value: "medium", label: "Medium" },
+            { value: "other", label: "Other" }
+          ]
+        },
+        {
+          name: "Roofing Material",
+          options: [
+            { value: "shingles", label: "Shingles" },
+            { value: "metal", label: "Metal" },
+            { value: "tile", label: "Tile" },
+            { value: "other", label: "Other" }
+          ]
+        },
+        {
+          name: "Insulation Type",
+          options: [
+            { value: "fiberglass", label: "Fiberglass" },
+            { value: "spray_foam", label: "Spray Foam" },
+            { value: "cellulose", label: "Cellulose" },
+            { value: "other", label: "Other" }
+          ]
+        }
+      ];
+    case "Tiling":
+      return [
+        {
+          name: "Tile Material",
+          options: [
+            { value: "ceramic", label: "Ceramic" },
+            { value: "porcelain", label: "Porcelain" },
+            { value: "stone", label: "Stone" },
+            { value: "other", label: "Other" }
+          ]
+        },
+        {
+          name: "Tile Finish",
+          options: [
+            { value: "matte", label: "Matte" },
+            { value: "glossy", label: "Glossy" },
+            { value: "textured", label: "Textured" },
+            { value: "other", label: "Other" }
+          ]
+        },
+        {
+          name: "Tile Size",
+          options: [
+            { value: "small", label: "Small" },
+            { value: "large", label: "Large" },
+            { value: "mosaic", label: "Mosaic" },
+            { value: "other", label: "Other" }
+          ]
+        },
+        {
+          name: "Grouting Type",
+          options: [
+            { value: "epoxy", label: "Epoxy" },
+            { value: "cement_based", label: "Cement-based" },
+            { value: "sanded", label: "Sanded" },
+            { value: "other", label: "Other" }
+          ]
+        }
+      ];
+    case "Plastering / Gib Stopping":
+      return [
+        {
+          name: "Plaster Type",
+          options: [
+            { value: "skim_coat", label: "Skim Coat" },
+            { value: "venetian_plaster", label: "Venetian Plaster" },
+            { value: "lime", label: "Lime" },
+            { value: "other", label: "Other" }
+          ]
+        },
+        {
+          name: "Wall Surface",
+          options: [
+            { value: "dry_wall", label: "Dry Wall" },
+            { value: "masonry", label: "Masonry" },
+            { value: "lath", label: "Lath" },
+            { value: "other", label: "Other" }
+          ]
+        },
+        {
+          name: "Finish Type",
+          options: [
+            { value: "smooth", label: "Smooth" },
+            { value: "textured", label: "Textured" },
+            { value: "patterned", label: "Patterned" },
+            { value: "other", label: "Other" }
+          ]
+        },
+        {
+          name: "Joint Compound",
+          options: [
+            { value: "lightweight", label: "Lightweight" },
+            { value: "standard", label: "Standard" },
+            { value: "quick_setting", label: "Quick-setting" },
+            { value: "other", label: "Other" }
+          ]
+        }
+      ];
+    case "Bricklaying / Blockwork":
+      return [
+        {
+          name: "Brick Type",
+          options: [
+            { value: "clay", label: "Clay" },
+            { value: "concrete", label: "Concrete" },
+            { value: "engineering", label: "Engineering" },
+            { value: "other", label: "Other" }
+          ]
+        },
+        {
+          name: "Mortar Mix",
+          options: [
+            { value: "sand_cement", label: "Sand-Cement" },
+            { value: "lime", label: "Lime" },
+            { value: "polymer", label: "Polymer" },
+            { value: "other", label: "Other" }
+          ]
+        },
+        {
+          name: "Wall Type",
+          options: [
+            { value: "single_skin", label: "Single Skin" },
+            { value: "double_skin", label: "Double Skin" },
+            { value: "cavity", label: "Cavity" },
+            { value: "other", label: "Other" }
+          ]
+        },
+        {
+          name: "Pattern Type",
+          options: [
+            { value: "stretcher_bond", label: "Stretcher Bond" },
+            { value: "herringbone", label: "Herringbone" },
+            { value: "flemish_bond", label: "Flemish Bond" },
+            { value: "other", label: "Other" }
+          ]
+        }
+      ];
+    case "Earthworks / Excavation":
+      return [
+        {
+          name: "Excavation Type",
+          options: [
+            { value: "trench", label: "Trench" },
+            { value: "foundation", label: "Foundation" },
+            { value: "grading", label: "Grading" },
+            { value: "other", label: "Other" }
+          ]
+        },
+        {
+          name: "Soil Type",
+          options: [
+            { value: "clay", label: "Clay" },
+            { value: "sand", label: "Sand" },
+            { value: "loam", label: "Loam" },
+            { value: "other", label: "Other" }
+          ]
+        },
+        {
+          name: "Excavation Depth",
+          options: [
+            { value: "shallow", label: "Shallow" },
+            { value: "deep", label: "Deep" },
+            { value: "medium", label: "Medium" },
+            { value: "other", label: "Other" }
+          ]
+        },
+        {
+          name: "Machinery Required",
+          options: [
+            { value: "backhoe", label: "Backhoe" },
+            { value: "bulldozer", label: "Bulldozer" },
+            { value: "excavator", label: "Excavator" },
+            { value: "other", label: "Other" }
+          ]
+        }
+      ];
+    case "Drainage":
+      return [
+        {
+          name: "Drain Type",
+          options: [
+            { value: "french_drain", label: "French Drain" },
+            { value: "surface_drain", label: "Surface Drain" },
+            { value: "channel_drain", label: "Channel Drain" },
+            { value: "other", label: "Other" }
+          ]
+        },
+        {
+          name: "Material Type",
+          options: [
+            { value: "pvc", label: "PVC" },
+            { value: "clay", label: "Clay" },
+            { value: "concrete", label: "Concrete" },
+            { value: "other", label: "Other" }
+          ]
+        },
+        {
+          name: "System Layout",
+          options: [
+            { value: "gravity_fed", label: "Gravity-fed" },
+            { value: "pump_assisted", label: "Pump-assisted" },
+            { value: "combined", label: "Combined" },
+            { value: "other", label: "Other" }
+          ]
+        },
+        {
+          name: "Slope / Angle",
+          options: [
+            { value: "steep", label: "Steep" },
+            { value: "gradual", label: "Gradual" },
+            { value: "moderate", label: "Moderate" },
+            { value: "other", label: "Other" }
+          ]
+        }
+      ];
+    case "HVAC":
+      return [
+        {
+          name: "System Type",
+          options: [
+            { value: "central", label: "Central" },
+            { value: "ductless", label: "Ductless" },
+            { value: "split_system", label: "Split System" },
+            { value: "other", label: "Other" }
+          ]
+        },
+        {
+          name: "Energy Source",
+          options: [
+            { value: "gas", label: "Gas" },
+            { value: "electric", label: "Electric" },
+            { value: "geothermal", label: "Geothermal" },
+            { value: "other", label: "Other" }
+          ]
+        },
+        {
+          name: "Ventilation Type",
+          options: [
+            { value: "heat_recovery", label: "Heat Recovery" },
+            { value: "exhaust", label: "Exhaust" },
+            { value: "natural", label: "Natural" },
+            { value: "other", label: "Other" }
+          ]
+        },
+        {
+          name: "Filter Type",
+          options: [
+            { value: "hepa", label: "HEPA" },
+            { value: "charcoal", label: "Charcoal" },
+            { value: "electrostatic", label: "Electrostatic" },
+            { value: "other", label: "Other" }
+          ]
+        }
+      ];
+    case "Insulation":
+      return [
+        {
+          name: "Insulation Material",
+          options: [
+            { value: "fiberglass", label: "Fiberglass" },
+            { value: "foam_board", label: "Foam Board" },
+            { value: "cellulose", label: "Cellulose" },
+            { value: "other", label: "Other" }
+          ]
+        },
+        {
+          name: "Installation Type",
+          options: [
+            { value: "batt", label: "Batt" },
+            { value: "spray_foam", label: "Spray Foam" },
+            { value: "blown_in", label: "Blown-in" },
+            { value: "other", label: "Other" }
+          ]
+        },
+        {
+          name: "Area Type",
+          options: [
+            { value: "attic", label: "Attic" },
+            { value: "walls", label: "Walls" },
+            { value: "floors", label: "Floors" },
+            { value: "other", label: "Other" }
+          ]
+        },
+        {
+          name: "R-value",
+          options: [
+            { value: "r_13", label: "R-13" },
+            { value: "r_30", label: "R-30" },
+            { value: "r_49", label: "R-49" },
+            { value: "other", label: "Other" }
+          ]
+        }
+      ];
+    case "Windows & Glazing":
+      return [
+        {
+          name: "Glass Type",
+          options: [
+            { value: "double_glazed", label: "Double-glazed" },
+            { value: "tinted", label: "Tinted" },
+            { value: "low_e", label: "Low-E" },
+            { value: "other", label: "Other" }
+          ]
+        },
+        {
+          name: "Frame Material",
+          options: [
+            { value: "wood", label: "Wood" },
+            { value: "aluminum", label: "Aluminum" },
+            { value: "pvc", label: "PVC" },
+            { value: "other", label: "Other" }
+          ]
+        },
+        {
+          name: "Opening Type",
+          options: [
+            { value: "casement", label: "Casement" },
+            { value: "sliding", label: "Sliding" },
+            { value: "awning", label: "Awning" },
+            { value: "other", label: "Other" }
+          ]
+        },
+        {
+          name: "Finish Type",
+          options: [
+            { value: "clear", label: "Clear" },
+            { value: "frosted", label: "Frosted" },
+            { value: "patterned", label: "Patterned" },
+            { value: "other", label: "Other" }
+          ]
+        }
+      ];
+    case "Cabinetry / Joinery":
+      return [
+        {
+          name: "Cabinet Style",
+          options: [
+            { value: "shaker", label: "Shaker" },
+            { value: "modern", label: "Modern" },
+            { value: "traditional", label: "Traditional" },
+            { value: "other", label: "Other" }
+          ]
+        },
+        {
+          name: "Material",
+          options: [
+            { value: "mdf", label: "MDF" },
+            { value: "solid_wood", label: "Solid Wood" },
+            { value: "plywood", label: "Plywood" },
+            { value: "other", label: "Other" }
+          ]
+        },
+        {
+          name: "Finish",
+          options: [
+            { value: "lacquered", label: "Lacquered" },
+            { value: "veneered", label: "Veneered" },
+            { value: "painted", label: "Painted" },
+            { value: "other", label: "Other" }
+          ]
+        },
+        {
+          name: "Storage Features",
+          options: [
+            { value: "pull_out_drawers", label: "Pull-out Drawers" },
+            { value: "shelves", label: "Shelves" },
+            { value: "custom_inserts", label: "Custom Inserts" },
+            { value: "other", label: "Other" }
+          ]
+        }
+      ];
+    case "Welding / Metalwork":
+      return [
+        {
+          name: "Metal Type",
+          options: [
+            { value: "steel", label: "Steel" },
+            { value: "aluminum", label: "Aluminum" },
+            { value: "wrought_iron", label: "Wrought Iron" },
+            { value: "other", label: "Other" }
+          ]
+        },
+        {
+          name: "Welding Method",
+          options: [
+            { value: "mig", label: "MIG" },
+            { value: "tig", label: "TIG" },
+            { value: "stick", label: "Stick" },
+            { value: "other", label: "Other" }
+          ]
+        },
+        {
+          name: "Fabrication Type",
+          options: [
+            { value: "structural", label: "Structural" },
+            { value: "decorative", label: "Decorative" },
+            { value: "mechanical", label: "Mechanical" },
+            { value: "other", label: "Other" }
+          ]
+        },
+        {
+          name: "Finish Type",
+          options: [
+            { value: "powder_coated", label: "Powder-coated" },
+            { value: "galvanized", label: "Galvanized" },
+            { value: "painted", label: "Painted" },
+            { value: "other", label: "Other" }
+          ]
+        }
+      ];
+    case "Fencing / Gates":
+      return [
+        {
+          name: "Material Type",
+          options: [
+            { value: "timber", label: "Timber" },
+            { value: "steel", label: "Steel" },
+            { value: "aluminum", label: "Aluminum" },
+            { value: "other", label: "Other" }
+          ]
+        },
+        {
+          name: "Gate Style",
+          options: [
+            { value: "swing", label: "Swing" },
+            { value: "sliding", label: "Sliding" },
+            { value: "bi_fold", label: "Bi-fold" },
+            { value: "other", label: "Other" }
+          ]
+        },
+        {
+          name: "Fence Height",
+          options: [
+            { value: "standard", label: "Standard" },
+            { value: "privacy", label: "Privacy" },
+            { value: "security", label: "Security" },
+            { value: "other", label: "Other" }
+          ]
+        },
+        {
+          name: "Finish Type",
+          options: [
+            { value: "treated_wood", label: "Treated Wood" },
+            { value: "powder_coated", label: "Powder-coated" },
+            { value: "painted", label: "Painted" },
+            { value: "other", label: "Other" }
+          ]
+        }
+      ];
     default:
       return [];
   }
