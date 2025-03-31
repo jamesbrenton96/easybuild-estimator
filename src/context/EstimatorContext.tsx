@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState } from "react";
 
 export type ProjectType = 
@@ -18,7 +19,7 @@ export type ProjectType =
   | "Earthworks / Excavation"
   | "Drainage"
   | "HVAC"
-  | "Insulation"
+  | "Insulation" 
   | "Flooring"
   | "Windows & Glazing"
   | "Cabinetry / Joinery"
@@ -393,6 +394,65 @@ export const getSubcategoriesForProjectType = (projectType: ProjectType | null):
           ]
         }
       ];
+    case "Painting & Decorating":
+      return [
+        {
+          name: "Surface Preparation",
+          options: [
+            { value: "sanding", label: "Sanding" },
+            { value: "patching", label: "Patching" },
+            { value: "priming", label: "Priming" },
+            { value: "other", label: "Other" }
+          ]
+        },
+        {
+          name: "Painting Techniques",
+          options: [
+            { value: "brush", label: "Brush" },
+            { value: "roller", label: "Roller" },
+            { value: "spray", label: "Spray" },
+            { value: "other", label: "Other" }
+          ]
+        },
+        {
+          name: "Paint Types",
+          options: [
+            { value: "water_based", label: "Water-based" },
+            { value: "oil_based", label: "Oil-based" },
+            { value: "epoxy", label: "Epoxy" },
+            { value: "other", label: "Other" }
+          ]
+        },
+        {
+          name: "Interior vs Exterior",
+          options: [
+            { value: "walls", label: "Walls" },
+            { value: "ceilings", label: "Ceilings" },
+            { value: "trim", label: "Trim" },
+            { value: "exterior_cladding", label: "Exterior Cladding" },
+            { value: "other", label: "Other" }
+          ]
+        },
+        {
+          name: "Finish Type",
+          options: [
+            { value: "matte", label: "Matte" },
+            { value: "satin", label: "Satin" },
+            { value: "semi_gloss", label: "Semi-gloss" },
+            { value: "gloss", label: "Gloss" },
+            { value: "other", label: "Other" }
+          ]
+        },
+        {
+          name: "Specialty Coatings",
+          options: [
+            { value: "anti_mould", label: "Anti-mould" },
+            { value: "heat_resistant", label: "Heat-resistant" },
+            { value: "anti_graffiti", label: "Anti-graffiti" },
+            { value: "other", label: "Other" }
+          ]
+        }
+      ];
     case "Tiling":
       return [
         {
@@ -666,6 +726,67 @@ export const getSubcategoriesForProjectType = (projectType: ProjectType | null):
           ]
         }
       ];
+    case "Flooring":
+      return [
+        {
+          name: "Material Type",
+          options: [
+            { value: "hardwood", label: "Hardwood" },
+            { value: "engineered_timber", label: "Engineered Timber" },
+            { value: "vinyl", label: "Vinyl" },
+            { value: "laminate", label: "Laminate" },
+            { value: "tile", label: "Tile" },
+            { value: "carpet", label: "Carpet" },
+            { value: "other", label: "Other" }
+          ]
+        },
+        {
+          name: "Subfloor Preparation",
+          options: [
+            { value: "concrete_slab", label: "Concrete Slab" },
+            { value: "timber_subfloor", label: "Timber Subfloor" },
+            { value: "underlay_installation", label: "Underlay Installation" },
+            { value: "other", label: "Other" }
+          ]
+        },
+        {
+          name: "Flooring Installation",
+          options: [
+            { value: "glue_down", label: "Glue-down" },
+            { value: "floating", label: "Floating" },
+            { value: "nail_down", label: "Nail-down" },
+            { value: "other", label: "Other" }
+          ]
+        },
+        {
+          name: "Finish Type",
+          options: [
+            { value: "polished", label: "Polished" },
+            { value: "matte", label: "Matte" },
+            { value: "glossy", label: "Glossy" },
+            { value: "other", label: "Other" }
+          ]
+        },
+        {
+          name: "Underfloor Heating",
+          options: [
+            { value: "electric", label: "Electric" },
+            { value: "hydronic", label: "Hydronic" },
+            { value: "none", label: "None" },
+            { value: "other", label: "Other" }
+          ]
+        },
+        {
+          name: "Eco-friendly Options",
+          options: [
+            { value: "bamboo", label: "Bamboo" },
+            { value: "cork", label: "Cork" },
+            { value: "recycled_materials", label: "Recycled Materials" },
+            { value: "none", label: "None" },
+            { value: "other", label: "Other" }
+          ]
+        }
+      ];
     case "Windows & Glazing":
       return [
         {
@@ -818,6 +939,351 @@ export const getSubcategoriesForProjectType = (projectType: ProjectType | null):
             { value: "treated_wood", label: "Treated Wood" },
             { value: "powder_coated", label: "Powder-coated" },
             { value: "painted", label: "Painted" },
+            { value: "other", label: "Other" }
+          ]
+        }
+      ];
+    case "Demolition":
+      return [
+        {
+          name: "Type of Demolition",
+          options: [
+            { value: "partial", label: "Partial" },
+            { value: "full", label: "Full" },
+            { value: "interior", label: "Interior" },
+            { value: "exterior", label: "Exterior" },
+            { value: "other", label: "Other" }
+          ]
+        },
+        {
+          name: "Materials Removal",
+          options: [
+            { value: "asbestos", label: "Asbestos" },
+            { value: "hazardous_materials", label: "Hazardous Materials" },
+            { value: "general_waste", label: "General Waste" },
+            { value: "other", label: "Other" }
+          ]
+        },
+        {
+          name: "Disposal Method",
+          options: [
+            { value: "recycling", label: "Recycling" },
+            { value: "landfill", label: "Landfill" },
+            { value: "salvage", label: "Salvage" },
+            { value: "other", label: "Other" }
+          ]
+        },
+        {
+          name: "Demolition Method",
+          options: [
+            { value: "manual", label: "Manual" },
+            { value: "mechanical", label: "Mechanical" },
+            { value: "explosive", label: "Explosive" },
+            { value: "other", label: "Other" }
+          ]
+        },
+        {
+          name: "Site Safety",
+          options: [
+            { value: "scaffolding", label: "Scaffolding" },
+            { value: "barriers", label: "Barriers" },
+            { value: "dust_control", label: "Dust Control" },
+            { value: "other", label: "Other" }
+          ]
+        },
+        {
+          name: "Permits & Compliance",
+          options: [
+            { value: "environmental_permits", label: "Environmental Permits" },
+            { value: "demolition_permits", label: "Demolition Permits" },
+            { value: "none", label: "None Required" },
+            { value: "other", label: "Other" }
+          ]
+        }
+      ];
+    case "Scaffolding":
+      return [
+        {
+          name: "Scaffolding Type",
+          options: [
+            { value: "frame_scaffolding", label: "Frame Scaffolding" },
+            { value: "tube_and_clamp", label: "Tube and Clamp" },
+            { value: "mobile_scaffolding", label: "Mobile Scaffolding" },
+            { value: "other", label: "Other" }
+          ]
+        },
+        {
+          name: "Purpose",
+          options: [
+            { value: "access", label: "Access" },
+            { value: "containment", label: "Containment" },
+            { value: "support_for_roofing", label: "Support for Roofing" },
+            { value: "other", label: "Other" }
+          ]
+        },
+        {
+          name: "Height Range",
+          options: [
+            { value: "low_level", label: "Low-level" },
+            { value: "medium_level", label: "Medium-level" },
+            { value: "high_level", label: "High-level" },
+            { value: "other", label: "Other" }
+          ]
+        },
+        {
+          name: "Load Capacity",
+          options: [
+            { value: "light", label: "Light" },
+            { value: "medium", label: "Medium" },
+            { value: "heavy_duty", label: "Heavy-duty" },
+            { value: "other", label: "Other" }
+          ]
+        },
+        {
+          name: "Safety Features",
+          options: [
+            { value: "guardrails", label: "Guardrails" },
+            { value: "access_ladders", label: "Access Ladders" },
+            { value: "fall_protection", label: "Fall Protection" },
+            { value: "other", label: "Other" }
+          ]
+        },
+        {
+          name: "Modular Components",
+          options: [
+            { value: "planks", label: "Planks" },
+            { value: "braces", label: "Braces" },
+            { value: "platforms", label: "Platforms" },
+            { value: "other", label: "Other" }
+          ]
+        }
+      ];
+    case "Waterproofing":
+      return [
+        {
+          name: "Material Type",
+          options: [
+            { value: "liquid_membranes", label: "Liquid Membranes" },
+            { value: "sheet_membranes", label: "Sheet Membranes" },
+            { value: "bitumen_based", label: "Bitumen-based" },
+            { value: "other", label: "Other" }
+          ]
+        },
+        {
+          name: "Application Areas",
+          options: [
+            { value: "roofs", label: "Roofs" },
+            { value: "foundations", label: "Foundations" },
+            { value: "balconies", label: "Balconies" },
+            { value: "wet_areas", label: "Wet Areas" },
+            { value: "other", label: "Other" }
+          ]
+        },
+        {
+          name: "Method of Application",
+          options: [
+            { value: "spray", label: "Spray" },
+            { value: "roll_on", label: "Roll-on" },
+            { value: "trowel_applied", label: "Trowel-applied" },
+            { value: "other", label: "Other" }
+          ]
+        },
+        {
+          name: "Waterproofing for Wet Areas",
+          options: [
+            { value: "bathrooms", label: "Bathrooms" },
+            { value: "kitchens", label: "Kitchens" },
+            { value: "laundries", label: "Laundries" },
+            { value: "other", label: "Other" }
+          ]
+        },
+        {
+          name: "Sealing Systems",
+          options: [
+            { value: "joints", label: "Joints" },
+            { value: "penetrations", label: "Penetrations" },
+            { value: "windows_doors", label: "Windows/Doors" },
+            { value: "other", label: "Other" }
+          ]
+        },
+        {
+          name: "Sustainable Waterproofing",
+          options: [
+            { value: "eco_friendly_materials", label: "Eco-friendly Materials" },
+            { value: "voc_free", label: "VOC-free" },
+            { value: "none", label: "None" },
+            { value: "other", label: "Other" }
+          ]
+        }
+      ];
+    case "Solar Installation":
+      return [
+        {
+          name: "Solar Panel Type",
+          options: [
+            { value: "monocrystalline", label: "Monocrystalline" },
+            { value: "polycrystalline", label: "Polycrystalline" },
+            { value: "thin_film", label: "Thin-film" },
+            { value: "other", label: "Other" }
+          ]
+        },
+        {
+          name: "System Type",
+          options: [
+            { value: "grid_tied", label: "Grid-tied" },
+            { value: "off_grid", label: "Off-grid" },
+            { value: "hybrid", label: "Hybrid" },
+            { value: "other", label: "Other" }
+          ]
+        },
+        {
+          name: "Inverter Type",
+          options: [
+            { value: "string_inverters", label: "String Inverters" },
+            { value: "micro_inverters", label: "Micro-inverters" },
+            { value: "power_optimizers", label: "Power Optimizers" },
+            { value: "other", label: "Other" }
+          ]
+        },
+        {
+          name: "Battery Storage",
+          options: [
+            { value: "lithium_ion", label: "Lithium-ion" },
+            { value: "lead_acid", label: "Lead-acid" },
+            { value: "none", label: "None" },
+            { value: "other", label: "Other" }
+          ]
+        },
+        {
+          name: "Roof Mounting Type",
+          options: [
+            { value: "fixed", label: "Fixed" },
+            { value: "adjustable", label: "Adjustable" },
+            { value: "ground_mounted", label: "Ground-mounted" },
+            { value: "other", label: "Other" }
+          ]
+        },
+        {
+          name: "Performance Monitoring",
+          options: [
+            { value: "cloud_based", label: "Cloud-based" },
+            { value: "smartphone_app", label: "Smartphone App Integration" },
+            { value: "none", label: "None" },
+            { value: "other", label: "Other" }
+          ]
+        }
+      ];
+    case "Smart Home / Automation":
+      return [
+        {
+          name: "System Type",
+          options: [
+            { value: "lighting_control", label: "Lighting Control" },
+            { value: "hvac_control", label: "HVAC Control" },
+            { value: "security_systems", label: "Security Systems" },
+            { value: "other", label: "Other" }
+          ]
+        },
+        {
+          name: "Integration with Other Systems",
+          options: [
+            { value: "home_theatre", label: "Home Theatre" },
+            { value: "audio", label: "Audio" },
+            { value: "intercom_systems", label: "Intercom Systems" },
+            { value: "other", label: "Other" }
+          ]
+        },
+        {
+          name: "Connectivity",
+          options: [
+            { value: "wifi", label: "Wi-Fi" },
+            { value: "zigbee", label: "Zigbee" },
+            { value: "z_wave", label: "Z-Wave" },
+            { value: "bluetooth", label: "Bluetooth" },
+            { value: "other", label: "Other" }
+          ]
+        },
+        {
+          name: "Home Security",
+          options: [
+            { value: "motion_detectors", label: "Motion Detectors" },
+            { value: "door_window_sensors", label: "Door/Window Sensors" },
+            { value: "cameras", label: "Cameras" },
+            { value: "other", label: "Other" }
+          ]
+        },
+        {
+          name: "Energy Management",
+          options: [
+            { value: "smart_thermostats", label: "Smart Thermostats" },
+            { value: "energy_meters", label: "Energy Meters" },
+            { value: "none", label: "None" },
+            { value: "other", label: "Other" }
+          ]
+        },
+        {
+          name: "Voice Control",
+          options: [
+            { value: "amazon_alexa", label: "Amazon Alexa" },
+            { value: "google_assistant", label: "Google Assistant" },
+            { value: "apple_homekit", label: "Apple HomeKit" },
+            { value: "none", label: "None" },
+            { value: "other", label: "Other" }
+          ]
+        }
+      ];
+    case "Site Prep & Cleanup":
+      return [
+        {
+          name: "Site Clearing",
+          options: [
+            { value: "trees", label: "Removal of Trees" },
+            { value: "brush", label: "Brush" },
+            { value: "old_structures", label: "Old Structures" },
+            { value: "other", label: "Other" }
+          ]
+        },
+        {
+          name: "Excavation",
+          options: [
+            { value: "trenching", label: "Trenching" },
+            { value: "grading", label: "Grading" },
+            { value: "leveling", label: "Leveling" },
+            { value: "other", label: "Other" }
+          ]
+        },
+        {
+          name: "Waste Removal",
+          options: [
+            { value: "construction_debris", label: "Construction Debris" },
+            { value: "hazardous_materials", label: "Hazardous Materials" },
+            { value: "other", label: "Other" }
+          ]
+        },
+        {
+          name: "Dust Control",
+          options: [
+            { value: "water_spraying", label: "Water Spraying" },
+            { value: "tarping", label: "Tarping" },
+            { value: "none", label: "None" },
+            { value: "other", label: "Other" }
+          ]
+        },
+        {
+          name: "Final Site Clean",
+          options: [
+            { value: "sweeping", label: "Sweeping" },
+            { value: "power_washing", label: "Power Washing" },
+            { value: "window_cleaning", label: "Window Cleaning" },
+            { value: "other", label: "Other" }
+          ]
+        },
+        {
+          name: "Environmental Considerations",
+          options: [
+            { value: "erosion_control", label: "Erosion Control" },
+            { value: "sediment_fencing", label: "Sediment Fencing" },
+            { value: "none", label: "None" },
             { value: "other", label: "Other" }
           ]
         }
