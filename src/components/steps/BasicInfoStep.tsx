@@ -75,7 +75,18 @@ export default function BasicInfoStep() {
             </div>
           </div>
           <div className="mb-3 text-white/70 text-sm italic">
-            <span className="font-medium">Example for a Deck:</span> I want to build a 3x2 meter deck using treated pine timber for the framework and composite decking boards for the surface. The deck will have a low-pitched roof with a polycarbonate sheet for roofing. The deck will be built at the back of the house with easy access, and I expect the job to be completed in 2 weeks.
+            <span className="font-medium">Example for a Deck:</span> I want to build a 3x2 meter deck that will tie seamlessly into an existing deck which is 300mm off the ground. The deck will be constructed using H3.2 treated pine timber for the framework, ensuring durability in outdoor conditions, and will feature Vitex 140x20mm decking boards for the surface, chosen for its aesthetic appeal and natural resistance to the elements.
+
+The deck will be laid in a picture frame design to create a neat, professional appearance around the perimeter. Once completed, the decking will be stained with a suitable wood stain that complements the natural color of the Vitex wood.
+
+Additionally, the deck will feature a low-pitched roof with polycarbonate roofing sheets, offering protection from the elements while maintaining light and visibility. The project will be located at the back of the house with clear and easy access for materials and construction.
+
+I an unsure how long the job will take to do the installation, finishing touches, and staining of the deck.
+
+The work will be carried out by a qualified builder at an hourly rate of $75 plus GST and an apprentice at $50 per hour plus GST.
+
+I also plan to add an 18% margin on all materials to account for procurement and handling costs.
+The deck will have a low-pitched roof that will be framed out of H3.2 timber with corrugate iron for roofing.
           </div>
           <Textarea
             id="description"
