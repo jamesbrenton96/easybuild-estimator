@@ -57,8 +57,7 @@ const Intro = () => {
                   Please note that the estimates provided are intended to serve as a guide only. 
                   These estimates are not legally binding quotes and may vary based on actual project 
                   requirements, market conditions, material availability, and other factors that may 
-                  affect final costs. For a legally binding quote, we recommend consulting with a 
-                  licensed contractor or building professional.
+                  affect final costs. For a legally binding quote, we recommend consulting with Brenton Building 'UKNZ' Limited.
                 </p>
               </div>
             </section>
