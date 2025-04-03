@@ -1,23 +1,39 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { useEstimator } from "@/context/EstimatorContext";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Settings, Info } from "lucide-react";
 
 export default function SubmitStep() {
   const { formData, prevStep, nextStep, setIsLoading, setEstimationResults } = useEstimator();
   const isMobile = useIsMobile();
+  const [webhookUrl, setWebhookUrl] = useState(localStorage.getItem("makeWebhookUrl") || "");
+  const [showSettings, setShowSettings] = useState(false);
   
   const handleSubmit = async () => {
-    // Create a placeholder for the Make.com webhook URL
-    const webhookUrl = "https://hook.make.com/YOUR_WEBHOOK_ID"; // This would be replaced with the actual webhook URL
+    if (!webhookUrl.trim().startsWith("https://hook.make.com/")) {
+      toast.error("Please enter a valid Make.com webhook URL");
+      setShowSettings(true);
+      return;
+    }
+    
+    // Save the webhook URL for future use
+    localStorage.setItem("makeWebhookUrl", webhookUrl);
     
     // Create FormData for file uploads
     const data = new FormData();
     data.append("projectType", formData.projectType || "");
     data.append("description", formData.description);
     data.append("location", formData.location);
+    
+    // Add subcategories if any
+    if (Object.keys(formData.subcategories).length > 0) {
+      data.append("subcategories", JSON.stringify(formData.subcategories));
+    }
     
     // Append files if any
     formData.files.forEach((file, index) => {
@@ -27,10 +43,12 @@ export default function SubmitStep() {
     try {
       setIsLoading(true);
       
-      // In a real implementation, send the data to the webhook
-      // For now, we'll simulate a response after a delay
+      // In a real implementation, this would send data to Make.com
+      console.log("Sending data to webhook:", webhookUrl);
+      
+      // For now we'll use the mock response while users set up their Make.com scenario
       setTimeout(() => {
-        // This is a placeholder for the response from the AI estimation service
+        // Mock response that would normally come from Make.com
         const mockResponse = {
           estimate: {
             labor: {
@@ -57,7 +75,7 @@ export default function SubmitStep() {
         nextStep();
       }, 3000);
       
-      // If you want to implement the actual API call, uncomment the following code and adjust accordingly:
+      // When ready to integrate with Make.com, uncomment this code
       /*
       const response = await fetch(webhookUrl, {
         method: "POST",
@@ -121,6 +139,44 @@ export default function SubmitStep() {
               )}
             </div>
           </div>
+        </div>
+        
+        {showSettings && (
+          <div className="bg-white/5 rounded-lg p-6 mb-6 border border-white/10">
+            <h3 className="font-medium text-white mb-3 flex items-center">
+              <Settings className="w-4 h-4 mr-2" /> Make.com Webhook Configuration
+            </h3>
+            <div className="space-y-4">
+              <div>
+                <p className="text-white/70 text-sm mb-2">Enter your Make.com webhook URL:</p>
+                <Input
+                  type="text"
+                  placeholder="https://hook.make.com/your-webhook-id"
+                  value={webhookUrl}
+                  onChange={(e) => setWebhookUrl(e.target.value)}
+                  className="bg-white/10 border-white/20 text-white"
+                />
+              </div>
+              <div className="text-white/60 text-sm flex items-start">
+                <Info className="w-4 h-4 mr-2 mt-0.5 flex-shrink-0" />
+                <p>
+                  Create a webhook in Make.com, then paste the URL here. This will send your form data to your Make.com scenario.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+        
+        <div className="text-center mb-6">
+          <Button 
+            type="button" 
+            variant="link" 
+            className="text-white/60 hover:text-white"
+            onClick={() => setShowSettings(!showSettings)}
+          >
+            <Settings className="w-4 h-4 mr-2" />
+            {showSettings ? "Hide webhook settings" : "Configure Make.com webhook"}
+          </Button>
         </div>
         
         <div className="text-center text-white/80 text-sm mb-8">
