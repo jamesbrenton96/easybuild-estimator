@@ -2,7 +2,8 @@
 import React, { useState } from "react";
 import { useEstimator } from "@/context/EstimatorContext";
 import { motion } from "framer-motion";
-import { Upload, X, FileText, Image } from "lucide-react";
+import { Upload, X, FileText, Image, AlertTriangle } from "lucide-react";
+import { toast } from "sonner";
 
 export default function DocumentsStep() {
   const { formData, updateFormData, nextStep, prevStep } = useEstimator();
@@ -56,6 +57,17 @@ export default function DocumentsStep() {
     return <FileText className="h-5 w-5 text-construction-orange" />;
   };
 
+  const handleNextStep = () => {
+    if (formData.files.length === 0) {
+      toast.error("Please upload at least one supporting document.", {
+        description: "Documents are required to proceed.",
+        icon: <AlertTriangle className="h-5 w-5 text-yellow-500" />
+      });
+      return;
+    }
+    nextStep();
+  };
+
   return (
     <motion.div 
       className="step-container"
@@ -66,7 +78,7 @@ export default function DocumentsStep() {
       <div className="text-center mb-8">
         <h1 className="text-2xl sm:text-3xl font-bold text-white mb-3">Upload Supporting Documents</h1>
         <p className="text-white/80 max-w-2xl mx-auto">
-          Add plans, drawings, or photos to help us provide a more accurate estimate. (Optional)
+          Upload plans, drawings, or photos to help us provide a more accurate estimate. (Required)
         </p>
       </div>
       
@@ -98,7 +110,7 @@ export default function DocumentsStep() {
               <Upload className="h-6 w-6 text-construction-orange" />
             </motion.div>
             <p className="text-white font-medium">Drag and drop files here, or click to browse</p>
-            <p className="text-white/60 text-sm mt-1">Supports PDF, JPG, PNG, DOC & more</p>
+            <p className="text-white/60 text-sm mt-1">Supports PDF, JPG, PNG, DOC & more (Required)</p>
           </label>
         </div>
         
@@ -132,7 +144,7 @@ export default function DocumentsStep() {
             Back
           </button>
           <button
-            onClick={nextStep}
+            onClick={handleNextStep}
             className="btn-next"
           >
             Continue
