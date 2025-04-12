@@ -1,3 +1,4 @@
+
 import React from "react";
 import { useEstimator } from "@/context/EstimatorContext";
 import { motion } from "framer-motion";
@@ -45,26 +46,40 @@ export default function SubmitStep() {
         body: data
       });
       
-      console.log("Webhook response received");
+      console.log("Webhook response received", response);
       
       // Process the response
       if (response.ok) {
         try {
-          // Try to get text response first
+          // Get response as text first (since we don't know if it's JSON or Markdown)
           const textResponse = await response.text();
-          console.log("Webhook text response:", textResponse);
+          console.log("Webhook raw response:", textResponse);
           
-          // Check if the response is actually JSON despite being returned as text
+          if (!textResponse || textResponse.trim() === "") {
+            throw new Error("Empty response received");
+          }
+          
+          // Check if the response is valid JSON
           try {
             const jsonResponse = JSON.parse(textResponse);
-            console.log("Successfully parsed webhook response as JSON");
-            setEstimationResults({
-              estimate: jsonResponse.estimate,
-              markdownContent: null
-            });
+            console.log("Successfully parsed response as JSON:", jsonResponse);
+            
+            if (jsonResponse.estimate) {
+              // Standard JSON estimate format
+              setEstimationResults({
+                estimate: jsonResponse.estimate,
+                markdownContent: null
+              });
+            } else {
+              // JSON without expected structure, treat as markdown
+              setEstimationResults({
+                markdownContent: textResponse,
+                estimate: null
+              });
+            }
           } catch (jsonError) {
-            console.log("Response is not JSON, treating as markdown");
-            // If not valid JSON, use it as markdown
+            console.log("Response is not JSON, treating as markdown:", jsonError);
+            // Not valid JSON, treat as markdown
             setEstimationResults({
               markdownContent: textResponse,
               estimate: null
@@ -75,10 +90,11 @@ export default function SubmitStep() {
           nextStep();
           toast.success("Estimate generated successfully!");
         } catch (parseError) {
-          console.error("Error parsing response:", parseError);
+          console.error("Error processing response:", parseError);
           handleFallbackResponse();
         }
       } else {
+        console.error(`Error status: ${response.status}, ${response.statusText}`);
         throw new Error(`Error status: ${response.status}`);
       }
     } catch (error) {
