@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { FormSubmitter } from "../submitter/FormSubmitter";
-import { ReviewDetails } from "../submitter/ReviewDetails";
+import ReviewDetails from "../submitter/ReviewDetails";
 
 export default function SubmitStep() {
   const { formData, prevStep, nextStep, setIsLoading, setEstimationResults } = useEstimator();
