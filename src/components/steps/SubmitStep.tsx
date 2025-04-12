@@ -1,4 +1,3 @@
-
 import React from "react";
 import { useEstimator } from "@/context/EstimatorContext";
 import { motion } from "framer-motion";
@@ -50,86 +49,78 @@ export default function SubmitStep() {
       
       // Process the response
       if (response.ok) {
-        // Try to parse as JSON if possible
         try {
-          const jsonResponse = await response.json();
-          console.log("Webhook JSON response:", jsonResponse);
-          setEstimationResults(jsonResponse);
-          setIsLoading(false);
-          nextStep();
-          toast.success("Estimate generated successfully!");
-        } catch (jsonError) {
-          console.log("Couldn't parse JSON response, using text response");
+          // Try to get text response first
           const textResponse = await response.text();
-          const estimateData = {
-            estimate: {
-              projectOverview: formData.description,
-              scopeOfWork: "Based on your requirements",
-              dimensions: "Standard dimensions",
-              materials: {
-                cost: 8500,
-                breakdown: [
-                  { name: "Timber", cost: 2500 },
-                  { name: "Concrete", cost: 1800 },
-                  { name: "Fixtures", cost: 2200 },
-                  { name: "Other Materials", cost: 2000 }
-                ]
-              },
-              labor: {
-                hours: 120,
-                cost: 6000
-              },
-              totalCost: 14500,
-              timeline: "3 weeks",
-              notes: "This is an initial estimate based on the provided information. A site visit is recommended for a more accurate quote.",
-              materialDetails: "Standard quality materials included. Premium materials available at additional cost.",
-              termsAndConditions: "Estimate valid for 30 days. 50% deposit required to begin work."
-            }
-          };
+          console.log("Webhook text response:", textResponse);
           
-          setEstimationResults(estimateData);
+          // Check if the response is actually JSON despite being returned as text
+          try {
+            const jsonResponse = JSON.parse(textResponse);
+            console.log("Successfully parsed webhook response as JSON");
+            setEstimationResults({
+              estimate: jsonResponse.estimate,
+              markdownContent: null
+            });
+          } catch (jsonError) {
+            console.log("Response is not JSON, treating as markdown");
+            // If not valid JSON, use it as markdown
+            setEstimationResults({
+              markdownContent: textResponse,
+              estimate: null
+            });
+          }
+          
           setIsLoading(false);
           nextStep();
           toast.success("Estimate generated successfully!");
+        } catch (parseError) {
+          console.error("Error parsing response:", parseError);
+          handleFallbackResponse();
         }
       } else {
         throw new Error(`Error status: ${response.status}`);
       }
     } catch (error) {
       console.error("Error submitting form:", error);
-      
-      // Fallback to mock data if webhook fails
-      const fallbackResponse = {
-        estimate: {
-          projectOverview: formData.description,
-          scopeOfWork: "Based on your requirements",
-          dimensions: "Standard dimensions",
-          materials: {
-            cost: 8500,
-            breakdown: [
-              { name: "Timber", cost: 2500 },
-              { name: "Concrete", cost: 1800 },
-              { name: "Fixtures", cost: 2200 },
-              { name: "Other Materials", cost: 2000 }
-            ]
-          },
-          labor: {
-            hours: 120,
-            cost: 6000
-          },
-          totalCost: 14500,
-          timeline: "3 weeks",
-          notes: "This is an initial estimate based on the provided information. A site visit is recommended for a more accurate quote.",
-          materialDetails: "Standard quality materials included. Premium materials available at additional cost.",
-          termsAndConditions: "Estimate valid for 30 days. 50% deposit required to begin work."
-        }
-      };
-      
-      setEstimationResults(fallbackResponse);
-      setIsLoading(false);
-      nextStep();
-      toast.warning("Using estimated values as we couldn't connect to our server. We'll follow up with an accurate quote.");
+      handleFallbackResponse();
     }
+  };
+  
+  // Fallback response handler
+  const handleFallbackResponse = () => {
+    // Fallback to mock data if webhook fails
+    const fallbackResponse = {
+      estimate: {
+        projectOverview: formData.description,
+        scopeOfWork: "Based on your requirements",
+        dimensions: "Standard dimensions",
+        materials: {
+          cost: 8500,
+          breakdown: [
+            { name: "Timber", cost: 2500 },
+            { name: "Concrete", cost: 1800 },
+            { name: "Fixtures", cost: 2200 },
+            { name: "Other Materials", cost: 2000 }
+          ]
+        },
+        labor: {
+          hours: 120,
+          cost: 6000
+        },
+        totalCost: 14500,
+        timeline: "3 weeks",
+        notes: "This is an initial estimate based on the provided information. A site visit is recommended for a more accurate quote.",
+        materialDetails: "Standard quality materials included. Premium materials available at additional cost.",
+        termsAndConditions: "Estimate valid for 30 days. 50% deposit required to begin work."
+      },
+      markdownContent: null
+    };
+    
+    setEstimationResults(fallbackResponse);
+    setIsLoading(false);
+    nextStep();
+    toast.warning("Using estimated values as we couldn't connect to our server. We'll follow up with an accurate quote.");
   };
 
   return (

@@ -2,9 +2,10 @@
 import React, { useEffect, useRef } from "react";
 import { useEstimator } from "@/context/EstimatorContext";
 import { motion } from "framer-motion";
-import { ArrowLeft, Check, Clock, FileText, Info, Printer, Download } from "lucide-react";
+import { ArrowLeft, Check, Clock, FileText, Info, Download, AlertTriangle } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 import html2pdf from "html2pdf.js";
+import ReactMarkdown from "react-markdown";
 
 export default function ReviewStep() {
   const { estimationResults, setStep } = useEstimator();
@@ -20,19 +21,17 @@ export default function ReviewStep() {
   if (!estimationResults) {
     return null;
   }
-  
-  const { estimate } = estimationResults;
 
   const handleDownloadPDF = () => {
     const element = estimateRef.current;
     if (!element) return;
     
     const opt = {
-      margin:       [10, 10, 10, 10],
-      filename:     'brenton-building-estimate.pdf',
-      image:        { type: 'jpeg', quality: 0.98 },
-      html2canvas:  { scale: 2, useCORS: true },
-      jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      margin: [10, 10, 10, 10],
+      filename: 'brenton-building-estimate.pdf',
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2, useCORS: true },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
     };
     
     // Create a clone of the element so we can add a logo to just the PDF
@@ -63,6 +62,155 @@ export default function ReviewStep() {
     html2pdf().from(clone).set(opt).save();
   };
 
+  // Render markdown content if available, otherwise render the structured estimate
+  const renderEstimateContent = () => {
+    if (estimationResults.markdownContent) {
+      return (
+        <div className="bg-white/5 backdrop-blur-sm rounded-lg overflow-hidden border border-white/10 mb-8">
+          <div className="p-4 border-b border-white/10">
+            <h2 className="text-white font-medium text-lg">AI-Generated Estimate</h2>
+          </div>
+          <div className="p-6 markdown-content">
+            <ReactMarkdown className="text-white prose prose-invert prose-headings:text-construction-orange prose-a:text-blue-400 prose-strong:text-white prose-li:text-white/90 max-w-none">
+              {estimationResults.markdownContent}
+            </ReactMarkdown>
+          </div>
+        </div>
+      );
+    } else if (estimationResults.estimate) {
+      const { estimate } = estimationResults;
+      return (
+        <>
+          {/* Project Overview */}
+          <div className="bg-white/5 backdrop-blur-sm rounded-lg overflow-hidden border border-white/10 mb-8">
+            <div className="p-4 border-b border-white/10">
+              <h2 className="text-white font-medium text-lg">Project Overview</h2>
+            </div>
+            <div className="p-6">
+              <p className="text-white/90">{estimate.projectOverview || estimate.description || "Custom building project"}</p>
+            </div>
+          </div>
+          
+          {/* Scope of Work */}
+          {estimate.scopeOfWork && (
+            <div className="bg-white/5 backdrop-blur-sm rounded-lg overflow-hidden border border-white/10 mb-8">
+              <div className="p-4 border-b border-white/10">
+                <h2 className="text-white font-medium text-lg">Scope of Work</h2>
+              </div>
+              <div className="p-6">
+                <p className="text-white/90">{estimate.scopeOfWork}</p>
+              </div>
+            </div>
+          )}
+          
+          {/* Dimensions */}
+          {estimate.dimensions && (
+            <div className="bg-white/5 backdrop-blur-sm rounded-lg overflow-hidden border border-white/10 mb-8">
+              <div className="p-4 border-b border-white/10">
+                <h2 className="text-white font-medium text-lg">Dimensions</h2>
+              </div>
+              <div className="p-6">
+                <p className="text-white/90">{estimate.dimensions}</p>
+              </div>
+            </div>
+          )}
+          
+          {/* Cost Summary */}
+          <div className="bg-white/5 backdrop-blur-sm rounded-lg overflow-hidden border border-white/10 mb-8">
+            <div className="p-6 text-center">
+              <h2 className="text-white text-lg font-medium mb-2">Total Estimated Cost</h2>
+              <div className="text-4xl font-bold text-construction-orange mb-2">
+                {formatCurrency(estimate.totalCost)}
+              </div>
+              <div className="flex items-center justify-center text-white/70">
+                <Clock className="w-4 h-4 mr-1" />
+                <span>Estimated Timeline: {estimate.timeline}</span>
+              </div>
+            </div>
+            
+            <div className="grid sm:grid-cols-2 divide-y sm:divide-y-0 sm:divide-x divide-white/10 border-t border-white/10">
+              <div className="p-6">
+                <h3 className="text-white/70 text-sm mb-2">Labor</h3>
+                <div className="text-2xl font-semibold text-white mb-1">
+                  {formatCurrency(estimate.labor.cost)}
+                </div>
+                <div className="text-white/70 text-sm">{estimate.labor.hours} hours</div>
+              </div>
+              
+              <div className="p-6">
+                <h3 className="text-white/70 text-sm mb-2">Materials</h3>
+                <div className="text-2xl font-semibold text-white mb-1">
+                  {formatCurrency(estimate.materials.cost)}
+                </div>
+                <div className="text-white/70 text-sm">{estimate.materials.breakdown.length} items</div>
+              </div>
+            </div>
+          </div>
+          
+          {/* Materials Breakdown */}
+          <div className="bg-white/5 backdrop-blur-sm rounded-lg overflow-hidden border border-white/10 mb-8">
+            <div className="p-4 border-b border-white/10 flex items-center">
+              <h2 className="text-white font-medium">Materials Breakdown</h2>
+            </div>
+            
+            <div className="divide-y divide-white/10">
+              {estimate.materials.breakdown.map((item, index) => (
+                <div key={index} className="p-4 flex justify-between items-center">
+                  <span className="text-white">{item.name}</span>
+                  <span className="text-white font-medium">{formatCurrency(item.cost)}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+          
+          {/* Material Details & Calculations */}
+          {estimate.materialDetails && (
+            <div className="bg-white/5 backdrop-blur-sm rounded-lg overflow-hidden border border-white/10 mb-8">
+              <div className="p-4 border-b border-white/10">
+                <h2 className="text-white font-medium text-lg">Material Details & Calculations</h2>
+              </div>
+              <div className="p-6">
+                <p className="text-white/90">{estimate.materialDetails}</p>
+              </div>
+            </div>
+          )}
+          
+          {/* Notes */}
+          <div className="bg-white/5 backdrop-blur-sm rounded-lg p-4 border border-white/10 mb-8 flex items-start">
+            <Info className="h-5 w-5 text-construction-orange mr-3 mt-0.5 flex-shrink-0" />
+            <div>
+              <h3 className="text-white font-medium mb-1">Notes</h3>
+              <p className="text-white/80 text-sm">{estimate.notes}</p>
+            </div>
+          </div>
+          
+          {/* Terms and Conditions */}
+          {estimate.termsAndConditions && (
+            <div className="bg-white/5 backdrop-blur-sm rounded-lg overflow-hidden border border-white/10 mb-8">
+              <div className="p-4 border-b border-white/10">
+                <h2 className="text-white font-medium text-lg">Terms & Conditions</h2>
+              </div>
+              <div className="p-6">
+                <p className="text-white/90">{estimate.termsAndConditions}</p>
+              </div>
+            </div>
+          )}
+        </>
+      );
+    } else {
+      // Fallback message if no estimate or markdown content
+      return (
+        <div className="bg-white/5 backdrop-blur-sm rounded-lg overflow-hidden border border-white/10 mb-8">
+          <div className="p-6 text-center">
+            <AlertTriangle className="h-12 w-12 text-yellow-500 mx-auto mb-4" />
+            <h2 className="text-white text-lg font-medium mb-2">Sorry, the estimate couldn't be generated</h2>
+            <p className="text-white/70">Please try again later or contact our support team for assistance.</p>
+          </div>
+        </div>
+      );
+    }
+  };
+
   return (
     <motion.div 
       className="step-container"
@@ -81,120 +229,7 @@ export default function ReviewStep() {
       </div>
       
       <div ref={estimateRef} className="max-w-3xl mx-auto pdf-content">
-        {/* Project Overview */}
-        <div className="bg-white/5 backdrop-blur-sm rounded-lg overflow-hidden border border-white/10 mb-8">
-          <div className="p-4 border-b border-white/10">
-            <h2 className="text-white font-medium text-lg">Project Overview</h2>
-          </div>
-          <div className="p-6">
-            <p className="text-white/90">{estimate.projectOverview || estimate.description || "Custom building project"}</p>
-          </div>
-        </div>
-        
-        {/* Scope of Work */}
-        {estimate.scopeOfWork && (
-          <div className="bg-white/5 backdrop-blur-sm rounded-lg overflow-hidden border border-white/10 mb-8">
-            <div className="p-4 border-b border-white/10">
-              <h2 className="text-white font-medium text-lg">Scope of Work</h2>
-            </div>
-            <div className="p-6">
-              <p className="text-white/90">{estimate.scopeOfWork}</p>
-            </div>
-          </div>
-        )}
-        
-        {/* Dimensions */}
-        {estimate.dimensions && (
-          <div className="bg-white/5 backdrop-blur-sm rounded-lg overflow-hidden border border-white/10 mb-8">
-            <div className="p-4 border-b border-white/10">
-              <h2 className="text-white font-medium text-lg">Dimensions</h2>
-            </div>
-            <div className="p-6">
-              <p className="text-white/90">{estimate.dimensions}</p>
-            </div>
-          </div>
-        )}
-        
-        {/* Cost Summary */}
-        <div className="bg-white/5 backdrop-blur-sm rounded-lg overflow-hidden border border-white/10 mb-8">
-          <div className="p-6 text-center">
-            <h2 className="text-white text-lg font-medium mb-2">Total Estimated Cost</h2>
-            <div className="text-4xl font-bold text-construction-orange mb-2">
-              {formatCurrency(estimate.totalCost)}
-            </div>
-            <div className="flex items-center justify-center text-white/70">
-              <Clock className="w-4 h-4 mr-1" />
-              <span>Estimated Timeline: {estimate.timeline}</span>
-            </div>
-          </div>
-          
-          <div className="grid sm:grid-cols-2 divide-y sm:divide-y-0 sm:divide-x divide-white/10 border-t border-white/10">
-            <div className="p-6">
-              <h3 className="text-white/70 text-sm mb-2">Labor</h3>
-              <div className="text-2xl font-semibold text-white mb-1">
-                {formatCurrency(estimate.labor.cost)}
-              </div>
-              <div className="text-white/70 text-sm">{estimate.labor.hours} hours</div>
-            </div>
-            
-            <div className="p-6">
-              <h3 className="text-white/70 text-sm mb-2">Materials</h3>
-              <div className="text-2xl font-semibold text-white mb-1">
-                {formatCurrency(estimate.materials.cost)}
-              </div>
-              <div className="text-white/70 text-sm">{estimate.materials.breakdown.length} items</div>
-            </div>
-          </div>
-        </div>
-        
-        {/* Materials Breakdown */}
-        <div className="bg-white/5 backdrop-blur-sm rounded-lg overflow-hidden border border-white/10 mb-8">
-          <div className="p-4 border-b border-white/10 flex items-center">
-            <h2 className="text-white font-medium">Materials Breakdown</h2>
-          </div>
-          
-          <div className="divide-y divide-white/10">
-            {estimate.materials.breakdown.map((item, index) => (
-              <div key={index} className="p-4 flex justify-between items-center">
-                <span className="text-white">{item.name}</span>
-                <span className="text-white font-medium">{formatCurrency(item.cost)}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-        
-        {/* Material Details & Calculations */}
-        {estimate.materialDetails && (
-          <div className="bg-white/5 backdrop-blur-sm rounded-lg overflow-hidden border border-white/10 mb-8">
-            <div className="p-4 border-b border-white/10">
-              <h2 className="text-white font-medium text-lg">Material Details & Calculations</h2>
-            </div>
-            <div className="p-6">
-              <p className="text-white/90">{estimate.materialDetails}</p>
-            </div>
-          </div>
-        )}
-        
-        {/* Notes */}
-        <div className="bg-white/5 backdrop-blur-sm rounded-lg p-4 border border-white/10 mb-8 flex items-start">
-          <Info className="h-5 w-5 text-construction-orange mr-3 mt-0.5 flex-shrink-0" />
-          <div>
-            <h3 className="text-white font-medium mb-1">Notes</h3>
-            <p className="text-white/80 text-sm">{estimate.notes}</p>
-          </div>
-        </div>
-        
-        {/* Terms and Conditions */}
-        {estimate.termsAndConditions && (
-          <div className="bg-white/5 backdrop-blur-sm rounded-lg overflow-hidden border border-white/10 mb-8">
-            <div className="p-4 border-b border-white/10">
-              <h2 className="text-white font-medium text-lg">Terms & Conditions</h2>
-            </div>
-            <div className="p-6">
-              <p className="text-white/90">{estimate.termsAndConditions}</p>
-            </div>
-          </div>
-        )}
+        {renderEstimateContent()}
       </div>
       
       {/* Download and Share Options */}
