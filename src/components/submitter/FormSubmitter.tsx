@@ -1,4 +1,3 @@
-
 import React from "react";
 import { toast } from "sonner";
 
@@ -17,22 +16,18 @@ export function FormSubmitter({
   nextStep,
   isMobile
 }: FormSubmitterProps) {
-  // Use the provided webhook URL directly
   const webhookUrl = "https://hook.us2.make.com/niu1dp65y66kc2r3j56xdcl607sp8fyr";
   
   const handleSubmit = async () => {
-    // Create FormData for file uploads
     const data = new FormData();
     data.append("projectType", formData.projectType || "");
     data.append("description", formData.description);
     data.append("location", formData.location);
     
-    // Add subcategories if any
     if (Object.keys(formData.subcategories).length > 0) {
       data.append("subcategories", JSON.stringify(formData.subcategories));
     }
     
-    // Append files if any
     formData.files.forEach((file, index) => {
       data.append(`file-${index}`, file);
     });
@@ -49,44 +44,55 @@ export function FormSubmitter({
         files: formData.files.map(f => f.name)
       });
       
-      // Make the actual API call to the webhook
       const response = await fetch(webhookUrl, {
         method: "POST",
         body: data
       });
       
-      console.log("Webhook response received", response);
+      console.log("Webhook response status:", response.status);
       
-      // Process the response
+      const textResponse = await response.text();
+      console.log("Raw webhook response text:", textResponse);
+      
+      // Attempt to parse as JSON
+      try {
+        const jsonResponse = JSON.parse(textResponse);
+        console.log("Parsed JSON response:", jsonResponse);
+        
+        // Log all possible parsing scenarios
+        console.log("Parsing checks:", {
+          isArray: Array.isArray(jsonResponse),
+          hasTextType: jsonResponse[0]?.type === "text",
+          hasEstimateKey: !!jsonResponse.estimate,
+          hasTextKey: jsonResponse.type === "text"
+        });
+      } catch (jsonError) {
+        console.error("Failed to parse response as JSON:", jsonError);
+      }
+      
       if (response.ok) {
         try {
-          // Get response as text first (since we don't know if it's JSON or Markdown)
-          const textResponse = await response.text();
           console.log("Webhook raw response:", textResponse);
           
           if (!textResponse || textResponse.trim() === "") {
             throw new Error("Empty response received");
           }
           
-          // Check if the response is valid JSON
           try {
             const jsonResponse = JSON.parse(textResponse);
             console.log("Successfully parsed response as JSON:", jsonResponse);
             
             if (jsonResponse.estimate) {
-              // Standard JSON estimate format
               setEstimationResults({
                 estimate: jsonResponse.estimate,
                 markdownContent: null
               });
             } else if (jsonResponse.type === "text" && jsonResponse.text) {
-              // Single text object format
               setEstimationResults({
                 markdownContent: jsonResponse.text,
                 estimate: null
               });
             } else if (Array.isArray(jsonResponse) && jsonResponse[0]?.type === "text") {
-              // Array of text objects format
               const markdownContent = jsonResponse
                 .filter(item => item.type === "text" && item.text)
                 .map(item => item.text)
@@ -97,7 +103,6 @@ export function FormSubmitter({
                 estimate: null
               });
             } else {
-              // JSON without expected structure, treat as markdown
               setEstimationResults({
                 markdownContent: textResponse,
                 estimate: null
@@ -105,7 +110,6 @@ export function FormSubmitter({
             }
           } catch (jsonError) {
             console.log("Response is not JSON, treating as markdown:", jsonError);
-            // Not valid JSON, treat as markdown
             setEstimationResults({
               markdownContent: textResponse,
               estimate: null
@@ -129,9 +133,7 @@ export function FormSubmitter({
     }
   };
   
-  // Fallback response handler
   const handleFallbackResponse = () => {
-    // Fallback to mock data if webhook fails
     const fallbackResponse = {
       estimate: {
         projectOverview: formData.description,
