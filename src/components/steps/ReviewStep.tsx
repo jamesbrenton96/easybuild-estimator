@@ -87,7 +87,7 @@ export default function ReviewStep() {
       <EstimateHeader />
       
       <div ref={estimateRef} className="max-w-3xl mx-auto pdf-content">
-        <style jsx global>{`
+        <style dangerouslySetInnerHTML={{ __html: `
           /* Custom styles for markdown tables */
           .markdown-content table {
             width: 100%;
@@ -168,7 +168,7 @@ export default function ReviewStep() {
             height: 1px;
             background-color: #e5e7eb;
           }
-        `}</style>
+        `}} />
         {renderEstimateContent()}
       </div>
       
