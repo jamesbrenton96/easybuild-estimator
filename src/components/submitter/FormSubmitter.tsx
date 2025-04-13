@@ -79,6 +79,23 @@ export function FormSubmitter({
                 estimate: jsonResponse.estimate,
                 markdownContent: null
               });
+            } else if (jsonResponse.type === "text" && jsonResponse.text) {
+              // Single text object format
+              setEstimationResults({
+                markdownContent: jsonResponse.text,
+                estimate: null
+              });
+            } else if (Array.isArray(jsonResponse) && jsonResponse[0]?.type === "text") {
+              // Array of text objects format
+              const markdownContent = jsonResponse
+                .filter(item => item.type === "text" && item.text)
+                .map(item => item.text)
+                .join("\n");
+              
+              setEstimationResults({
+                markdownContent: markdownContent,
+                estimate: null
+              });
             } else {
               // JSON without expected structure, treat as markdown
               setEstimationResults({
