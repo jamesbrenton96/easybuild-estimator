@@ -2,11 +2,7 @@
 import React, { useEffect, useRef } from "react";
 import { useEstimator } from "@/context/EstimatorContext";
 import { motion } from "framer-motion";
-import { ArrowLeft, Check, Clock, FileText, Info, Download, AlertTriangle } from "lucide-react";
-import { formatCurrency } from "@/lib/utils";
 import html2pdf from "html2pdf.js";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
 
 // Import components
 import EstimateHeader from "../estimate/EstimateHeader";
@@ -91,6 +87,88 @@ export default function ReviewStep() {
       <EstimateHeader />
       
       <div ref={estimateRef} className="max-w-3xl mx-auto pdf-content">
+        <style jsx global>{`
+          /* Custom styles for markdown tables */
+          .markdown-content table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            display: block;
+          }
+          
+          .markdown-content table th {
+            background-color: #f3f4f6;
+            font-weight: 600;
+            text-align: left;
+            padding: 0.75rem;
+            border: 1px solid #e5e7eb;
+          }
+          
+          .markdown-content table td {
+            padding: 0.75rem;
+            border: 1px solid #e5e7eb;
+          }
+          
+          .markdown-content table tr:nth-child(even) {
+            background-color: #f9fafb;
+          }
+          
+          /* Improve heading styles */
+          .markdown-content h1 {
+            color: #e58c33;
+            font-size: 1.75rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid #e5e7eb;
+          }
+          
+          .markdown-content h2 {
+            color: #e58c33;
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-top: 1.5rem;
+            margin-bottom: 1rem;
+          }
+          
+          .markdown-content h3 {
+            color: #4b5563;
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-top: 1.25rem;
+            margin-bottom: 0.75rem;
+          }
+          
+          /* Improve list styles */
+          .markdown-content ul, .markdown-content ol {
+            padding-left: 1.5rem;
+            margin: 1rem 0;
+          }
+          
+          .markdown-content li {
+            margin-bottom: 0.5rem;
+          }
+          
+          /* Improve text styling */
+          .markdown-content p {
+            margin-bottom: 1rem;
+            line-height: 1.6;
+          }
+          
+          .markdown-content strong {
+            font-weight: 600;
+            color: #374151;
+          }
+          
+          /* Add divider styles */
+          .markdown-content hr {
+            margin: 1.5rem 0;
+            border: 0;
+            height: 1px;
+            background-color: #e5e7eb;
+          }
+        `}</style>
         {renderEstimateContent()}
       </div>
       

@@ -2,6 +2,7 @@
 import React from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { Card } from "@/components/ui/card";
 
 interface MarkdownEstimateProps {
   markdownContent: string;
@@ -12,7 +13,7 @@ export default function MarkdownEstimate({ markdownContent }: MarkdownEstimatePr
   const cleanMarkdown = () => {
     let content = markdownContent;
     
-    // If the content appears to be JSON-like but containing markdown (from the screenshot)
+    // If the content appears to be JSON-like but containing markdown
     if (content.includes('{"type":"text","text":"')) {
       try {
         // Try to extract just the text part from JSON-like format
@@ -31,18 +32,30 @@ export default function MarkdownEstimate({ markdownContent }: MarkdownEstimatePr
   };
 
   return (
-    <div className="bg-white rounded-lg overflow-hidden shadow-lg mb-8">
-      <div className="p-4 border-b border-gray-200 bg-gray-50">
-        <h2 className="text-gray-800 font-medium text-lg">Construction Cost Estimate</h2>
+    <Card className="bg-white rounded-lg overflow-hidden shadow-lg mb-8">
+      <div className="p-5 border-b border-gray-200 bg-gray-50">
+        <h2 className="text-gray-800 font-semibold text-xl">Construction Cost Estimate</h2>
       </div>
       <div className="p-6 markdown-content text-gray-800">
         <ReactMarkdown 
-          className="prose max-w-none prose-headings:text-construction-orange prose-headings:font-semibold prose-headings:mt-6 prose-headings:mb-3 prose-p:my-2 prose-a:text-blue-600 prose-strong:text-gray-900 prose-li:my-1 prose-table:border-collapse"
+          className="prose max-w-none 
+            prose-headings:text-construction-orange prose-headings:font-semibold 
+            prose-h1:text-2xl prose-h1:mb-6 prose-h1:border-b prose-h1:border-gray-200 prose-h1:pb-3
+            prose-h2:text-xl prose-h2:mt-6 prose-h2:mb-4 
+            prose-h3:text-lg prose-h3:mt-5 prose-h3:mb-3
+            prose-p:my-3 prose-p:leading-relaxed
+            prose-a:text-blue-600 
+            prose-strong:text-gray-900 prose-strong:font-medium
+            prose-li:my-1 prose-li:ml-2
+            prose-table:border-collapse prose-table:w-full prose-table:my-4
+            prose-th:bg-gray-100 prose-th:p-2 prose-th:border prose-th:border-gray-300 prose-th:text-left
+            prose-td:border prose-td:border-gray-300 prose-td:p-2
+            prose-hr:my-6"
           remarkPlugins={[remarkGfm]}
         >
           {cleanMarkdown()}
         </ReactMarkdown>
       </div>
-    </div>
+    </Card>
   );
 }
