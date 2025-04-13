@@ -9,24 +9,45 @@ interface MarkdownEstimateProps {
 }
 
 export default function MarkdownEstimate({ markdownContent }: MarkdownEstimateProps) {
-  // Pre-process the markdown content to clean it up if needed
+  // Pre-process the markdown content to clean it up
   const cleanMarkdown = () => {
     let content = markdownContent;
     
-    // If the content appears to be JSON-like but containing markdown
-    if (content.includes('{"type":"text","text":"')) {
+    // If the content appears to be JSON-like with text fields
+    if (content.includes('"type":"text"') || content.includes('[{"type":"text"')) {
       try {
-        // Try to extract just the text part from JSON-like format
-        const match = content.match(/"text":"(.*?)"]}/s);
-        if (match && match[1]) {
-          content = match[1]
-            .replace(/\\n/g, '\n')  // Replace escaped newlines
-            .replace(/\\"/g, '"');  // Replace escaped quotes
+        // Extract the actual text content from JSON structure
+        const regex = /"text":"([\s\S]*?)(?:",|"})/g;
+        let extractedText = '';
+        let match;
+        
+        while ((match = regex.exec(content)) !== null) {
+          // Replace escaped newlines with actual newlines
+          let textPart = match[1]
+            .replace(/\\n/g, '\n')
+            .replace(/\\"/g, '"');
+          
+          extractedText += textPart;
+        }
+        
+        if (extractedText) {
+          content = extractedText;
         }
       } catch (e) {
         console.error("Error cleaning markdown:", e);
       }
     }
+    
+    // Clean up any remaining artifacts
+    content = content
+      .replace(/\[{/g, '') // Remove opening bracket with brace
+      .replace(/}\]/g, '') // Remove closing brace with bracket
+      .replace(/\\n/g, '\n') // Replace any remaining escaped newlines
+      .replace(/\|n\|/g, '\n') // Replace pipe n pipe with newline
+      .replace(/\\n\\n/g, '\n\n') // Replace double escaped newlines
+      .replace(/"\s*\|\s*"/g, ' | ') // Fix table separators
+      .replace(/\\t/g, '    ') // Replace tabs with spaces
+      .replace(/\\"/g, '"'); // Replace escaped quotes
     
     return content;
   };

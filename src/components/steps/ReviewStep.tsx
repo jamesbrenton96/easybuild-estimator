@@ -66,15 +66,23 @@ export default function ReviewStep() {
     html2pdf().from(clone).set(opt).save();
   };
 
-  // Render content based on estimation results
-  const renderEstimateContent = () => {
+  // Determine if we have valid JSON or a string response
+  const processEstimationResults = () => {
+    // If there's no estimationResults, return null
+    if (!estimationResults) return null;
+    
+    // If there's a string in markdownContent, use MarkdownEstimate
     if (estimationResults.markdownContent) {
       return <MarkdownEstimate markdownContent={estimationResults.markdownContent} />;
-    } else if (estimationResults.estimate) {
-      return <StructuredEstimate estimate={estimationResults.estimate} />;
-    } else {
-      return <FallbackEstimate />;
     }
+    
+    // If there's a structured estimate object, use StructuredEstimate
+    if (estimationResults.estimate) {
+      return <StructuredEstimate estimate={estimationResults.estimate} />;
+    }
+    
+    // If there's no valid format, use FallbackEstimate
+    return <FallbackEstimate />;
   };
 
   return (
@@ -168,8 +176,25 @@ export default function ReviewStep() {
             height: 1px;
             background-color: #e5e7eb;
           }
+          
+          /* Fix pre-formatted text */
+          .markdown-content pre {
+            background-color: #f9fafb;
+            padding: 1rem;
+            border-radius: 0.375rem;
+            overflow-x: auto;
+            margin: 1rem 0;
+          }
+          
+          .markdown-content code {
+            font-family: monospace;
+            background-color: #f3f4f6;
+            padding: 0.2rem 0.4rem;
+            border-radius: 0.25rem;
+            font-size: 0.875rem;
+          }
         `}} />
-        {renderEstimateContent()}
+        {processEstimationResults()}
       </div>
       
       <EstimateActions 
