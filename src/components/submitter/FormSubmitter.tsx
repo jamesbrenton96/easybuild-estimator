@@ -1,3 +1,4 @@
+
 import React from "react";
 import { toast } from "sonner";
 
@@ -51,78 +52,46 @@ export function FormSubmitter({
       
       console.log("Webhook response status:", response.status);
       
-      const textResponse = await response.text();
-      console.log("Raw webhook response text:", textResponse);
-      
-      // Attempt to parse as JSON
-      try {
-        const jsonResponse = JSON.parse(textResponse);
-        console.log("Parsed JSON response:", jsonResponse);
-        
-        // Log all possible parsing scenarios
-        console.log("Parsing checks:", {
-          isArray: Array.isArray(jsonResponse),
-          hasTextType: jsonResponse[0]?.type === "text",
-          hasEstimateKey: !!jsonResponse.estimate,
-          hasTextKey: jsonResponse.type === "text"
-        });
-      } catch (jsonError) {
-        console.error("Failed to parse response as JSON:", jsonError);
-      }
-      
       if (response.ok) {
+        // Get the raw text response
+        const textResponse = await response.text();
+        console.log("Raw webhook response text:", textResponse);
+        
+        // Check if it's empty
+        if (!textResponse || textResponse.trim() === "") {
+          throw new Error("Empty response received");
+        }
+        
+        // Try to parse as JSON first
         try {
-          console.log("Webhook raw response:", textResponse);
+          const jsonResponse = JSON.parse(textResponse);
+          console.log("Successfully parsed as JSON:", jsonResponse);
           
-          if (!textResponse || textResponse.trim() === "") {
-            throw new Error("Empty response received");
-          }
-          
-          try {
-            const jsonResponse = JSON.parse(textResponse);
-            console.log("Successfully parsed response as JSON:", jsonResponse);
-            
-            if (jsonResponse.estimate) {
-              setEstimationResults({
-                estimate: jsonResponse.estimate,
-                markdownContent: null
-              });
-            } else if (jsonResponse.type === "text" && jsonResponse.text) {
-              setEstimationResults({
-                markdownContent: jsonResponse.text,
-                estimate: null
-              });
-            } else if (Array.isArray(jsonResponse) && jsonResponse[0]?.type === "text") {
-              const markdownContent = jsonResponse
-                .filter(item => item.type === "text" && item.text)
-                .map(item => item.text)
-                .join("\n");
-              
-              setEstimationResults({
-                markdownContent: markdownContent,
-                estimate: null
-              });
-            } else {
-              setEstimationResults({
-                markdownContent: textResponse,
-                estimate: null
-              });
-            }
-          } catch (jsonError) {
-            console.log("Response is not JSON, treating as markdown:", jsonError);
+          // Check if it's a structured estimate
+          if (jsonResponse.estimate) {
+            setEstimationResults({
+              estimate: jsonResponse.estimate,
+              markdownContent: null
+            });
+          } else {
+            // It's JSON but not our expected format, treat it as markdown
             setEstimationResults({
               markdownContent: textResponse,
               estimate: null
             });
           }
-          
-          setIsLoading(false);
-          nextStep();
-          toast.success("Estimate generated successfully!");
-        } catch (parseError) {
-          console.error("Error processing response:", parseError);
-          handleFallbackResponse();
+        } catch (jsonError) {
+          // Not valid JSON, treat as markdown
+          console.log("Not JSON, treating as markdown content");
+          setEstimationResults({
+            markdownContent: textResponse,
+            estimate: null
+          });
         }
+        
+        setIsLoading(false);
+        nextStep();
+        toast.success("Estimate generated successfully!");
       } else {
         console.error(`Error status: ${response.status}, ${response.statusText}`);
         throw new Error(`Error status: ${response.status}`);

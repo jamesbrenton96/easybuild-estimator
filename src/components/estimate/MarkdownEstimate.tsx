@@ -9,70 +9,19 @@ interface MarkdownEstimateProps {
 }
 
 export default function MarkdownEstimate({ markdownContent }: MarkdownEstimateProps) {
-  // Pre-process the markdown content to clean it up
+  // Simplified markdown cleaning function - don't try to force JSON parsing
   const cleanMarkdown = () => {
-    let content = markdownContent;
-    
-    // Handle JSON-like structure with text fields
-    if (content.includes('"type":"text"') || content.includes('[{"type":"text"')) {
-      try {
-        // First, try to parse as complete JSON if it looks like a valid array
-        if (content.trim().startsWith('[') && content.trim().endsWith(']')) {
-          try {
-            const parsedJson = JSON.parse(content);
-            if (Array.isArray(parsedJson)) {
-              // Extract text from each object in the array
-              content = parsedJson
-                .filter(item => item.type === 'text' && item.text)
-                .map(item => item.text)
-                .join('\n');
-            }
-          } catch (e) {
-            console.log("Not complete JSON, trying regex extraction");
-          }
-        }
-        
-        // If still contains JSON markers, use regex extraction
-        if (content.includes('"type":"text"')) {
-          // Extract the actual text content from JSON structure
-          const regex = /"text":"([\s\S]*?)(?:",|"})/g;
-          let extractedText = '';
-          let match;
-          
-          while ((match = regex.exec(content)) !== null) {
-            // Replace escaped newlines with actual newlines
-            let textPart = match[1]
-              .replace(/\\n/g, '\n')
-              .replace(/\\"/g, '"');
-            
-            extractedText += textPart;
-          }
-          
-          if (extractedText) {
-            content = extractedText;
-          }
-        }
-      } catch (e) {
-        console.error("Error cleaning markdown:", e);
-      }
+    // If it's already clean markdown, just return it
+    if (markdownContent.includes('# ') || markdownContent.includes('## ')) {
+      console.log("Content appears to be clean markdown, using as-is");
+      return markdownContent;
     }
     
-    // Clean up any remaining artifacts
-    content = content
-      .replace(/\[\{/g, '') // Remove opening bracket with brace
-      .replace(/\}\]/g, '') // Remove closing brace with bracket
-      .replace(/\\"type\\":\\"text\\",\\"text\\":\\"/g, '') // Remove type:text markers
-      .replace(/\\n/g, '\n') // Replace any remaining escaped newlines
-      .replace(/\|n\|/g, '\n') // Replace pipe n pipe with newline
-      .replace(/\\n\\n/g, '\n\n') // Replace double escaped newlines
-      .replace(/"\s*\|\s*"/g, ' | ') // Fix table separators
-      .replace(/\\t/g, '    ') // Replace tabs with spaces
-      .replace(/\\"/g, '"') // Replace escaped quotes
-      .replace(/\\\\/g, '\\') // Replace double backslashes
-      .replace(/^"|"$/g, ''); // Remove surrounding quotes
-    
-    // Format tables properly
-    content = content.replace(/---+/g, '---|---'); // Fix markdown table separators
+    // Handle potential escaped characters
+    let content = markdownContent
+      .replace(/\\n/g, '\n')
+      .replace(/\\"/g, '"')
+      .replace(/\\\\/g, '\\');
     
     console.log("Cleaned markdown content:", content);
     return content;
