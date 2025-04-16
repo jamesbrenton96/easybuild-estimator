@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useEstimator } from "@/context/EstimatorContext";
 import { motion } from "framer-motion";
-import { Upload, X, FileText, Image, AlertTriangle } from "lucide-react";
+import { Upload, X, FileText, Image } from "lucide-react";
 import { toast } from "sonner";
 
 export default function DocumentsStep() {
@@ -93,17 +93,7 @@ export default function DocumentsStep() {
   const handleNextStep = () => {
     if (formData.files.length === 0) {
       toast.error("Please upload at least one document", {
-        description: "At least one file is required to proceed.",
-        icon: <AlertTriangle className="h-5 w-5 text-yellow-500" />
-      });
-      return;
-    }
-    
-    const hasPdf = formData.files.some(file => file.type === 'application/pdf');
-    if (!hasPdf) {
-      toast.error("PDF document required", {
-        description: "Please upload at least one PDF file.",
-        icon: <AlertTriangle className="h-5 w-5 text-yellow-500" />
+        description: "At least one file (PDF or image) is required to proceed."
       });
       return;
     }
