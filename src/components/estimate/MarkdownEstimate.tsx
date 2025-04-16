@@ -9,22 +9,12 @@ interface MarkdownEstimateProps {
 }
 
 export default function MarkdownEstimate({ markdownContent }: MarkdownEstimateProps) {
-  // Simplified markdown cleaning function - don't try to force JSON parsing
+  // Simple cleaning function that just handles basic escape characters
   const cleanMarkdown = () => {
-    // If it's already clean markdown, just return it
-    if (markdownContent.includes('# ') || markdownContent.includes('## ')) {
-      console.log("Content appears to be clean markdown, using as-is");
-      return markdownContent;
-    }
-    
-    // Handle potential escaped characters
-    let content = markdownContent
+    return markdownContent
       .replace(/\\n/g, '\n')
       .replace(/\\"/g, '"')
       .replace(/\\\\/g, '\\');
-    
-    console.log("Cleaned markdown content:", content);
-    return content;
   };
 
   return (

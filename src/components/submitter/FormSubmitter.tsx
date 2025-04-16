@@ -1,4 +1,3 @@
-
 import React from "react";
 import { toast } from "sonner";
 
@@ -37,13 +36,6 @@ export function FormSubmitter({
       setIsLoading(true);
       
       console.log("Sending data to webhook:", webhookUrl);
-      console.log("Form data being sent:", {
-        projectType: formData.projectType,
-        description: formData.description,
-        location: formData.location,
-        subcategories: formData.subcategories,
-        files: formData.files.map(f => f.name)
-      });
       
       const response = await fetch(webhookUrl, {
         method: "POST",
@@ -53,36 +45,28 @@ export function FormSubmitter({
       console.log("Webhook response status:", response.status);
       
       if (response.ok) {
-        // Get the raw text response
         const textResponse = await response.text();
-        console.log("Raw webhook response text:", textResponse);
+        console.log("Raw webhook response:", textResponse);
         
-        // Check if it's empty
-        if (!textResponse || textResponse.trim() === "") {
-          throw new Error("Empty response received");
-        }
-        
-        // Try to parse as JSON first
         try {
+          // Try to parse as JSON array first
           const jsonResponse = JSON.parse(textResponse);
-          console.log("Successfully parsed as JSON:", jsonResponse);
           
-          // Check if it's a structured estimate
-          if (jsonResponse.estimate) {
+          // If it's an array with text objects, extract the markdown content
+          if (Array.isArray(jsonResponse) && jsonResponse[0]?.text) {
             setEstimationResults({
-              estimate: jsonResponse.estimate,
-              markdownContent: null
+              markdownContent: jsonResponse[0].text,
+              estimate: null
             });
           } else {
-            // It's JSON but not our expected format, treat it as markdown
+            // If it's a different JSON structure, pass it as is
             setEstimationResults({
               markdownContent: textResponse,
               estimate: null
             });
           }
         } catch (jsonError) {
-          // Not valid JSON, treat as markdown
-          console.log("Not JSON, treating as markdown content");
+          // If not valid JSON, treat as plain markdown
           setEstimationResults({
             markdownContent: textResponse,
             estimate: null
@@ -93,7 +77,6 @@ export function FormSubmitter({
         nextStep();
         toast.success("Estimate generated successfully!");
       } else {
-        console.error(`Error status: ${response.status}, ${response.statusText}`);
         throw new Error(`Error status: ${response.status}`);
       }
     } catch (error) {
