@@ -1,8 +1,7 @@
-
 import React, { useState } from "react";
 import { useEstimator } from "@/context/EstimatorContext";
 import { motion } from "framer-motion";
-import { Upload, X, FileText, Image, AlertTriangle, FilePdf } from "lucide-react";
+import { Upload, X, FileText, Image, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 
 export default function DocumentsStep() {
@@ -37,25 +36,40 @@ export default function DocumentsStep() {
   };
   
   const handleFiles = (files: FileList) => {
-    const pdfFiles = Array.from(files).filter(file => 
+    const newFiles = Array.from(files);
+    const pdfFiles = newFiles.filter(file => file.type === 'application/pdf');
+    const imageFiles = newFiles.filter(file => 
+      file.type === 'image/jpeg' || 
+      file.type === 'image/png'
+    );
+    
+    const existingPdfFiles = formData.files.filter(file => 
       file.type === 'application/pdf'
     );
     
-    if (pdfFiles.length === 0) {
-      toast.error("Only PDF files are allowed", {
-        description: "Please upload a PDF file."
+    if (pdfFiles.length > 1 || (existingPdfFiles.length > 0 && pdfFiles.length > 0)) {
+      toast.error("Only one PDF file is allowed", {
+        description: "Please remove existing PDF before uploading a new one."
       });
       return;
     }
     
-    if (formData.files.length > 0 || pdfFiles.length > 1) {
-      toast.error("Only one PDF file can be uploaded", {
-        description: "Please remove the existing file before uploading a new one."
+    if (newFiles.some(file => 
+      !['application/pdf', 'image/jpeg', 'image/png'].includes(file.type)
+    )) {
+      toast.error("Invalid file type", {
+        description: "Only PDF, JPEG, and PNG files are allowed."
       });
       return;
     }
     
-    updateFormData({ files: pdfFiles });
+    const existingNonPdfFiles = formData.files.filter(file => 
+      file.type !== 'application/pdf'
+    );
+    
+    updateFormData({ 
+      files: [...existingNonPdfFiles, ...imageFiles, ...pdfFiles] 
+    });
   };
   
   const removeFile = (index: number) => {
@@ -65,13 +79,11 @@ export default function DocumentsStep() {
   };
   
   const getFileIcon = (file: File) => {
-    const extension = file.name.split('.').pop()?.toLowerCase();
-    
     if (file.type === 'application/pdf') {
-      return <FilePdf className="h-5 w-5 text-red-500" />;
+      return <FileText className="h-5 w-5 text-red-500" />;
     }
     
-    if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(extension || '')) {
+    if (file.type === 'image/jpeg' || file.type === 'image/png') {
       return <Image className="h-5 w-5 text-construction-orange" />;
     }
     
@@ -80,18 +92,18 @@ export default function DocumentsStep() {
 
   const handleNextStep = () => {
     if (formData.files.length === 0) {
-      toast.error("Please upload a PDF document", {
-        description: "A PDF file is required to proceed.",
+      toast.error("Please upload at least one document", {
+        description: "At least one file is required to proceed.",
         icon: <AlertTriangle className="h-5 w-5 text-yellow-500" />
       });
       return;
     }
     
-    // Ensure only PDF is uploaded
-    const pdfFiles = formData.files.filter(file => file.type === 'application/pdf');
-    if (pdfFiles.length !== formData.files.length) {
-      toast.error("Only PDF files are allowed", {
-        description: "Please remove non-PDF files."
+    const hasPdf = formData.files.some(file => file.type === 'application/pdf');
+    if (!hasPdf) {
+      toast.error("PDF document required", {
+        description: "Please upload at least one PDF file.",
+        icon: <AlertTriangle className="h-5 w-5 text-yellow-500" />
       });
       return;
     }
@@ -107,9 +119,9 @@ export default function DocumentsStep() {
       transition={{ duration: 0.4 }}
     >
       <div className="text-center mb-8">
-        <h1 className="text-2xl sm:text-3xl font-bold text-white mb-3">Upload PDF Document</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold text-white mb-3">Upload Documents</h1>
         <p className="text-white/80 max-w-2xl mx-auto">
-          Upload a single PDF document to support your project details. (Required)
+          Upload one PDF document and any supporting images (JPEG, PNG) for your project. A PDF file is required.
         </p>
       </div>
       
@@ -126,10 +138,10 @@ export default function DocumentsStep() {
           <input
             type="file"
             id="file-upload"
-            multiple={false}
+            multiple
             onChange={handleFileChange}
             className="hidden"
-            accept=".pdf"
+            accept=".pdf,.jpg,.jpeg,.png"
           />
           
           <label htmlFor="file-upload" className="flex flex-col items-center justify-center cursor-pointer py-6">
@@ -140,14 +152,14 @@ export default function DocumentsStep() {
             >
               <Upload className="h-6 w-6 text-construction-orange" />
             </motion.div>
-            <p className="text-white font-medium">Drag and drop PDF here, or click to browse</p>
-            <p className="text-white/60 text-sm mt-1">Only PDF files are allowed (One file maximum)</p>
+            <p className="text-white font-medium">Drag and drop files here, or click to browse</p>
+            <p className="text-white/60 text-sm mt-1">One PDF file required, plus optional JPEG/PNG images</p>
           </label>
         </div>
         
         {formData.files.length > 0 && (
           <div className="mt-6">
-            <h3 className="text-white font-medium mb-3">Uploaded PDF</h3>
+            <h3 className="text-white font-medium mb-3">Uploaded Files ({formData.files.length})</h3>
             <ul className="space-y-2 max-h-60 overflow-y-auto rounded-md bg-white/5 p-2">
               {formData.files.map((file, index) => (
                 <li key={index} className="flex items-center justify-between py-2 px-3 rounded-md bg-white/5">
