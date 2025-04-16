@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef } from "react";
 import { useEstimator } from "@/context/EstimatorContext";
 import { motion } from "framer-motion";
@@ -47,14 +46,15 @@ export default function ReviewStep() {
     header.style.marginBottom = '20px';
     
     const logo = document.createElement('img');
-    logo.src = "/lovable-uploads/bee065c6-a438-40bf-b1e3-4e1183bbda1d.png";
-    logo.style.height = '80px';
+    logo.src = "/lovable-uploads/537c07bc-894b-431a-b629-999d244268a9.png";
+    logo.style.height = '100px';
     logo.style.margin = '0 auto 20px auto';
     
     const title = document.createElement('h1');
     title.textContent = "Brenton Building Estimate";
     title.style.fontSize = '24px';
     title.style.color = '#e58c33';
+    title.style.fontFamily = 'Arial';
     title.style.marginTop = '10px';
     
     header.appendChild(logo);
@@ -62,6 +62,10 @@ export default function ReviewStep() {
     
     // Insert the header at the top of the clone
     clone.insertBefore(header, clone.firstChild);
+    
+    // Set Arial font for the entire document
+    clone.style.fontFamily = 'Arial';
+    clone.style.fontSize = '12px';
     
     html2pdf().from(clone).set(opt).save();
   };
@@ -96,13 +100,20 @@ export default function ReviewStep() {
       
       <div ref={estimateRef} className="max-w-3xl mx-auto pdf-content">
         <style dangerouslySetInnerHTML={{ __html: `
+          /* Base font for PDF content */
+          .pdf-content {
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+            line-height: 1.5;
+          }
+          
           /* Custom styles for markdown tables */
           .markdown-content table {
             width: 100%;
             border-collapse: collapse;
             margin: 1.5rem 0;
-            overflow-x: auto;
-            display: block;
+            font-family: Arial, sans-serif;
+            font-size: 12px;
           }
           
           .markdown-content table th {
@@ -111,21 +122,20 @@ export default function ReviewStep() {
             text-align: left;
             padding: 0.75rem;
             border: 1px solid #e5e7eb;
+            font-family: Arial, sans-serif;
           }
           
           .markdown-content table td {
             padding: 0.75rem;
             border: 1px solid #e5e7eb;
-          }
-          
-          .markdown-content table tr:nth-child(even) {
-            background-color: #f9fafb;
+            font-family: Arial, sans-serif;
           }
           
           /* Improve heading styles */
           .markdown-content h1 {
             color: #e58c33;
-            font-size: 1.75rem;
+            font-size: 20px;
+            font-family: Arial, sans-serif;
             font-weight: 600;
             margin-bottom: 1.5rem;
             padding-bottom: 0.75rem;
@@ -134,7 +144,8 @@ export default function ReviewStep() {
           
           .markdown-content h2 {
             color: #e58c33;
-            font-size: 1.5rem;
+            font-size: 16px;
+            font-family: Arial, sans-serif;
             font-weight: 600;
             margin-top: 1.5rem;
             margin-bottom: 1rem;
@@ -142,20 +153,21 @@ export default function ReviewStep() {
           
           .markdown-content h3 {
             color: #4b5563;
-            font-size: 1.25rem;
+            font-size: 14px;
+            font-family: Arial, sans-serif;
             font-weight: 600;
             margin-top: 1.25rem;
             margin-bottom: 0.75rem;
           }
           
-          /* Improve list styles */
-          .markdown-content ul, .markdown-content ol {
-            padding-left: 1.5rem;
-            margin: 1rem 0;
-          }
-          
+          /* Improve list and text styling */
+          .markdown-content ul, 
+          .markdown-content ol,
+          .markdown-content p,
           .markdown-content li {
-            margin-bottom: 0.5rem;
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+            line-height: 1.6;
           }
           
           /* Improve text styling */
