@@ -87,6 +87,7 @@ export function EstimatorProvider({ children }: { children: ReactNode }) {
   const initialFormData = localStorage.getItem('savedFormData') ? 
     JSON.parse(localStorage.getItem('savedFormData') || '{}') : 
     {
+      files: [],
       subcategories: {
         correspondence: {},
         projectName: { content: "" },

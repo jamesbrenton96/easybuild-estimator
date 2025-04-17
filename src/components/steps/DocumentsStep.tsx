@@ -9,6 +9,11 @@ export default function DocumentsStep() {
   const { formData, updateFormData, nextStep, prevStep } = useEstimator();
   const [dragActive, setDragActive] = useState(false);
   
+  // Initialize files array if it doesn't exist
+  if (!formData.files) {
+    updateFormData({ files: [] });
+  }
+  
   const handleDrag = (e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -44,7 +49,10 @@ export default function DocumentsStep() {
       file.type === 'image/png'
     );
     
-    const existingPdfFiles = formData.files.filter(file => 
+    // Ensure files array exists in formData
+    const currentFiles = formData.files || [];
+    
+    const existingPdfFiles = currentFiles.filter(file => 
       file.type === 'application/pdf'
     );
     
@@ -64,7 +72,7 @@ export default function DocumentsStep() {
       return;
     }
     
-    const existingNonPdfFiles = formData.files.filter(file => 
+    const existingNonPdfFiles = currentFiles.filter(file => 
       file.type !== 'application/pdf'
     );
     
@@ -74,6 +82,9 @@ export default function DocumentsStep() {
   };
   
   const removeFile = (index: number) => {
+    // Ensure files array exists
+    if (!formData.files) return;
+    
     const updatedFiles = [...formData.files];
     updatedFiles.splice(index, 1);
     updateFormData({ files: updatedFiles });
@@ -92,7 +103,10 @@ export default function DocumentsStep() {
   };
 
   const handleNextStep = () => {
-    if (formData.files.length === 0) {
+    // Ensure files array exists
+    const files = formData.files || [];
+    
+    if (files.length === 0) {
       toast.error("Please upload at least one document", {
         description: "At least one file (PDF or image) is required to proceed."
       });
@@ -101,6 +115,9 @@ export default function DocumentsStep() {
     
     nextStep();
   };
+
+  // Ensure files array exists for the JSX rendering
+  const files = formData.files || [];
 
   return (
     <motion.div 
@@ -148,11 +165,11 @@ export default function DocumentsStep() {
           </label>
         </div>
         
-        {formData.files.length > 0 && (
+        {files.length > 0 && (
           <div className="mt-6">
-            <h3 className="text-white font-medium mb-3">Uploaded Files ({formData.files.length})</h3>
+            <h3 className="text-white font-medium mb-3">Uploaded Files ({files.length})</h3>
             <ul className="space-y-2 max-h-60 overflow-y-auto rounded-md bg-white/5 p-2">
-              {formData.files.map((file, index) => (
+              {files.map((file, index) => (
                 <li key={index} className="flex items-center justify-between py-2 px-3 rounded-md bg-white/5">
                   <div className="flex items-center space-x-2 overflow-hidden">
                     {getFileIcon(file)}

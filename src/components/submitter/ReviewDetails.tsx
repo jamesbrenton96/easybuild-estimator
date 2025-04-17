@@ -20,6 +20,9 @@ export default function ReviewDetails({ formData }: ReviewDetailsProps) {
     }
   };
   
+  // Ensure files array exists
+  const files = formData.files || [];
+  
   return (
     <div className="bg-white rounded-lg p-6 mb-6 shadow-md">
       <div className="space-y-4">
@@ -51,8 +54,8 @@ export default function ReviewDetails({ formData }: ReviewDetailsProps) {
         
         <div>
           <h3 className="text-gray-500 text-sm">Supporting Documents</h3>
-          {formData.files.length > 0 ? (
-            <p className="text-gray-700">{formData.files.length} file(s) attached</p>
+          {files.length > 0 ? (
+            <p className="text-gray-700">{files.length} file(s) attached</p>
           ) : (
             <p className="text-gray-500">No files attached</p>
           )}
