@@ -1,156 +1,155 @@
 
-import { ProjectType } from "@/context/EstimatorContext";
-
 export interface ConstructionType {
   id: string;
-  name: ProjectType;
+  name: string;
   description: string;
+  icon?: string;
 }
 
 export const CONSTRUCTION_TYPES: Record<string, ConstructionType> = {
-  allTrades: {
-    id: "allTrades",
-    name: "All Trades Included",
-    description: "Comprehensive construction services covering multiple trades and specialties"
-  },
   houseExtension: {
     id: "houseExtension",
     name: "House Extension",
-    description: "Extend existing residential spaces with additional rooms or areas"
+    description: "Adding additional living space to an existing home.",
   },
   houseRenovation: {
-    id: "houseRenovation", 
+    id: "houseRenovation",
     name: "House Renovation",
-    description: "Renew and update existing residential spaces with modern features"
+    description: "Updating or improving existing spaces within a home.",
   },
   newBuild: {
     id: "newBuild",
     name: "New Build",
-    description: "Complete construction of new residential or commercial buildings"
+    description: "Construction of a new building from the ground up.",
   },
   deckLandscaping: {
     id: "deckLandscaping",
     name: "Deck / Landscaping",
-    description: "Outdoor living spaces and garden design and implementation"
+    description: "Outdoor structures and garden design/implementation.",
   },
   electrical: {
     id: "electrical",
     name: "Electrical",
-    description: "Electrical wiring, fixtures, and system installation or repair"
+    description: "Electrical wiring, fixtures, and system installations.",
   },
   plumbing: {
     id: "plumbing",
     name: "Plumbing",
-    description: "Water, drainage and gas system installation or repair"
+    description: "Water supply, drainage systems, and fixture installations.",
   },
   concreting: {
     id: "concreting",
     name: "Concreting",
-    description: "Concrete pouring, finishing, and decorative concrete work"
+    description: "Concrete work for foundations, floors, and more.",
   },
-  carpentry: {
-    id: "carpentry",
+  carpentryFraming: {
+    id: "carpentryFraming",
     name: "Carpentry / Framing",
-    description: "Structural wood framing and finish carpentry work"
+    description: "Wooden structures, frames, and detailed woodwork.",
   },
   roofing: {
     id: "roofing",
     name: "Roofing",
-    description: "Roof installation, replacement, or repair services"
+    description: "Roof installation, repair, and related structures.",
   },
-  painting: {
-    id: "painting",
+  paintingDecorating: {
+    id: "paintingDecorating",
     name: "Painting & Decorating",
-    description: "Interior and exterior painting and decorative finishes"
+    description: "Surface preparation, painting, and finishing work.",
   },
   tiling: {
     id: "tiling",
     name: "Tiling",
-    description: "Ceramic, porcelain, and stone tile installation for floors and walls"
+    description: "Installation of tiles on floors, walls, and other surfaces.",
   },
-  plastering: {
-    id: "plastering",
+  plasteringGib: {
+    id: "plasteringGib",
     name: "Plastering / Gib Stopping",
-    description: "Wall and ceiling finishing with plaster or drywall compounds"
+    description: "Wall and ceiling finishing and preparation.",
   },
-  bricklaying: {
-    id: "bricklaying",
+  bricklayingBlockwork: {
+    id: "bricklayingBlockwork",
     name: "Bricklaying / Blockwork",
-    description: "Construction with brick, block, and stone masonry"
+    description: "Construction with bricks, blocks, and similar materials.",
   },
-  earthworks: {
-    id: "earthworks",
+  earthworksExcavation: {
+    id: "earthworksExcavation",
     name: "Earthworks / Excavation",
-    description: "Site preparation, digging, and ground moving services"
+    description: "Ground preparation, digging, and site clearance.",
   },
   drainage: {
     id: "drainage",
     name: "Drainage",
-    description: "Installation and repair of water drainage systems"
+    description: "Water management and drainage system installation.",
   },
   hvac: {
     id: "hvac",
     name: "HVAC",
-    description: "Heating, ventilation, and air conditioning system services"
+    description: "Heating, ventilation, and air conditioning systems.",
   },
   insulation: {
     id: "insulation",
     name: "Insulation",
-    description: "Thermal and acoustic insulation installation"
+    description: "Thermal and acoustic insulation for buildings.",
   },
   flooring: {
     id: "flooring",
     name: "Flooring",
-    description: "Installation of various flooring materials and finishes"
+    description: "Various flooring materials and installation.",
   },
   windowsGlazing: {
     id: "windowsGlazing",
     name: "Windows & Glazing",
-    description: "Window installation, replacement, and glass services"
+    description: "Window installation, glass work, and related services.",
   },
-  cabinetry: {
-    id: "cabinetry",
+  cabinetryJoinery: {
+    id: "cabinetryJoinery",
     name: "Cabinetry / Joinery",
-    description: "Custom cabinet and built-in furniture construction"
+    description: "Custom-built cabinets, furniture, and detailed woodwork.",
   },
-  welding: {
-    id: "welding",
+  weldingMetalwork: {
+    id: "weldingMetalwork",
     name: "Welding / Metalwork",
-    description: "Metal fabrication, welding, and installation services"
+    description: "Metal fabrication, welding, and structural steel work.",
   },
-  fencing: {
-    id: "fencing",
+  fencingGates: {
+    id: "fencingGates",
     name: "Fencing / Gates",
-    description: "Installation of fences, gates, and related structures"
+    description: "Boundary fencing, gates, and related security features.",
   },
   demolition: {
     id: "demolition",
     name: "Demolition",
-    description: "Controlled demolition and removal of structures"
+    description: "Safe removal of structures and materials.",
   },
   scaffolding: {
     id: "scaffolding",
     name: "Scaffolding",
-    description: "Temporary platforms and support structures for construction"
+    description: "Temporary structures for construction access.",
   },
   waterproofing: {
     id: "waterproofing",
     name: "Waterproofing",
-    description: "Water sealing and protection services for buildings"
+    description: "Protection against water penetration and damage.",
   },
   solarInstallation: {
     id: "solarInstallation",
     name: "Solar Installation",
-    description: "Solar panel and related system installation services"
+    description: "Solar panel and related renewable energy systems.",
   },
-  smartHome: {
-    id: "smartHome",
+  smartHomeAutomation: {
+    id: "smartHomeAutomation",
     name: "Smart Home / Automation",
-    description: "Home automation and smart technology installation"
+    description: "Intelligent home systems and automation technology.",
   },
   sitePrepCleanup: {
     id: "sitePrepCleanup",
     name: "Site Prep & Cleanup",
-    description: "Preparation and cleanup services for construction sites"
+    description: "Preparation and final cleaning of construction sites.",
+  },
+  allTrades: {
+    id: "allTrades",
+    name: "All Trades Included",
+    description: "A comprehensive project requiring multiple trade disciplines.",
   }
 };

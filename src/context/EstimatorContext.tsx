@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState } from "react";
 
 export type ProjectType = string;
@@ -1309,12 +1310,27 @@ type EstimatorContextProps = {
   setEstimationResults: (results: any) => void;
 };
 
+const defaultSubcategoryData: SubcategoryData = {
+  correspondence: {},
+  projectName: { content: "" },
+  overview: { content: "" },
+  dimensions: { content: "" },
+  materials: { content: "" },
+  finish: { content: "" },
+  locationDetails: { content: "" },
+  timeframe: { content: "" },
+  additionalWork: { content: "" },
+  rates: { content: "" },
+  margin: { content: "" },
+  notes: { content: "" }
+};
+
 const defaultFormData: FormDataType = {
   projectType: null,
   description: "",
   location: "",
   files: [],
-  subcategories: {},
+  subcategories: defaultSubcategoryData,
 };
 
 const defaultContextValue: EstimatorContextProps = {

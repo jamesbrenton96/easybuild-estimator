@@ -22,7 +22,20 @@ export default function BasicInfoStep() {
   };
   
   const handleNestedChange = (category: string, field: string, value: string) => {
-    const currentSubcategories = formData.subcategories || {};
+    const currentSubcategories = formData.subcategories || {
+      correspondence: {},
+      projectName: { content: "" },
+      overview: { content: "" },
+      dimensions: { content: "" },
+      materials: { content: "" },
+      finish: { content: "" },
+      locationDetails: { content: "" },
+      timeframe: { content: "" },
+      additionalWork: { content: "" },
+      rates: { content: "" },
+      margin: { content: "" },
+      notes: { content: "" }
+    };
     
     if (category === "correspondence") {
       const correspondenceData = currentSubcategories.correspondence || {} as CorrespondenceData;
@@ -67,7 +80,21 @@ export default function BasicInfoStep() {
 
   // Helper function to safely access ContentData.content 
   const getContentValue = (category: string): string => {
-    const subcategories = formData.subcategories || {};
+    const subcategories = formData.subcategories || {
+      correspondence: {},
+      projectName: { content: "" },
+      overview: { content: "" },
+      dimensions: { content: "" },
+      materials: { content: "" },
+      finish: { content: "" },
+      locationDetails: { content: "" },
+      timeframe: { content: "" },
+      additionalWork: { content: "" },
+      rates: { content: "" },
+      margin: { content: "" },
+      notes: { content: "" }
+    };
+    
     if (!subcategories[category]) return "";
     
     const data = subcategories[category];
@@ -78,7 +105,21 @@ export default function BasicInfoStep() {
 
   // Helper function to safely access CorrespondenceData fields
   const getCorrespondenceValue = (field: string): string => {
-    const subcategories = formData.subcategories || {};
+    const subcategories = formData.subcategories || {
+      correspondence: {},
+      projectName: { content: "" },
+      overview: { content: "" },
+      dimensions: { content: "" },
+      materials: { content: "" },
+      finish: { content: "" },
+      locationDetails: { content: "" },
+      timeframe: { content: "" },
+      additionalWork: { content: "" },
+      rates: { content: "" },
+      margin: { content: "" },
+      notes: { content: "" }
+    };
+    
     if (!subcategories.correspondence) return "";
     
     const correspondence = subcategories.correspondence as CorrespondenceData;
