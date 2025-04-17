@@ -8,13 +8,19 @@ interface ReviewDetailsProps {
 export default function ReviewDetails({ formData }: ReviewDetailsProps) {
   // Helper function to get the full correspondence type name
   const getFullCorrespondenceType = (type: string) => {
-    switch (type) {
+    switch (type?.toLowerCase()) {
       case "accurate":
         return "Accurate Estimate";
       case "ballpark":
         return "Ballpark Estimate";
       case "quotation":
         return "Fixed Price Quotation";
+      case "quote":
+        return "Quotation";
+      case "preliminary":
+        return "Preliminary Estimate";
+      case "proposal":
+        return "Proposal";
       default:
         return type || "Estimate";
     }

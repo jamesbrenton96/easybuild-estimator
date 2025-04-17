@@ -122,26 +122,46 @@ export function FormSubmitter({
       
       // Prepare data for the webhook
       const webhookData = {
-        formData: formData,
-        estimateType: fullCorrespondenceType,
-        clientName: clientName,
-        date: date,
+        formData: {
+          projectType: formData.projectType || "",
+          location: formData.location || "",
+          files: formData.files ? formData.files.length : 0,
+          correspondence: {
+            type: fullCorrespondenceType,
+            clientName: clientName,
+            date: date
+          },
+          subcategories: formData.subcategories || {}
+        },
         timestamp: new Date().toISOString(),
       };
       
-      // Send data to webhook
+      console.log("Sending webhook data:", JSON.stringify(webhookData));
+      
+      // Send data to webhook - using axios for better error handling
       try {
-        await fetch(webhookUrl, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          mode: "no-cors", // Add this to handle CORS issues
-          body: JSON.stringify(webhookData),
-        });
-        console.log("Webhook data sent successfully");
+        const response = await axios.post(webhookUrl, webhookData);
+        console.log("Webhook response:", response);
+        toast.success("Data sent to webhook successfully");
       } catch (error) {
         console.error("Error sending webhook data:", error);
+        toast.error("Error sending data to webhook. Using fallback method.");
+        
+        // Fallback method using fetch with no-cors mode
+        try {
+          await fetch(webhookUrl, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            mode: "no-cors",
+            body: JSON.stringify(webhookData),
+          });
+          console.log("Webhook fallback method completed");
+          toast.success("Data sent to webhook using fallback method");
+        } catch (fallbackError) {
+          console.error("Fallback webhook method failed:", fallbackError);
+        }
       }
       
       // For development we will load a mock response
