@@ -4,7 +4,7 @@ import { useEstimator } from "@/context/EstimatorContext";
 import { motion } from "framer-motion";
 import html2pdf from "html2pdf.js";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Pencil, Save, FileText } from "lucide-react";
+import { Pencil, Save, FileText, Share2 } from "lucide-react";
 import { toast } from "sonner";
 
 // Import components
@@ -14,11 +14,13 @@ import StructuredEstimate from "../estimate/StructuredEstimate";
 import FallbackEstimate from "../estimate/FallbackEstimate";
 import EstimateActions from "../estimate/EstimateActions";
 import EditableEstimate from "../estimate/EditableEstimate";
+import ShareEstimate from "../estimate/ShareEstimate";
 
 export default function ReviewStep() {
   const { estimationResults, setStep, setEstimationResults } = useEstimator();
   const estimateRef = useRef<HTMLDivElement>(null);
   const [activeTab, setActiveTab] = useState("view");
+  const [showShareModal, setShowShareModal] = useState(false);
   
   // If there are no results, redirect to step 1
   useEffect(() => {
@@ -76,8 +78,53 @@ export default function ReviewStep() {
       /* PDF-specific styles */
       table { page-break-inside: avoid; }
       h1, h2, h3 { page-break-after: avoid; }
-      table { width: 100%; font-size: 9px; }
-      td, th { word-break: break-word; }
+      
+      /* Improve table layout for PDF */
+      table { 
+        width: 100%; 
+        font-size: 9px; 
+        border-collapse: collapse;
+        table-layout: fixed;
+      }
+      
+      td, th { 
+        word-break: break-word; 
+        padding: 4px; 
+        font-size: 9px;
+      }
+      
+      /* Create more compact tables */
+      .markdown-content table {
+        margin: 1rem 0;
+      }
+      
+      .markdown-content table th,
+      .markdown-content table td {
+        padding: 4px;
+        font-size: 9px;
+        line-height: 1.2;
+      }
+      
+      /* Adjust table column widths */
+      .markdown-content table th:first-child,
+      .markdown-content table td:first-child {
+        width: 40%;
+      }
+      
+      .markdown-content table th:nth-child(2),
+      .markdown-content table td:nth-child(2) {
+        width: 15%;
+      }
+      
+      .markdown-content table th:nth-child(3),
+      .markdown-content table td:nth-child(3) {
+        width: 15%;
+      }
+      
+      .markdown-content table th:last-child,
+      .markdown-content table td:last-child {
+        width: 30%;
+      }
       
       /* Ensure tables don't get cut off */
       @media print {
@@ -85,11 +132,22 @@ export default function ReviewStep() {
         tr    { page-break-inside: avoid; }
         td    { page-break-inside: avoid; }
         
+        /* Reduce margins for print */
+        @page {
+          margin: 10mm;
+        }
+        
         /* Force page breaks before major sections */
         h1 { page-break-before: always; }
         
         /* But don't start with a page break */
         h1:first-of-type { page-break-before: avoid; }
+        
+        /* Reduce spacing between sections */
+        p, h2, h3, h4, ul, ol {
+          margin-top: 0.5em;
+          margin-bottom: 0.5em;
+        }
       }
     `;
     clone.appendChild(style);
@@ -124,6 +182,10 @@ export default function ReviewStep() {
     
     setActiveTab("view");
     toast.success("Your changes have been saved");
+  };
+
+  const handleShareClick = () => {
+    setShowShareModal(true);
   };
 
   return (
@@ -171,17 +233,38 @@ export default function ReviewStep() {
                 background-color: #f3f4f6;
                 font-weight: 600;
                 text-align: left;
-                padding: 0.75rem;
+                padding: 0.65rem;
                 border: 1px solid #e5e7eb;
                 font-family: Arial, sans-serif;
                 word-wrap: break-word;
               }
               
               .markdown-content table td {
-                padding: 0.75rem;
+                padding: 0.65rem;
                 border: 1px solid #e5e7eb;
                 font-family: Arial, sans-serif;
                 word-wrap: break-word;
+              }
+              
+              /* Adjust column widths for better formatting */
+              .markdown-content table th:first-child,
+              .markdown-content table td:first-child {
+                width: 40%;
+              }
+              
+              .markdown-content table th:nth-child(2),
+              .markdown-content table td:nth-child(2) {
+                width: 15%;
+              }
+              
+              .markdown-content table th:nth-child(3),
+              .markdown-content table td:nth-child(3) {
+                width: 15%;
+              }
+              
+              .markdown-content table th:last-child,
+              .markdown-content table td:last-child {
+                width: 30%;
               }
               
               /* Improve heading styles */
@@ -298,7 +381,15 @@ export default function ReviewStep() {
       <EstimateActions 
         onDownloadPDF={handleDownloadPDF} 
         onStartNew={() => setStep(1)} 
+        onShare={handleShareClick}
       />
+
+      {showShareModal && (
+        <ShareEstimate 
+          isOpen={showShareModal} 
+          onClose={() => setShowShareModal(false)} 
+        />
+      )}
     </motion.div>
   );
 }

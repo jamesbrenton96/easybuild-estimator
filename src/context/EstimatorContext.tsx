@@ -1,35 +1,6 @@
 import React, { createContext, useContext, useState } from "react";
 
-export type ProjectType = 
-  | "All Trades Included"
-  | "House Extension"
-  | "House Renovation"
-  | "New Build"
-  | "Deck / Landscaping"
-  | "Electrical"
-  | "Plumbing"
-  | "Concreting"
-  | "Carpentry / Framing"
-  | "Roofing"
-  | "Painting & Decorating"
-  | "Tiling"
-  | "Plastering / Gib Stopping"
-  | "Bricklaying / Blockwork"
-  | "Earthworks / Excavation"
-  | "Drainage"
-  | "HVAC"
-  | "Insulation" 
-  | "Flooring"
-  | "Windows & Glazing"
-  | "Cabinetry / Joinery"
-  | "Welding / Metalwork"
-  | "Fencing / Gates"
-  | "Demolition"
-  | "Scaffolding"
-  | "Waterproofing"
-  | "Solar Installation"
-  | "Smart Home / Automation"
-  | "Site Prep & Cleanup";
+export type ProjectType = string;
 
 export type SubcategoryOption = {
   value: string;
@@ -41,34 +12,29 @@ export type Subcategory = {
   options: SubcategoryOption[];
 };
 
-// Interface for correspondence data
 export interface CorrespondenceData {
   type?: string;
   clientName?: string;
   date?: string;
-  [key: string]: string | undefined;
 }
 
-// Interface for content data (used for all other subcategories)
 export interface ContentData {
   content: string;
 }
 
-// Combined interface for all subcategory data
 export interface SubcategoryData {
-  correspondence?: CorrespondenceData;
-  overview?: ContentData;
-  dimensions?: ContentData;
-  materials?: ContentData;
-  finish?: ContentData;
-  locationDetails?: ContentData;
-  timeframe?: ContentData;
-  additionalWork?: ContentData;
-  rates?: ContentData;
-  margin?: ContentData;
-  notes?: ContentData;
-  projectName?: ContentData;
-  [key: string]: CorrespondenceData | ContentData | undefined;
+  correspondence: CorrespondenceData;
+  projectName: ContentData;
+  overview: ContentData;
+  dimensions: ContentData;
+  materials: ContentData;
+  finish: ContentData;
+  locationDetails: ContentData;
+  timeframe: ContentData;
+  additionalWork: ContentData;
+  rates: ContentData;
+  margin: ContentData;
+  notes: ContentData;
 }
 
 export const getSubcategoriesForProjectType = (projectType: ProjectType | null): Subcategory[] => {
