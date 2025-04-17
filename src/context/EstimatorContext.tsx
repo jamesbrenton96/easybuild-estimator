@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState } from "react";
 
 export type ProjectType = 
@@ -42,17 +41,20 @@ export type Subcategory = {
   options: SubcategoryOption[];
 };
 
-// New interfaces for the subcategory data
+// Interface for correspondence data
 export interface CorrespondenceData {
   type?: string;
   clientName?: string;
   date?: string;
+  [key: string]: string | undefined;
 }
 
+// Interface for content data (used for all other subcategories)
 export interface ContentData {
-  content?: string;
+  content: string;
 }
 
+// Combined interface for all subcategory data
 export interface SubcategoryData {
   correspondence?: CorrespondenceData;
   overview?: ContentData;
@@ -65,6 +67,7 @@ export interface SubcategoryData {
   rates?: ContentData;
   margin?: ContentData;
   notes?: ContentData;
+  projectName?: ContentData;
   [key: string]: CorrespondenceData | ContentData | undefined;
 }
 

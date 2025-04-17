@@ -43,7 +43,7 @@ export default function BasicInfoStep() {
           [category]: {
             ...categoryData,
             content: value
-          }
+          } as ContentData
         }
       });
     }
@@ -64,6 +64,26 @@ export default function BasicInfoStep() {
   };
   
   const isNextDisabled = !formData.description || !formData.location;
+
+  // Helper function to safely access ContentData.content 
+  const getContentValue = (category: string): string => {
+    const subcategories = formData.subcategories || {};
+    if (!subcategories[category]) return "";
+    
+    const data = subcategories[category];
+    if (category === "correspondence") return ""; // correspondence doesn't have content
+    
+    return (data as ContentData).content || "";
+  };
+
+  // Helper function to safely access CorrespondenceData fields
+  const getCorrespondenceValue = (field: string): string => {
+    const subcategories = formData.subcategories || {};
+    if (!subcategories.correspondence) return "";
+    
+    const correspondence = subcategories.correspondence as CorrespondenceData;
+    return correspondence[field as keyof CorrespondenceData] as string || "";
+  };
 
   return (
     <motion.div 
@@ -96,7 +116,7 @@ export default function BasicInfoStep() {
               <div>
                 <Label htmlFor="correspondenceType" className="form-label">Correspondence Type</Label>
                 <Select 
-                  value={formData.subcategories?.correspondence?.type || ""}
+                  value={getCorrespondenceValue("type")}
                   onValueChange={(value) => handleNestedChange("correspondence", "type", value)}
                 >
                   <SelectTrigger className="bg-white/10 border-white/20 text-white">
@@ -116,7 +136,7 @@ export default function BasicInfoStep() {
                 <Label htmlFor="clientName" className="form-label">Client Name</Label>
                 <Input
                   id="clientName"
-                  value={formData.subcategories?.correspondence?.clientName || ""}
+                  value={getCorrespondenceValue("clientName")}
                   onChange={(e) => handleNestedChange("correspondence", "clientName", e.target.value)}
                   className="bg-white/10 border-white/20 text-white"
                   placeholder="e.g., Joe Bloggs"
@@ -144,10 +164,10 @@ export default function BasicInfoStep() {
                       id="currentDate"
                       className={cn(
                         "w-full flex items-center justify-between rounded-md border border-white/20 bg-white/10 px-3 py-2 text-sm text-white",
-                        !formData.subcategories?.correspondence?.date && "text-white/50"
+                        !getCorrespondenceValue("date") && "text-white/50"
                       )}
                     >
-                      {formData.subcategories?.correspondence?.date || "Select date"}
+                      {getCorrespondenceValue("date") || "Select date"}
                       <CalendarIcon className="ml-auto h-4 w-4 opacity-70" />
                     </button>
                   </PopoverTrigger>
@@ -155,8 +175,8 @@ export default function BasicInfoStep() {
                     <Calendar
                       mode="single"
                       selected={
-                        formData.subcategories?.correspondence?.date
-                          ? new Date(formData.subcategories.correspondence.date.split('/').reverse().join('-'))
+                        getCorrespondenceValue("date")
+                          ? new Date(getCorrespondenceValue("date").split('/').reverse().join('-'))
                           : undefined
                       }
                       onSelect={handleDateSelect}
@@ -177,7 +197,7 @@ export default function BasicInfoStep() {
               <Label htmlFor="projectName" className="form-label mb-2 block">Enter a name for your project</Label>
               <Input
                 id="projectName"
-                value={formData.subcategories?.projectName?.content || ""}
+                value={getContentValue("projectName")}
                 onChange={(e) => handleNestedChange("projectName", "content", e.target.value)}
                 className="bg-white/10 border-white/20 text-white"
                 placeholder="e.g., Smith Residence Kitchen Renovation"
@@ -195,7 +215,7 @@ export default function BasicInfoStep() {
               <Label htmlFor="overview" className="form-label mb-2 block">What is the overall scope of the project?</Label>
               <Textarea
                 id="overview"
-                value={formData.subcategories?.overview?.content || ""}
+                value={getContentValue("overview")}
                 onChange={(e) => handleNestedChange("overview", "content", e.target.value)}
                 className="bg-white/10 border-white/20 text-white resize-none min-h-[120px]"
                 placeholder="What is the overall scope of the project? (e.g., Building a deck, renovating a bathroom, installing new plumbing)"
@@ -217,7 +237,7 @@ export default function BasicInfoStep() {
               <Label htmlFor="dimensions" className="form-label mb-2 block">Include the exact measurements</Label>
               <Textarea
                 id="dimensions"
-                value={formData.subcategories?.dimensions?.content || ""}
+                value={getContentValue("dimensions")}
                 onChange={(e) => handleNestedChange("dimensions", "content", e.target.value)}
                 className="bg-white/10 border-white/20 text-white resize-none min-h-[120px]"
                 placeholder="Include the exact measurements (e.g., length, width, height, area in square meters, volume in cubic meters)."
@@ -243,7 +263,7 @@ export default function BasicInfoStep() {
               <Label htmlFor="materials" className="form-label mb-2 block">Specify the type of materials you're planning to use</Label>
               <Textarea
                 id="materials"
-                value={formData.subcategories?.materials?.content || ""}
+                value={getContentValue("materials")}
                 onChange={(e) => handleNestedChange("materials", "content", e.target.value)}
                 className="bg-white/10 border-white/20 text-white resize-none min-h-[120px]"
                 placeholder="Specify the type of materials you're planning to use (e.g., timber type for decking, tile material for bathroom, concrete grade for flooring)."
@@ -270,7 +290,7 @@ export default function BasicInfoStep() {
               <Label htmlFor="finish" className="form-label mb-2 block">Describe any specific finishes, textures, or styles</Label>
               <Textarea
                 id="finish"
-                value={formData.subcategories?.finish?.content || ""}
+                value={getContentValue("finish")}
                 onChange={(e) => handleNestedChange("finish", "content", e.target.value)}
                 className="bg-white/10 border-white/20 text-white resize-none min-h-[120px]"
                 placeholder="Describe any specific finishes, textures, or styles (e.g., polished concrete, matte paint finish, modern tiling pattern, gloss varnish)."
@@ -295,7 +315,7 @@ export default function BasicInfoStep() {
               <Label htmlFor="locationDetails" className="form-label mb-2 block">Are there any location-specific factors that could affect the project?</Label>
               <Textarea
                 id="locationDetails"
-                value={formData.subcategories?.locationDetails?.content || ""}
+                value={getContentValue("locationDetails")}
                 onChange={(e) => handleNestedChange("locationDetails", "content", e.target.value)}
                 className="bg-white/10 border-white/20 text-white resize-none min-h-[120px]"
                 placeholder="Are there any location-specific factors that could affect the project? (e.g., access to the site, difficult terrain, proximity to services)."
@@ -318,7 +338,7 @@ export default function BasicInfoStep() {
               <Label htmlFor="timeframe" className="form-label mb-2 block">Include your estimated timeline for the project</Label>
               <Textarea
                 id="timeframe"
-                value={formData.subcategories?.timeframe?.content || ""}
+                value={getContentValue("timeframe")}
                 onChange={(e) => handleNestedChange("timeframe", "content", e.target.value)}
                 className="bg-white/10 border-white/20 text-white resize-none min-h-[120px]"
                 placeholder="Include your estimated timeline for the project (e.g., do you need it completed in a specific number of days or weeks?)."
@@ -340,7 +360,7 @@ export default function BasicInfoStep() {
               <Label htmlFor="additionalWork" className="form-label mb-2 block">Are there any additional tasks or components?</Label>
               <Textarea
                 id="additionalWork"
-                value={formData.subcategories?.additionalWork?.content || ""}
+                value={getContentValue("additionalWork")}
                 onChange={(e) => handleNestedChange("additionalWork", "content", e.target.value)}
                 className="bg-white/10 border-white/20 text-white resize-none min-h-[120px]"
                 placeholder="Are there any additional tasks or components that should be included in the project? (e.g., electrical work, plumbing installation, landscaping after construction)."
@@ -362,7 +382,7 @@ export default function BasicInfoStep() {
               <Label htmlFor="rates" className="form-label mb-2 block">Company's hourly rates</Label>
               <Textarea
                 id="rates"
-                value={formData.subcategories?.rates?.content || ""}
+                value={getContentValue("rates")}
                 onChange={(e) => handleNestedChange("rates", "content", e.target.value)}
                 className="bg-white/10 border-white/20 text-white resize-none min-h-[120px]"
                 placeholder="If you'd like to include information about your company's hourly rates, please specify them here (e.g., carpenter rates, labor costs, subcontractor fees)."
@@ -386,7 +406,7 @@ export default function BasicInfoStep() {
               <Label htmlFor="margin" className="form-label mb-2 block">Profit margin for materials</Label>
               <Textarea
                 id="margin"
-                value={formData.subcategories?.margin?.content || ""}
+                value={getContentValue("margin")}
                 onChange={(e) => handleNestedChange("margin", "content", e.target.value)}
                 className="bg-white/10 border-white/20 text-white resize-none min-h-[120px]"
                 placeholder="If you'd like to include a margin for materials, please specify the percentage here (e.g., 18% to cover procurement, handling, and additional costs)."
@@ -408,7 +428,7 @@ export default function BasicInfoStep() {
               <Label htmlFor="notes" className="form-label mb-2 block">Specific notes or terms related to the project</Label>
               <Textarea
                 id="notes"
-                value={formData.subcategories?.notes?.content || ""}
+                value={getContentValue("notes")}
                 onChange={(e) => handleNestedChange("notes", "content", e.target.value)}
                 className="bg-white/10 border-white/20 text-white resize-none min-h-[120px]"
                 placeholder="If you have any specific notes or terms related to the project, please include them here (e.g., payment terms, special requirements, warranty details, or additional conditions)."
@@ -451,56 +471,68 @@ export default function BasicInfoStep() {
               if (formData.subcategories) {
                 const subcats = formData.subcategories;
                 
-                if (subcats.projectName?.content) {
-                  compiledDescription += `# ${subcats.projectName.content}\n\n`;
+                if (subcats.projectName) {
+                  const projectName = subcats.projectName as ContentData;
+                  if (projectName.content) compiledDescription += `# ${projectName.content}\n\n`;
                 }
                 
                 if (subcats.correspondence) {
+                  const correspondence = subcats.correspondence as CorrespondenceData;
                   compiledDescription += `# Correspondence Details\n`;
-                  if (subcats.correspondence.type) compiledDescription += `Type: ${subcats.correspondence.type}\n`;
-                  if (subcats.correspondence.clientName) compiledDescription += `Client: ${subcats.correspondence.clientName}\n`;
-                  if (subcats.correspondence.date) compiledDescription += `Date: ${subcats.correspondence.date}\n`;
+                  if (correspondence.type) compiledDescription += `Type: ${correspondence.type}\n`;
+                  if (correspondence.clientName) compiledDescription += `Client: ${correspondence.clientName}\n`;
+                  if (correspondence.date) compiledDescription += `Date: ${correspondence.date}\n`;
                   compiledDescription += `\n`;
                 }
                 
-                if (subcats.overview?.content) {
-                  compiledDescription += `# Project Overview\n${subcats.overview.content}\n\n`;
+                if (subcats.overview) {
+                  const overview = subcats.overview as ContentData;
+                  if (overview.content) compiledDescription += `# Project Overview\n${overview.content}\n\n`;
                 }
                 
-                if (subcats.dimensions?.content) {
-                  compiledDescription += `# Dimensions\n${subcats.dimensions.content}\n\n`;
+                if (subcats.dimensions) {
+                  const dimensions = subcats.dimensions as ContentData;
+                  if (dimensions.content) compiledDescription += `# Dimensions\n${dimensions.content}\n\n`;
                 }
                 
-                if (subcats.materials?.content) {
-                  compiledDescription += `# Materials\n${subcats.materials.content}\n\n`;
+                if (subcats.materials) {
+                  const materials = subcats.materials as ContentData;
+                  if (materials.content) compiledDescription += `# Materials\n${materials.content}\n\n`;
                 }
                 
-                if (subcats.finish?.content) {
-                  compiledDescription += `# Finish and Details\n${subcats.finish.content}\n\n`;
+                if (subcats.finish) {
+                  const finish = subcats.finish as ContentData;
+                  if (finish.content) compiledDescription += `# Finish and Details\n${finish.content}\n\n`;
                 }
                 
-                if (subcats.locationDetails?.content) {
-                  compiledDescription += `# Location-Specific Details\n${subcats.locationDetails.content}\n\n`;
+                if (subcats.locationDetails) {
+                  const locationDetails = subcats.locationDetails as ContentData;
+                  if (locationDetails.content) compiledDescription += `# Location-Specific Details\n${locationDetails.content}\n\n`;
                 }
                 
-                if (subcats.timeframe?.content) {
-                  compiledDescription += `# Timeframe\n${subcats.timeframe.content}\n\n`;
+                if (subcats.timeframe) {
+                  const timeframe = subcats.timeframe as ContentData;
+                  if (timeframe.content) compiledDescription += `# Timeframe\n${timeframe.content}\n\n`;
                 }
                 
-                if (subcats.additionalWork?.content) {
-                  compiledDescription += `# Additional Work\n${subcats.additionalWork.content}\n\n`;
+                if (subcats.additionalWork) {
+                  const additionalWork = subcats.additionalWork as ContentData;
+                  if (additionalWork.content) compiledDescription += `# Additional Work\n${additionalWork.content}\n\n`;
                 }
                 
-                if (subcats.rates?.content) {
-                  compiledDescription += `# Hourly Rates\n${subcats.rates.content}\n\n`;
+                if (subcats.rates) {
+                  const rates = subcats.rates as ContentData;
+                  if (rates.content) compiledDescription += `# Hourly Rates\n${rates.content}\n\n`;
                 }
                 
-                if (subcats.margin?.content) {
-                  compiledDescription += `# Profit Margin\n${subcats.margin.content}\n\n`;
+                if (subcats.margin) {
+                  const margin = subcats.margin as ContentData;
+                  if (margin.content) compiledDescription += `# Profit Margin\n${margin.content}\n\n`;
                 }
                 
-                if (subcats.notes?.content) {
-                  compiledDescription += `# Specific Notes and Terms\n${subcats.notes.content}\n\n`;
+                if (subcats.notes) {
+                  const notes = subcats.notes as ContentData;
+                  if (notes.content) compiledDescription += `# Specific Notes and Terms\n${notes.content}\n\n`;
                 }
               }
               

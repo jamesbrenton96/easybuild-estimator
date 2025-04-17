@@ -12,7 +12,7 @@ export default function ProjectTypeStep() {
   const projectTypes = Object.values(CONSTRUCTION_TYPES);
   
   // Handler for setting project type
-  const handleSelectProjectType = (selectedType: ProjectType) => {
+  const handleSelectProjectType = (selectedType: ConstructionType) => {
     // Create appropriate subcategories structure based on the selected type
     const subcategories: {
       correspondence: CorrespondenceData;
@@ -43,7 +43,7 @@ export default function ProjectTypeStep() {
     };
     
     updateFormData({
-      projectType: selectedType,
+      projectType: selectedType.name,
       subcategories: subcategories
     });
     
