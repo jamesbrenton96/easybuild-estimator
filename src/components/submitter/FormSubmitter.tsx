@@ -98,19 +98,52 @@ export function FormSubmitter({
     
     // Helper function to get full correspondence type
     function getFullCorrespondenceType(type: string) {
-      switch (type) {
+      switch (type.toLowerCase()) {
         case "accurate":
           return "Accurate Estimate";
         case "ballpark":
           return "Ballpark Estimate";
         case "quotation":
           return "Fixed Price Quotation";
+        case "quote":
+          return "Quotation";
+        case "preliminary":
+          return "Preliminary Estimate";
+        case "proposal":
+          return "Proposal";
         default:
           return type || "Estimate";
       }
     }
     
     try {
+      // Create webhook data
+      const webhookUrl = "https://hook.us2.make.com/niu1dp65y66kc2r3j56xdcl607sp8fyr";
+      
+      // Prepare data for the webhook
+      const webhookData = {
+        formData: formData,
+        estimateType: fullCorrespondenceType,
+        clientName: clientName,
+        date: date,
+        timestamp: new Date().toISOString(),
+      };
+      
+      // Send data to webhook
+      try {
+        await fetch(webhookUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          mode: "no-cors", // Add this to handle CORS issues
+          body: JSON.stringify(webhookData),
+        });
+        console.log("Webhook data sent successfully");
+      } catch (error) {
+        console.error("Error sending webhook data:", error);
+      }
+      
       // For development we will load a mock response
       // In a real application, this would be an API call to a service that generates the estimate
       

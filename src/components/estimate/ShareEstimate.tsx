@@ -1,24 +1,52 @@
 
 import React, { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Clipboard, Mail, Facebook, Twitter, Linkedin, Instagram, Check, Copy } from "lucide-react";
+import { Copy, Mail, Facebook, Twitter, Linkedin, Share2, Check, ExternalLink } from "lucide-react";
+import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 
 interface ShareEstimateProps {
   isOpen: boolean;
   onClose: () => void;
+  estimateContent?: string;
 }
 
-export default function ShareEstimate({ isOpen, onClose }: ShareEstimateProps) {
+export default function ShareEstimate({ isOpen, onClose, estimateContent }: ShareEstimateProps) {
   const [copied, setCopied] = useState(false);
-  const [emailTo, setEmailTo] = useState("");
-  
-  const currentUrl = window.location.href;
-  
+  const shareUrl = window.location.href;
+
+  // Generate email share link with content
+  const getEmailShareLink = () => {
+    // Extract the first line as the subject (project name)
+    const lines = estimateContent?.split('\n') || [];
+    let subject = "Construction Estimate";
+    
+    // Find the project name if it exists
+    for (let i = 0; i < lines.length; i++) {
+      if (lines[i].startsWith('# Project Name')) {
+        if (i + 1 < lines.length && lines[i + 1].trim()) {
+          subject = lines[i + 1].trim();
+          break;
+        }
+      }
+    }
+    
+    // Prepare email body with shortened content
+    const bodyText = "Please find the attached construction estimate details:\n\n" + 
+      (estimateContent?.substring(0, 1500) || "") + 
+      (estimateContent && estimateContent.length > 1500 ? "...\n\n(Full estimate available on request)" : "");
+    
+    return `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(bodyText)}`;
+  };
+
+  // Social media sharing links
+  const getFacebookShareLink = () => `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
+  const getTwitterShareLink = () => `https://twitter.com/intent/tweet?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent("Check out this construction estimate")}`;
+  const getLinkedInShareLink = () => `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`;
+
   const handleCopyLink = () => {
-    navigator.clipboard.writeText(currentUrl);
+    navigator.clipboard.writeText(shareUrl);
     setCopied(true);
     toast.success("Link copied to clipboard");
     
@@ -26,119 +54,86 @@ export default function ShareEstimate({ isOpen, onClose }: ShareEstimateProps) {
       setCopied(false);
     }, 3000);
   };
-  
-  const handleEmailShare = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!emailTo) {
-      toast.error("Please enter an email address");
-      return;
-    }
-    
-    const subject = encodeURIComponent("Brenton Building Estimate");
-    const body = encodeURIComponent(`Check out this building estimate: ${currentUrl}`);
-    window.open(`mailto:${emailTo}?subject=${subject}&body=${body}`);
-    
-    toast.success(`Email share initiated to ${emailTo}`);
-    setEmailTo("");
+
+  const openShareLink = (url: string) => {
+    window.open(url, '_blank', 'width=600,height=400');
   };
-  
-  const handleSocialShare = (platform: string) => {
-    let shareUrl = "";
-    const text = encodeURIComponent("Check out this building estimate");
-    const url = encodeURIComponent(currentUrl);
-    
-    switch (platform) {
-      case "facebook":
-        shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${url}`;
-        break;
-      case "twitter":
-        shareUrl = `https://twitter.com/intent/tweet?text=${text}&url=${url}`;
-        break;
-      case "linkedin":
-        shareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${url}`;
-        break;
-      default:
-        return;
-    }
-    
-    window.open(shareUrl, "_blank", "width=600,height=400");
-    toast.success(`Shared on ${platform}`);
-  };
-  
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Share Estimate</DialogTitle>
+          <DialogTitle className="flex items-center gap-2">
+            <Share2 className="w-5 h-5" /> Share Estimate
+          </DialogTitle>
           <DialogDescription>
-            Share this estimate with clients or colleagues
+            Share this estimate via email or social media
           </DialogDescription>
         </DialogHeader>
         
-        <div className="flex items-center space-x-2 mt-4">
-          <div className="grid flex-1 gap-2">
-            <Input
-              readOnly
-              value={currentUrl}
-              className="bg-gray-50"
-            />
-          </div>
-          <Button size="sm" onClick={handleCopyLink} className="px-3">
-            {copied ? (
-              <Check className="h-4 w-4" />
-            ) : (
-              <Copy className="h-4 w-4" />
-            )}
+        <div className="flex items-center space-x-2 my-4">
+          <Input
+            className="flex-1"
+            value={shareUrl}
+            readOnly
+          />
+          <Button 
+            variant="outline" 
+            size="icon" 
+            className={copied ? "text-green-500" : ""}
+            onClick={handleCopyLink}
+          >
+            {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
           </Button>
         </div>
         
-        <div className="mt-6">
-          <h3 className="text-sm font-medium mb-2">Share via Email</h3>
-          <form onSubmit={handleEmailShare} className="flex gap-2">
-            <Input
-              type="email"
-              placeholder="Enter recipient's email"
-              value={emailTo}
-              onChange={(e) => setEmailTo(e.target.value)}
-              className="flex-1"
-            />
-            <Button type="submit" size="sm">
-              <Mail className="h-4 w-4 mr-2" />
-              Send
-            </Button>
-          </form>
+        <div className="grid grid-cols-4 gap-2 mb-4">
+          <Button
+            variant="outline"
+            className="flex flex-col items-center justify-center h-20"
+            onClick={() => window.location.href = getEmailShareLink()}
+          >
+            <Mail className="h-6 w-6 mb-1 text-blue-600" />
+            <span className="text-xs">Email</span>
+          </Button>
+          
+          <Button
+            variant="outline"
+            className="flex flex-col items-center justify-center h-20"
+            onClick={() => openShareLink(getFacebookShareLink())}
+          >
+            <Facebook className="h-6 w-6 mb-1 text-blue-600" />
+            <span className="text-xs">Facebook</span>
+          </Button>
+          
+          <Button
+            variant="outline"
+            className="flex flex-col items-center justify-center h-20"
+            onClick={() => openShareLink(getTwitterShareLink())}
+          >
+            <Twitter className="h-6 w-6 mb-1 text-blue-400" />
+            <span className="text-xs">Twitter</span>
+          </Button>
+          
+          <Button
+            variant="outline"
+            className="flex flex-col items-center justify-center h-20"
+            onClick={() => openShareLink(getLinkedInShareLink())}
+          >
+            <Linkedin className="h-6 w-6 mb-1 text-blue-700" />
+            <span className="text-xs">LinkedIn</span>
+          </Button>
         </div>
         
-        <div className="mt-6">
-          <h3 className="text-sm font-medium mb-3">Share on Social Media</h3>
-          <div className="flex gap-2 justify-center">
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => handleSocialShare("facebook")}
-              className="w-10 h-10 rounded-full"
-            >
-              <Facebook className="h-5 w-5 text-blue-600" />
-            </Button>
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => handleSocialShare("twitter")}
-              className="w-10 h-10 rounded-full"
-            >
-              <Twitter className="h-5 w-5 text-blue-400" />
-            </Button>
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => handleSocialShare("linkedin")}
-              className="w-10 h-10 rounded-full"
-            >
-              <Linkedin className="h-5 w-5 text-blue-700" />
-            </Button>
-          </div>
-        </div>
+        <DialogFooter className="sm:justify-center gap-2">
+          <Button variant="secondary" onClick={onClose}>Close</Button>
+          <Button 
+            className="bg-construction-orange hover:bg-construction-orange/90"
+            onClick={handleCopyLink}
+          >
+            {copied ? "Copied!" : "Copy Link"}
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

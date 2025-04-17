@@ -4,7 +4,7 @@ import { useEstimator } from "@/context/EstimatorContext";
 import { motion } from "framer-motion";
 import html2pdf from "html2pdf.js";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Pencil, Save, FileText, Share2 } from "lucide-react";
+import { Pencil, Save, FileText, Share2, Mail, Facebook, Twitter, Linkedin } from "lucide-react";
 import { toast } from "sonner";
 
 // Import components
@@ -17,7 +17,7 @@ import EditableEstimate from "../estimate/EditableEstimate";
 import ShareEstimate from "../estimate/ShareEstimate";
 
 export default function ReviewStep() {
-  const { estimationResults, setStep, setEstimationResults } = useEstimator();
+  const { estimationResults, setStep, setEstimationResults, formData, saveFormData } = useEstimator();
   const estimateRef = useRef<HTMLDivElement>(null);
   const [activeTab, setActiveTab] = useState("view");
   const [showShareModal, setShowShareModal] = useState(false);
@@ -81,28 +81,30 @@ export default function ReviewStep() {
       
       /* Improve table layout for PDF */
       table { 
-        width: 100%; 
-        font-size: 9px; 
+        width: 98%; 
+        max-width: 98%;
+        font-size: 8px; 
         border-collapse: collapse;
         table-layout: fixed;
+        margin: 0 auto;
       }
       
       td, th { 
         word-break: break-word; 
-        padding: 4px; 
-        font-size: 9px;
+        padding: 2px; 
+        font-size: 8px;
       }
       
       /* Create more compact tables */
       .markdown-content table {
-        margin: 1rem 0;
+        margin: 0.5rem auto;
       }
       
       .markdown-content table th,
       .markdown-content table td {
-        padding: 4px;
-        font-size: 9px;
-        line-height: 1.2;
+        padding: 2px;
+        font-size: 8px;
+        line-height: 1.1;
       }
       
       /* Adjust table column widths */
@@ -113,17 +115,17 @@ export default function ReviewStep() {
       
       .markdown-content table th:nth-child(2),
       .markdown-content table td:nth-child(2) {
-        width: 15%;
+        width: 12%;
       }
       
       .markdown-content table th:nth-child(3),
       .markdown-content table td:nth-child(3) {
-        width: 15%;
+        width: 12%;
       }
       
       .markdown-content table th:last-child,
       .markdown-content table td:last-child {
-        width: 30%;
+        width: 26%;
       }
       
       /* Ensure tables don't get cut off */
@@ -145,9 +147,19 @@ export default function ReviewStep() {
         
         /* Reduce spacing between sections */
         p, h2, h3, h4, ul, ol {
-          margin-top: 0.5em;
-          margin-bottom: 0.5em;
+          margin-top: 0.3em;
+          margin-bottom: 0.3em;
         }
+        
+        /* Smaller font sizes for PDF */
+        body, p, li, td, th {
+          font-size: 8px !important;
+          line-height: 1.2 !important;
+        }
+        
+        h1 { font-size: 14px !important; }
+        h2 { font-size: 12px !important; }
+        h3 { font-size: 10px !important; }
       }
     `;
     clone.appendChild(style);
@@ -186,6 +198,12 @@ export default function ReviewStep() {
 
   const handleShareClick = () => {
     setShowShareModal(true);
+  };
+  
+  const handleStartNew = () => {
+    // Save current form data before starting a new estimate
+    saveFormData(formData);
+    setStep(1);
   };
 
   return (
@@ -365,22 +383,16 @@ export default function ReviewStep() {
         </TabsContent>
         
         <TabsContent value="edit">
-          {estimationResults.markdownContent ? (
-            <EditableEstimate 
-              initialContent={estimationResults.markdownContent} 
-              onSave={handleSaveEdits} 
-            />
-          ) : (
-            <div className="bg-white p-6 rounded-lg shadow-md text-center">
-              <p className="text-gray-700">This estimate format cannot be edited.</p>
-            </div>
-          )}
+          <EditableEstimate 
+            initialContent={estimationResults.markdownContent || ""} 
+            onSave={handleSaveEdits} 
+          />
         </TabsContent>
       </Tabs>
       
       <EstimateActions 
         onDownloadPDF={handleDownloadPDF} 
-        onStartNew={() => setStep(1)} 
+        onStartNew={handleStartNew} 
         onShare={handleShareClick}
       />
 
@@ -388,6 +400,7 @@ export default function ReviewStep() {
         <ShareEstimate 
           isOpen={showShareModal} 
           onClose={() => setShowShareModal(false)} 
+          estimateContent={estimationResults.markdownContent}
         />
       )}
     </motion.div>

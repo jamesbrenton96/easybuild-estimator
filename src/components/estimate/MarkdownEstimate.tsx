@@ -11,10 +11,13 @@ interface MarkdownEstimateProps {
 export default function MarkdownEstimate({ markdownContent }: MarkdownEstimateProps) {
   // Simple cleaning function that just handles basic escape characters
   const cleanMarkdown = () => {
-    return markdownContent
+    // Replace shortened correspondence types with full versions
+    let cleanedContent = markdownContent
       .replace(/\\n/g, '\n')
       .replace(/\\"/g, '"')
       .replace(/\\\\/g, '\\');
+      
+    return cleanedContent;
   };
 
   return (
