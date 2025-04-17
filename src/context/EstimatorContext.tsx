@@ -42,6 +42,32 @@ export type Subcategory = {
   options: SubcategoryOption[];
 };
 
+// New interfaces for the subcategory data
+export interface CorrespondenceData {
+  type?: string;
+  clientName?: string;
+  date?: string;
+}
+
+export interface ContentData {
+  content?: string;
+}
+
+export interface SubcategoryData {
+  correspondence?: CorrespondenceData;
+  overview?: ContentData;
+  dimensions?: ContentData;
+  materials?: ContentData;
+  finish?: ContentData;
+  locationDetails?: ContentData;
+  timeframe?: ContentData;
+  additionalWork?: ContentData;
+  rates?: ContentData;
+  margin?: ContentData;
+  notes?: ContentData;
+  [key: string]: CorrespondenceData | ContentData | undefined;
+}
+
 export const getSubcategoriesForProjectType = (projectType: ProjectType | null): Subcategory[] => {
   if (!projectType) return [];
 
@@ -1298,7 +1324,7 @@ type FormDataType = {
   description: string;
   location: string;
   files: File[];
-  subcategories: Record<string, string>;
+  subcategories: SubcategoryData;
 };
 
 type EstimatorContextProps = {

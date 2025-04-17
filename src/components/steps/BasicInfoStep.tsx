@@ -1,6 +1,6 @@
 
 import React, { useState } from "react";
-import { useEstimator } from "@/context/EstimatorContext";
+import { useEstimator, CorrespondenceData, ContentData } from "@/context/EstimatorContext";
 import { motion } from "framer-motion";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
@@ -23,17 +23,30 @@ export default function BasicInfoStep() {
   
   const handleNestedChange = (category: string, field: string, value: string) => {
     const currentSubcategories = formData.subcategories || {};
-    const categoryData = currentSubcategories[category] || {};
     
-    updateFormData({
-      subcategories: {
-        ...currentSubcategories,
-        [category]: {
-          ...categoryData,
-          [field]: value
+    if (category === "correspondence") {
+      const correspondenceData = currentSubcategories.correspondence || {} as CorrespondenceData;
+      updateFormData({
+        subcategories: {
+          ...currentSubcategories,
+          correspondence: {
+            ...correspondenceData,
+            [field]: value
+          }
         }
-      }
-    });
+      });
+    } else {
+      const categoryData = (currentSubcategories[category] || {}) as ContentData;
+      updateFormData({
+        subcategories: {
+          ...currentSubcategories,
+          [category]: {
+            ...categoryData,
+            content: value
+          }
+        }
+      });
+    }
   };
   
   const handleDateSelect = (date: Date | undefined) => {
@@ -216,7 +229,7 @@ export default function BasicInfoStep() {
           </AccordionItem>
           
           {/* Location-Specific Details */}
-          <AccordionItem value="location" className="border-white/20">
+          <AccordionItem value="locationDetails" className="border-white/20">
             <AccordionTrigger className="px-4 py-3 text-white hover:no-underline">
               <span className="font-semibold">Location-Specific Details</span>
             </AccordionTrigger>
