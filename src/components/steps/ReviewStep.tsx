@@ -40,7 +40,8 @@ export default function ReviewStep() {
       filename: 'brenton-building-estimate.pdf',
       image: { type: 'jpeg', quality: 0.98 },
       html2canvas: { scale: 2, useCORS: true },
-      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+      pagebreak: { mode: ['avoid-all', 'css', 'legacy'] } // Try to avoid breaking inside elements
     };
     
     // Create a clone of the element so we can add a logo to just the PDF
@@ -49,22 +50,18 @@ export default function ReviewStep() {
     // Create a header element with the logo
     const header = document.createElement('div');
     header.style.textAlign = 'center';
-    header.style.marginBottom = '20px';
+    header.style.marginBottom = '30px';
+    header.style.padding = '20px';
     
+    // Use the new logo
     const logo = document.createElement('img');
-    logo.src = "/lovable-uploads/e9c92678-9834-4536-b060-7f310dff3683.png";
-    logo.style.height = '100px';
+    logo.src = "/lovable-uploads/54be63ea-83fd-4f4a-8c94-dba12936b674.png";
+    logo.style.height = '150px';
     logo.style.margin = '0 auto 20px auto';
     
-    const title = document.createElement('h1');
-    title.textContent = "Brenton Building Estimate";
-    title.style.fontSize = '24px';
-    title.style.color = '#e58c33';
-    title.style.fontFamily = 'Arial, sans-serif';
-    title.style.marginTop = '10px';
-    
     header.appendChild(logo);
-    header.appendChild(title);
+    
+    // Don't add title text since we'll use the Project Name field instead
     
     // Insert the header at the top of the clone
     clone.insertBefore(header, clone.firstChild);
@@ -72,6 +69,30 @@ export default function ReviewStep() {
     // Set Arial font for the entire document
     clone.style.fontFamily = 'Arial, sans-serif';
     clone.style.fontSize = '12px';
+    
+    // Apply specific PDF styling to ensure content doesn't get cut off
+    const style = document.createElement('style');
+    style.textContent = `
+      /* PDF-specific styles */
+      table { page-break-inside: avoid; }
+      h1, h2, h3 { page-break-after: avoid; }
+      table { width: 100%; font-size: 9px; }
+      td, th { word-break: break-word; }
+      
+      /* Ensure tables don't get cut off */
+      @media print {
+        table { page-break-inside: avoid; }
+        tr    { page-break-inside: avoid; }
+        td    { page-break-inside: avoid; }
+        
+        /* Force page breaks before major sections */
+        h1 { page-break-before: always; }
+        
+        /* But don't start with a page break */
+        h1:first-of-type { page-break-before: avoid; }
+      }
+    `;
+    clone.appendChild(style);
     
     html2pdf().from(clone).set(opt).save();
   };
@@ -127,13 +148,13 @@ export default function ReviewStep() {
         </TabsList>
         
         <TabsContent value="view">
-          <div ref={estimateRef} className="max-w-3xl mx-auto pdf-content">
+          <div ref={estimateRef} className="max-w-3xl mx-auto pdf-content bg-white p-8 rounded-lg shadow-lg">
             <style dangerouslySetInnerHTML={{ __html: `
               /* Base font for PDF content */
               .pdf-content {
                 font-family: Arial, sans-serif;
                 font-size: 12px;
-                line-height: 1.5;
+                line-height: 1.6;
               }
               
               /* Custom styles for markdown tables */
@@ -169,9 +190,11 @@ export default function ReviewStep() {
                 font-size: 20px;
                 font-family: Arial, sans-serif;
                 font-weight: 600;
-                margin-bottom: 1.5rem;
-                padding-bottom: 0.75rem;
+                margin-top: 2rem;
+                margin-bottom: 1rem;
+                padding-bottom: 0.5rem;
                 border-bottom: 1px solid #e5e7eb;
+                page-break-after: avoid;
               }
               
               .markdown-content h2 {
@@ -181,6 +204,7 @@ export default function ReviewStep() {
                 font-weight: 600;
                 margin-top: 1.5rem;
                 margin-bottom: 1rem;
+                page-break-after: avoid;
               }
               
               .markdown-content h3 {
@@ -190,6 +214,7 @@ export default function ReviewStep() {
                 font-weight: 600;
                 margin-top: 1.25rem;
                 margin-bottom: 0.75rem;
+                page-break-after: avoid;
               }
               
               .markdown-content h4 {
@@ -199,6 +224,7 @@ export default function ReviewStep() {
                 font-weight: 600;
                 margin-top: 1.25rem;
                 margin-bottom: 0.75rem;
+                page-break-after: avoid;
               }
               
               /* Improve list and text styling */
@@ -209,6 +235,7 @@ export default function ReviewStep() {
                 font-family: Arial, sans-serif;
                 font-size: 12px;
                 line-height: 1.6;
+                page-break-inside: avoid;
               }
               
               /* Improve text styling */
@@ -239,6 +266,7 @@ export default function ReviewStep() {
                 margin: 1rem 0;
                 white-space: pre-wrap;
                 word-wrap: break-word;
+                page-break-inside: avoid;
               }
               
               .markdown-content code {

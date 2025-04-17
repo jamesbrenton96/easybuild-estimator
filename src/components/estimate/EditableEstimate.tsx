@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Save, RefreshCw } from "lucide-react";
+import { Save, RefreshCw, AlertOctagon } from "lucide-react";
 
 interface EditableEstimateProps {
   initialContent: string;
@@ -15,6 +15,15 @@ export default function EditableEstimate({ initialContent, onSave }: EditableEst
   
   const handleRevert = () => {
     setContent(initialContent);
+  };
+  
+  // A simple formatting function to make the content more readable
+  const formatMarkdown = (text: string) => {
+    // Add proper line breaks between sections
+    return text
+      .replace(/^#\s+([^\n]+)/gm, "\n\n# $1\n") // Add space before and after headers
+      .replace(/^\s*\n+/gm, "\n") // Remove multiple consecutive blank lines
+      .trim();
   };
   
   return (
@@ -34,7 +43,11 @@ export default function EditableEstimate({ initialContent, onSave }: EditableEst
           <Button 
             variant="default" 
             size="sm" 
-            onClick={() => onSave(content)}
+            onClick={() => {
+              // Format the content before saving
+              const formattedContent = formatMarkdown(content);
+              onSave(formattedContent);
+            }}
             className="bg-construction-orange hover:bg-construction-orange/90 flex items-center gap-1"
           >
             <Save className="h-4 w-4" />
@@ -42,11 +55,25 @@ export default function EditableEstimate({ initialContent, onSave }: EditableEst
           </Button>
         </div>
       </div>
+      <div className="p-4 bg-amber-50 border-b border-amber-100 flex items-center gap-2">
+        <AlertOctagon className="h-5 w-5 text-amber-500" />
+        <p className="text-sm text-amber-700">
+          Edit your content using Markdown formatting. Use # for headings, * for bullets, and blank lines between sections.
+        </p>
+      </div>
       <div className="p-6">
         <Textarea 
           value={content} 
           onChange={(e) => setContent(e.target.value)} 
-          className="min-h-[500px] font-mono resize-vertical"
+          className="min-h-[600px] font-mono resize-vertical text-sm leading-relaxed"
+          placeholder="# Project Title
+
+# Materials
+- Item 1
+- Item 2
+
+# Labor
+..."
         />
       </div>
     </Card>

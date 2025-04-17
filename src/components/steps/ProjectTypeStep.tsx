@@ -1,95 +1,53 @@
 
-import React, { useState, useEffect } from "react";
-import { useEstimator, getSubcategoriesForProjectType, ProjectType, Subcategory } from "@/context/EstimatorContext";
+import React from "react";
+import { useEstimator, ProjectType, CorrespondenceData, ContentData } from "@/context/EstimatorContext";
 import { motion } from "framer-motion";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-
-const projectTypes: ProjectType[] = [
-  "All Trades Included",
-  "House Extension",
-  "House Renovation",
-  "New Build",
-  "Deck / Landscaping",
-  "Electrical",
-  "Plumbing",
-  "Concreting",
-  "Carpentry / Framing",
-  "Roofing",
-  "Painting & Decorating",
-  "Tiling",
-  "Plastering / Gib Stopping",
-  "Bricklaying / Blockwork",
-  "Earthworks / Excavation",
-  "Drainage",
-  "HVAC",
-  "Insulation", 
-  "Flooring",
-  "Windows & Glazing",
-  "Cabinetry / Joinery",
-  "Welding / Metalwork",
-  "Fencing / Gates",
-  "Demolition",
-  "Scaffolding",
-  "Waterproofing",
-  "Solar Installation",
-  "Smart Home / Automation",
-  "Site Prep & Cleanup",
-];
+import { CONSTRUCTION_TYPES, ConstructionType } from "@/lib/construction-types";
+import { ChevronRight } from "lucide-react";
 
 export default function ProjectTypeStep() {
-  const { formData, updateFormData, nextStep } = useEstimator();
-  const [subcategories, setSubcategories] = useState<Subcategory[]>([]);
-  const [selectedSubcategories, setSelectedSubcategories] = useState<Record<string, string>>({});
-  const [showSubcategories, setShowSubcategories] = useState(false);
+  const { updateFormData, formData, nextStep } = useEstimator();
   
-  useEffect(() => {
-    if (formData.projectType) {
-      const newSubcategories = getSubcategoriesForProjectType(formData.projectType);
-      setSubcategories(newSubcategories);
-      
-      // Initialize subcategory values if they don't exist
-      const initialSubcategories = { ...formData.subcategories };
-      newSubcategories.forEach(subcat => {
-        if (!initialSubcategories[subcat.name] && subcat.options.length > 0) {
-          initialSubcategories[subcat.name] = '';
-        }
-      });
-      
-      setSelectedSubcategories(initialSubcategories);
-      setShowSubcategories(newSubcategories.length > 0);
-    } else {
-      setSubcategories([]);
-      setSelectedSubcategories({});
-      setShowSubcategories(false);
-    }
-  }, [formData.projectType]);
-
-  const handleSelectChange = (value: string) => {
-    updateFormData({ 
-      projectType: value as ProjectType,
-      subcategories: {} // Reset subcategories when project type changes
-    });
-  };
-
-  const handleSubcategoryChange = (subcategoryName: string, value: string) => {
-    const updatedSubcategories = { ...selectedSubcategories, [subcategoryName]: value };
-    setSelectedSubcategories(updatedSubcategories);
-    updateFormData({ subcategories: updatedSubcategories });
-  };
-
-  const handleNext = () => {
-    if (formData.projectType) {
-      updateFormData({ subcategories: selectedSubcategories });
-      nextStep();
-    }
-  };
-
-  const allSubcategoriesSelected = () => {
-    if (!showSubcategories) return true;
+  // Get the project types or filter them
+  const projectTypes = Object.values(CONSTRUCTION_TYPES);
+  
+  // Handler for setting project type
+  const handleSelectProjectType = (selectedType: ProjectType) => {
+    // Create appropriate subcategories structure based on the selected type
+    const subcategories: {
+      correspondence: CorrespondenceData;
+      overview: ContentData;
+      dimensions: ContentData;
+      materials: ContentData;
+      finish: ContentData;
+      locationDetails: ContentData;
+      timeframe: ContentData;
+      additionalWork: ContentData;
+      rates: ContentData;
+      margin: ContentData;
+      notes: ContentData;
+      projectName: ContentData;
+    } = {
+      correspondence: {} as CorrespondenceData,
+      overview: { content: "" } as ContentData,
+      dimensions: { content: "" } as ContentData,
+      materials: { content: "" } as ContentData,
+      finish: { content: "" } as ContentData,
+      locationDetails: { content: "" } as ContentData,
+      timeframe: { content: "" } as ContentData,
+      additionalWork: { content: "" } as ContentData,
+      rates: { content: "" } as ContentData,
+      margin: { content: "" } as ContentData,
+      notes: { content: "" } as ContentData,
+      projectName: { content: "" } as ContentData
+    };
     
-    return subcategories.every(subcat => {
-      return !!selectedSubcategories[subcat.name];
+    updateFormData({
+      projectType: selectedType,
+      subcategories: subcategories
     });
+    
+    nextStep();
   };
 
   return (
@@ -100,75 +58,26 @@ export default function ProjectTypeStep() {
       transition={{ duration: 0.4 }}
     >
       <div className="text-center mb-8">
-        <h1 className="text-2xl sm:text-3xl font-bold text-white mb-3">What type of project are you planning?</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold text-white mb-3">What type of project are you estimating?</h1>
         <p className="text-white/80 max-w-2xl mx-auto">
-          Select the type of project you're working on so we can tailor the estimate to your specific needs.
+          Choose the category that best describes your construction project.
         </p>
       </div>
       
-      <div className="max-w-md mx-auto">
-        <label htmlFor="project-type" className="form-label">
-          Project Type
-        </label>
-        <Select onValueChange={handleSelectChange} value={formData.projectType || undefined}>
-          <SelectTrigger id="project-type" className="w-full bg-white/10 border-white/20 text-white h-14 text-lg">
-            <SelectValue placeholder="Select project type" />
-          </SelectTrigger>
-          <SelectContent className="max-h-[300px]">
-            {projectTypes.map((type) => (
-              <SelectItem key={type} value={type} className="text-base">
-                {type}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        
-        {showSubcategories && (
-          <motion.div 
-            className="mt-8 space-y-4"
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            transition={{ duration: 0.3 }}
-          >
-            <h2 className="text-lg font-medium text-white">Additional Details</h2>
-            
-            {subcategories.map((subcategory) => (
-              <div key={subcategory.name} className="space-y-1.5">
-                <label htmlFor={`subcategory-${subcategory.name}`} className="form-label">
-                  {subcategory.name}
-                </label>
-                <Select 
-                  onValueChange={(value) => handleSubcategoryChange(subcategory.name, value)} 
-                  value={selectedSubcategories[subcategory.name] || undefined}
-                >
-                  <SelectTrigger 
-                    id={`subcategory-${subcategory.name}`} 
-                    className="w-full bg-white/10 border-white/20 text-white"
-                  >
-                    <SelectValue placeholder={`Select ${subcategory.name}`} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {subcategory.options.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            ))}
-          </motion.div>
-        )}
-        
-        <div className="mt-10 flex justify-center">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-3xl mx-auto">
+        {projectTypes.map((type) => (
           <button
-            onClick={handleNext}
-            disabled={!formData.projectType || !allSubcategoriesSelected()}
-            className="btn-next w-full max-w-xs disabled:opacity-50 disabled:cursor-not-allowed"
+            key={type.id}
+            onClick={() => handleSelectProjectType(type)}
+            className="bg-white/10 hover:bg-construction-orange hover:text-white border border-white/20 rounded-lg p-4 text-left transition-all flex items-center group"
           >
-            Continue
+            <span className="flex-1">
+              <span className="block text-white font-medium text-lg mb-1">{type.name}</span>
+              <span className="block text-white/70 text-sm">{type.description}</span>
+            </span>
+            <ChevronRight className="w-5 h-5 text-white/50 group-hover:text-white" />
           </button>
-        </div>
+        ))}
       </div>
     </motion.div>
   );
