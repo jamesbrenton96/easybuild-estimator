@@ -1,6 +1,6 @@
 
 import React from "react";
-import { useEstimator, ProjectType, CorrespondenceData, ContentData } from "@/context/EstimatorContext";
+import { useEstimator, CorrespondenceData, ContentData } from "@/context/EstimatorContext";
 import { motion } from "framer-motion";
 import { CONSTRUCTION_TYPES, ConstructionType } from "@/lib/construction-types";
 import { ChevronRight } from "lucide-react";
