@@ -29,13 +29,14 @@ export default function MarkdownEstimate({ markdownContent }: MarkdownEstimatePr
             prose-h1:text-2xl prose-h1:mb-6 prose-h1:border-b prose-h1:border-gray-200 prose-h1:pb-3
             prose-h2:text-xl prose-h2:mt-6 prose-h2:mb-4 
             prose-h3:text-lg prose-h3:mt-5 prose-h3:mb-3
+            prose-h4:text-base prose-h4:mt-4 prose-h4:mb-2
             prose-p:my-3 prose-p:leading-relaxed
             prose-a:text-blue-600 
             prose-strong:text-gray-900 prose-strong:font-medium
             prose-li:my-1 prose-li:ml-2
-            prose-table:border-collapse prose-table:w-full prose-table:my-4
+            prose-table:border-collapse prose-table:w-full prose-table:my-4 prose-table:table-fixed
             prose-th:bg-gray-100 prose-th:p-2 prose-th:border prose-th:border-gray-300 prose-th:text-left
-            prose-td:border prose-td:border-gray-300 prose-td:p-2
+            prose-td:border prose-td:border-gray-300 prose-td:p-2 prose-td:break-words
             prose-hr:my-6"
           remarkPlugins={[remarkGfm]}
         >

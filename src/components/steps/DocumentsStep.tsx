@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { useEstimator } from "@/context/EstimatorContext";
 import { motion } from "framer-motion";
@@ -111,7 +112,7 @@ export default function DocumentsStep() {
       <div className="text-center mb-8">
         <h1 className="text-2xl sm:text-3xl font-bold text-white mb-3">Upload Documents</h1>
         <p className="text-white/80 max-w-2xl mx-auto">
-          Upload one PDF document and any supporting images (JPEG, PNG) for your project. A PDF file is required.
+          Upload supporting documents for your project. You may include one optional PDF document and multiple images (JPEG, PNG).
         </p>
       </div>
       
@@ -143,7 +144,7 @@ export default function DocumentsStep() {
               <Upload className="h-6 w-6 text-construction-orange" />
             </motion.div>
             <p className="text-white font-medium">Drag and drop files here, or click to browse</p>
-            <p className="text-white/60 text-sm mt-1">One PDF file required, plus optional JPEG/PNG images</p>
+            <p className="text-white/60 text-sm mt-1">Optional PDF file (maximum one) and JPEG/PNG images</p>
           </label>
         </div>
         

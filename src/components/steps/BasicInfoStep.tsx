@@ -1,19 +1,53 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { useEstimator } from "@/context/EstimatorContext";
 import { motion } from "framer-motion";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { Label } from "@/components/ui/label";
+import { CalendarIcon } from "lucide-react";
+import { format } from "date-fns";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
 
 export default function BasicInfoStep() {
   const { formData, updateFormData, nextStep, prevStep } = useEstimator();
+  const [openCategories, setOpenCategories] = useState<string[]>(["correspondence"]);
   
-  const handleDescriptionChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    updateFormData({ description: e.target.value });
+  const handleChange = (field: string, value: string) => {
+    updateFormData({ [field]: value });
   };
   
-  const handleLocationChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    updateFormData({ location: e.target.value });
+  const handleNestedChange = (category: string, field: string, value: string) => {
+    const currentSubcategories = formData.subcategories || {};
+    const categoryData = currentSubcategories[category] || {};
+    
+    updateFormData({
+      subcategories: {
+        ...currentSubcategories,
+        [category]: {
+          ...categoryData,
+          [field]: value
+        }
+      }
+    });
+  };
+  
+  const handleDateSelect = (date: Date | undefined) => {
+    if (date) {
+      handleNestedChange("correspondence", "date", format(date, "dd/MM/yyyy"));
+    }
+  };
+  
+  const toggleCategory = (category: string) => {
+    setOpenCategories(prev => 
+      prev.includes(category) 
+        ? prev.filter(c => c !== category)
+        : [...prev, category]
+    );
   };
   
   const isNextDisabled = !formData.description || !formData.location;
@@ -33,84 +67,259 @@ export default function BasicInfoStep() {
       </div>
       
       <div className="max-w-2xl mx-auto space-y-6">
-        <div>
-          <label htmlFor="description" className="form-label">
-            Describe the scope of work
-          </label>
-          <div className="mb-2 text-white/70 text-sm italic">
-            Provide as much detail as possible for accurate estimates. Please include information on:
-          </div>
-          <div className="bg-white/5 rounded-md p-3 mb-3 text-white/80 text-xs space-y-2">
-            <div>
-              <p className="font-medium text-construction-orange">Project Overview</p>
-              <p>What is the overall scope of the project? (e.g., Building a deck, renovating a bathroom, installing new plumbing)</p>
-            </div>
-            <div>
-              <p className="font-medium text-construction-orange">Dimensions</p>
-              <p>Include the exact measurements (e.g., length, width, height, area in square meters, volume in cubic meters).</p>
-            </div>
-            <div>
-              <p className="font-medium text-construction-orange">Materials</p>
-              <p>Specify the type of materials you're planning to use (e.g., timber type for decking, tile material for bathroom, concrete grade for flooring).</p>
-            </div>
-            <div>
-              <p className="font-medium text-construction-orange">Finish and Details</p>
-              <p>Describe any specific finishes, textures, or styles (e.g., polished concrete, matte paint finish, modern tiling pattern, gloss varnish).</p>
-            </div>
-            <div>
-              <p className="font-medium text-construction-orange">Location-Specific Details</p>
-              <p>Are there any location-specific factors that could affect the project? (e.g., access to the site, difficult terrain, proximity to services).</p>
-            </div>
-            <div>
-              <p className="font-medium text-construction-orange">Timeframe</p>
-              <p>Include your estimated timeline for the project (e.g., do you need it completed in a specific number of days or weeks?).</p>
-            </div>
-            <div>
-              <p className="font-medium text-construction-orange">Additional Work</p>
-              <p>Are there any additional tasks or components that should be included in the project? (e.g., electrical work, plumbing installation, landscaping after construction).</p>
-            </div>
-            <div>
-              <p className="font-medium text-construction-orange">Hourly Rates (Optional)</p>
-              <p>If you'd like to include information about your company's hourly rates, please specify them here (e.g., carpenter rates, labor costs, subcontractor fees).</p>
-            </div>
-          </div>
-          <div className="mb-3 text-white/70 text-sm italic">
-            <span className="font-medium">Example for a Deck:</span> I want to build a 3x2 meter deck that will tie seamlessly into an existing deck which is 300mm off the ground. The deck will be constructed using H3.2 treated pine timber for the framework, ensuring durability in outdoor conditions, and will feature Vitex 140x20mm decking boards for the surface, chosen for its aesthetic appeal and natural resistance to the elements.
-
-The deck will be laid in a picture frame design to create a neat, professional appearance around the perimeter. Once completed, the decking will be stained with a suitable wood stain that complements the natural color of the Vitex wood.
-
-Additionally, the deck will feature a low-pitched roof with polycarbonate roofing sheets, offering protection from the elements while maintaining light and visibility. The project will be located at the back of the house with clear and easy access for materials and construction.
-
-I an unsure how long the job will take to do the installation, finishing touches, and staining of the deck.
-
-The work will be carried out by a qualified builder at an hourly rate of $75 plus GST and an apprentice at $50 per hour plus GST.
-
-I also plan to add an 18% margin on all materials to account for procurement and handling costs.
-The deck will have a low-pitched roof that will be framed out of H3.2 timber with corrugate iron for roofing.
-          </div>
+        {/* Project Details Accordion */}
+        <Accordion 
+          type="multiple" 
+          defaultValue={["correspondence"]} 
+          className="bg-white/5 rounded-lg overflow-hidden border border-white/20"
+        >
+          {/* Correspondence Details */}
+          <AccordionItem value="correspondence" className="border-white/20">
+            <AccordionTrigger className="px-4 py-3 text-white hover:no-underline">
+              <span className="font-semibold">Correspondence Details</span>
+            </AccordionTrigger>
+            <AccordionContent className="px-4 pb-4 text-white/90 space-y-4">
+              {/* Correspondence Type */}
+              <div>
+                <Label htmlFor="correspondenceType" className="form-label">Correspondence Type</Label>
+                <Select 
+                  value={formData.subcategories?.correspondence?.type || ""}
+                  onValueChange={(value) => handleNestedChange("correspondence", "type", value)}
+                >
+                  <SelectTrigger className="bg-white/10 border-white/20 text-white">
+                    <SelectValue placeholder="Select type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="quote">Quote</SelectItem>
+                    <SelectItem value="accurate">Accurate Estimate</SelectItem>
+                    <SelectItem value="preliminary">Preliminary Estimate</SelectItem>
+                    <SelectItem value="proposal">Proposal</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              {/* Client Name */}
+              <div>
+                <Label htmlFor="clientName" className="form-label">Client Name</Label>
+                <Input
+                  id="clientName"
+                  value={formData.subcategories?.correspondence?.clientName || ""}
+                  onChange={(e) => handleNestedChange("correspondence", "clientName", e.target.value)}
+                  className="bg-white/10 border-white/20 text-white"
+                  placeholder="e.g., Joe Bloggs"
+                />
+              </div>
+              
+              {/* Project Address */}
+              <div>
+                <Label htmlFor="projectAddress" className="form-label">Project Address</Label>
+                <Input
+                  id="projectAddress"
+                  value={formData.location || ""}
+                  onChange={(e) => handleChange("location", e.target.value)}
+                  className="bg-white/10 border-white/20 text-white"
+                  placeholder="e.g., 123 Willow Grove, Mount Eden, Auckland 1024, New Zealand"
+                />
+              </div>
+              
+              {/* Current Date */}
+              <div>
+                <Label htmlFor="currentDate" className="form-label">Current Date</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <button
+                      id="currentDate"
+                      className={cn(
+                        "w-full flex items-center justify-between rounded-md border border-white/20 bg-white/10 px-3 py-2 text-sm text-white",
+                        !formData.subcategories?.correspondence?.date && "text-white/50"
+                      )}
+                    >
+                      {formData.subcategories?.correspondence?.date || "Select date"}
+                      <CalendarIcon className="ml-auto h-4 w-4 opacity-70" />
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={
+                        formData.subcategories?.correspondence?.date
+                          ? new Date(formData.subcategories.correspondence.date.split('/').reverse().join('-'))
+                          : undefined
+                      }
+                      onSelect={handleDateSelect}
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+          
+          {/* Project Overview */}
+          <AccordionItem value="overview" className="border-white/20">
+            <AccordionTrigger className="px-4 py-3 text-white hover:no-underline">
+              <span className="font-semibold">Project Overview</span>
+            </AccordionTrigger>
+            <AccordionContent className="px-4 pb-4 text-white/90">
+              <Textarea
+                value={formData.subcategories?.overview?.content || ""}
+                onChange={(e) => handleNestedChange("overview", "content", e.target.value)}
+                className="bg-white/10 border-white/20 text-white resize-none min-h-[120px]"
+                placeholder="What is the overall scope of the project? (e.g., Building a deck, renovating a bathroom, installing new plumbing)"
+              />
+            </AccordionContent>
+          </AccordionItem>
+          
+          {/* Dimensions */}
+          <AccordionItem value="dimensions" className="border-white/20">
+            <AccordionTrigger className="px-4 py-3 text-white hover:no-underline">
+              <span className="font-semibold">Dimensions</span>
+            </AccordionTrigger>
+            <AccordionContent className="px-4 pb-4 text-white/90">
+              <Textarea
+                value={formData.subcategories?.dimensions?.content || ""}
+                onChange={(e) => handleNestedChange("dimensions", "content", e.target.value)}
+                className="bg-white/10 border-white/20 text-white resize-none min-h-[120px]"
+                placeholder="Include the exact measurements (e.g., length, width, height, area in square meters, volume in cubic meters)."
+              />
+            </AccordionContent>
+          </AccordionItem>
+          
+          {/* Materials */}
+          <AccordionItem value="materials" className="border-white/20">
+            <AccordionTrigger className="px-4 py-3 text-white hover:no-underline">
+              <span className="font-semibold">Materials</span>
+            </AccordionTrigger>
+            <AccordionContent className="px-4 pb-4 text-white/90">
+              <Textarea
+                value={formData.subcategories?.materials?.content || ""}
+                onChange={(e) => handleNestedChange("materials", "content", e.target.value)}
+                className="bg-white/10 border-white/20 text-white resize-none min-h-[120px]"
+                placeholder="Specify the type of materials you're planning to use (e.g., timber type for decking, tile material for bathroom, concrete grade for flooring)."
+              />
+            </AccordionContent>
+          </AccordionItem>
+          
+          {/* Finish and Details */}
+          <AccordionItem value="finish" className="border-white/20">
+            <AccordionTrigger className="px-4 py-3 text-white hover:no-underline">
+              <span className="font-semibold">Finish and Details</span>
+            </AccordionTrigger>
+            <AccordionContent className="px-4 pb-4 text-white/90">
+              <Textarea
+                value={formData.subcategories?.finish?.content || ""}
+                onChange={(e) => handleNestedChange("finish", "content", e.target.value)}
+                className="bg-white/10 border-white/20 text-white resize-none min-h-[120px]"
+                placeholder="Describe any specific finishes, textures, or styles (e.g., polished concrete, matte paint finish, modern tiling pattern, gloss varnish)."
+              />
+            </AccordionContent>
+          </AccordionItem>
+          
+          {/* Location-Specific Details */}
+          <AccordionItem value="location" className="border-white/20">
+            <AccordionTrigger className="px-4 py-3 text-white hover:no-underline">
+              <span className="font-semibold">Location-Specific Details</span>
+            </AccordionTrigger>
+            <AccordionContent className="px-4 pb-4 text-white/90">
+              <Textarea
+                value={formData.subcategories?.locationDetails?.content || ""}
+                onChange={(e) => handleNestedChange("locationDetails", "content", e.target.value)}
+                className="bg-white/10 border-white/20 text-white resize-none min-h-[120px]"
+                placeholder="Are there any location-specific factors that could affect the project? (e.g., access to the site, difficult terrain, proximity to services)."
+              />
+            </AccordionContent>
+          </AccordionItem>
+          
+          {/* Timeframe */}
+          <AccordionItem value="timeframe" className="border-white/20">
+            <AccordionTrigger className="px-4 py-3 text-white hover:no-underline">
+              <span className="font-semibold">Timeframe</span>
+            </AccordionTrigger>
+            <AccordionContent className="px-4 pb-4 text-white/90">
+              <Textarea
+                value={formData.subcategories?.timeframe?.content || ""}
+                onChange={(e) => handleNestedChange("timeframe", "content", e.target.value)}
+                className="bg-white/10 border-white/20 text-white resize-none min-h-[120px]"
+                placeholder="Include your estimated timeline for the project (e.g., do you need it completed in a specific number of days or weeks?)."
+              />
+            </AccordionContent>
+          </AccordionItem>
+          
+          {/* Additional Work */}
+          <AccordionItem value="additionalWork" className="border-white/20">
+            <AccordionTrigger className="px-4 py-3 text-white hover:no-underline">
+              <span className="font-semibold">Additional Work</span>
+            </AccordionTrigger>
+            <AccordionContent className="px-4 pb-4 text-white/90">
+              <Textarea
+                value={formData.subcategories?.additionalWork?.content || ""}
+                onChange={(e) => handleNestedChange("additionalWork", "content", e.target.value)}
+                className="bg-white/10 border-white/20 text-white resize-none min-h-[120px]"
+                placeholder="Are there any additional tasks or components that should be included in the project? (e.g., electrical work, plumbing installation, landscaping after construction)."
+              />
+            </AccordionContent>
+          </AccordionItem>
+          
+          {/* Hourly Rates */}
+          <AccordionItem value="rates" className="border-white/20">
+            <AccordionTrigger className="px-4 py-3 text-white hover:no-underline">
+              <span className="font-semibold">Hourly Rates</span>
+            </AccordionTrigger>
+            <AccordionContent className="px-4 pb-4 text-white/90">
+              <Textarea
+                value={formData.subcategories?.rates?.content || ""}
+                onChange={(e) => handleNestedChange("rates", "content", e.target.value)}
+                className="bg-white/10 border-white/20 text-white resize-none min-h-[120px]"
+                placeholder="If you'd like to include information about your company's hourly rates, please specify them here (e.g., carpenter rates, labor costs, subcontractor fees)."
+              />
+            </AccordionContent>
+          </AccordionItem>
+          
+          {/* Profit Margin */}
+          <AccordionItem value="margin" className="border-white/20">
+            <AccordionTrigger className="px-4 py-3 text-white hover:no-underline">
+              <span className="font-semibold">Profit Margin</span>
+            </AccordionTrigger>
+            <AccordionContent className="px-4 pb-4 text-white/90">
+              <Textarea
+                value={formData.subcategories?.margin?.content || ""}
+                onChange={(e) => handleNestedChange("margin", "content", e.target.value)}
+                className="bg-white/10 border-white/20 text-white resize-none min-h-[120px]"
+                placeholder="If you'd like to include a margin for materials, please specify the percentage here (e.g., 18% to cover procurement, handling, and additional costs)."
+              />
+            </AccordionContent>
+          </AccordionItem>
+          
+          {/* Specific Notes and Terms */}
+          <AccordionItem value="notes" className="border-white/20">
+            <AccordionTrigger className="px-4 py-3 text-white hover:no-underline">
+              <span className="font-semibold">Specific Notes and Terms</span>
+            </AccordionTrigger>
+            <AccordionContent className="px-4 pb-4 text-white/90">
+              <Textarea
+                value={formData.subcategories?.notes?.content || ""}
+                onChange={(e) => handleNestedChange("notes", "content", e.target.value)}
+                className="bg-white/10 border-white/20 text-white resize-none min-h-[120px]"
+                placeholder="If you have any specific notes or terms related to the project, please include them here (e.g., payment terms, special requirements, warranty details, or additional conditions)."
+              />
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
+        
+        {/* Full Description (Hidden, but kept for compatibility) */}
+        <div className="hidden">
+          <Label htmlFor="description" className="form-label">
+            Full Description
+          </Label>
           <Textarea
             id="description"
-            value={formData.description}
-            onChange={handleDescriptionChange}
-            className="bg-white/10 border-white/20 text-white resize-none min-h-[200px]"
-            placeholder="Enter details about your project following the guidelines above..."
+            value={formData.description || ""}
+            onChange={(e) => handleChange("description", e.target.value)}
+            className="bg-white/10 border-white/20 text-white resize-none min-h-[50px]"
           />
         </div>
         
-        <div>
-          <label htmlFor="location" className="form-label">
-            Location of the job
-          </label>
-          <Input
-            id="location"
-            type="text"
-            value={formData.location}
-            onChange={handleLocationChange}
-            className="bg-white/10 border-white/20 text-white h-12"
-            placeholder="Enter city, suburb or postcode"
-          />
-        </div>
-        
+        {/* Auto-compile full description from subcategories */}
         <div className="pt-4 flex justify-between">
           <button
             onClick={prevStep}
@@ -119,8 +328,75 @@ The deck will have a low-pitched roof that will be framed out of H3.2 timber wit
             Back
           </button>
           <button
-            onClick={nextStep}
-            disabled={isNextDisabled}
+            onClick={() => {
+              // Compile all subcategory content into the main description field
+              let compiledDescription = "";
+              
+              if (formData.subcategories) {
+                const subcats = formData.subcategories;
+                
+                if (subcats.correspondence) {
+                  compiledDescription += `# Correspondence Details\n`;
+                  if (subcats.correspondence.type) compiledDescription += `Type: ${subcats.correspondence.type}\n`;
+                  if (subcats.correspondence.clientName) compiledDescription += `Client: ${subcats.correspondence.clientName}\n`;
+                  if (subcats.correspondence.date) compiledDescription += `Date: ${subcats.correspondence.date}\n`;
+                  compiledDescription += `\n`;
+                }
+                
+                if (subcats.overview?.content) {
+                  compiledDescription += `# Project Overview\n${subcats.overview.content}\n\n`;
+                }
+                
+                if (subcats.dimensions?.content) {
+                  compiledDescription += `# Dimensions\n${subcats.dimensions.content}\n\n`;
+                }
+                
+                if (subcats.materials?.content) {
+                  compiledDescription += `# Materials\n${subcats.materials.content}\n\n`;
+                }
+                
+                if (subcats.finish?.content) {
+                  compiledDescription += `# Finish and Details\n${subcats.finish.content}\n\n`;
+                }
+                
+                if (subcats.locationDetails?.content) {
+                  compiledDescription += `# Location-Specific Details\n${subcats.locationDetails.content}\n\n`;
+                }
+                
+                if (subcats.timeframe?.content) {
+                  compiledDescription += `# Timeframe\n${subcats.timeframe.content}\n\n`;
+                }
+                
+                if (subcats.additionalWork?.content) {
+                  compiledDescription += `# Additional Work\n${subcats.additionalWork.content}\n\n`;
+                }
+                
+                if (subcats.rates?.content) {
+                  compiledDescription += `# Hourly Rates\n${subcats.rates.content}\n\n`;
+                }
+                
+                if (subcats.margin?.content) {
+                  compiledDescription += `# Profit Margin\n${subcats.margin.content}\n\n`;
+                }
+                
+                if (subcats.notes?.content) {
+                  compiledDescription += `# Specific Notes and Terms\n${subcats.notes.content}\n\n`;
+                }
+              }
+              
+              // If the compiled description is empty but we have a location, use that as minimal description
+              if (!compiledDescription && formData.location) {
+                compiledDescription = `Project at ${formData.location}`;
+              }
+              
+              // Update the main description field if we have content
+              if (compiledDescription) {
+                updateFormData({ description: compiledDescription });
+              }
+              
+              nextStep();
+            }}
+            disabled={!formData.location}
             className="btn-next disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Continue
