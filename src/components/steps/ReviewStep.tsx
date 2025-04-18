@@ -182,6 +182,24 @@ export default function ReviewStep() {
       return <StructuredEstimate estimate={estimationResults.estimate} />;
     }
     
+    // If the webhook returned some data but not in a format we recognize,
+    // try to convert it to markdown
+    if (Object.keys(estimationResults).length > 0) {
+      // Create a simple markdown representation of the data
+      const fallbackMarkdown = "# Construction Cost Estimate\n\n" + 
+        Object.entries(estimationResults)
+          .filter(([key]) => key !== 'webhookStatus' && key !== 'status')
+          .map(([key, value]) => {
+            if (typeof value === 'object') {
+              return `## ${key.charAt(0).toUpperCase() + key.slice(1)}\n${JSON.stringify(value, null, 2)}`;
+            }
+            return `## ${key.charAt(0).toUpperCase() + key.slice(1)}\n${value}`;
+          })
+          .join('\n\n');
+      
+      return <MarkdownEstimate markdownContent={fallbackMarkdown} />;
+    }
+    
     // If there's no valid format, use FallbackEstimate
     return <FallbackEstimate />;
   };

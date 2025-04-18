@@ -36,7 +36,7 @@ export default function ReviewDetails({ formData }: ReviewDetailsProps) {
       return <FileText className="h-5 w-5 text-red-500" />;
     }
     
-    if (file.type === 'image/jpeg' || file.type === 'image/png') {
+    if (file.type.startsWith('image/')) {
       return <Image className="h-5 w-5 text-construction-orange" />;
     }
     
@@ -48,7 +48,7 @@ export default function ReviewDetails({ formData }: ReviewDetailsProps) {
       <div className="space-y-4">
         <div>
           <h3 className="text-gray-500 text-sm">Project Type</h3>
-          <p className="text-gray-800 font-medium">{formData.projectType}</p>
+          <p className="text-gray-800 font-medium">{formData.projectType || "Not specified"}</p>
         </div>
         
         {formData.subcategories?.correspondence?.type && (
@@ -69,7 +69,7 @@ export default function ReviewDetails({ formData }: ReviewDetailsProps) {
         
         <div>
           <h3 className="text-gray-500 text-sm">Location</h3>
-          <p className="text-gray-700">{formData.location}</p>
+          <p className="text-gray-700">{formData.location || "Not specified"}</p>
         </div>
         
         <div>

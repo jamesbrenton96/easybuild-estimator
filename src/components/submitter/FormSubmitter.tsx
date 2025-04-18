@@ -36,64 +36,65 @@ export function FormSubmitter({
       let markdownContent = "";
       
       // Add correspondence details
-      markdownContent += "# Correspondence Details\n";
-      markdownContent += `Type: ${fullCorrespondenceType}\n`;
-      markdownContent += `Client: ${clientName}\n`;
-      markdownContent += `Date: ${date}\n\n`;
+      markdownContent += "# Construction Cost Estimate\n\n";
+      markdownContent += "## Correspondence Details\n";
+      markdownContent += `**Type:** ${fullCorrespondenceType}\n`;
+      markdownContent += `**Client:** ${clientName}\n`;
+      markdownContent += `**Date:** ${date}\n\n`;
       
       // Add project name if available
       if (formData.subcategories?.projectName?.content) {
-        markdownContent += `# Project Name\n${formData.subcategories.projectName.content}\n\n`;
+        markdownContent += `## Project Name\n${formData.subcategories.projectName.content}\n\n`;
       }
       
       // Add project overview if available
       if (formData.subcategories?.overview?.content) {
-        markdownContent += `# Project Overview\n${formData.subcategories.overview.content}\n\n`;
+        markdownContent += `## Project Overview\n${formData.subcategories.overview.content}\n\n`;
       }
       
       // Add dimensions if available
       if (formData.subcategories?.dimensions?.content) {
-        markdownContent += `# Dimensions\n${formData.subcategories.dimensions.content}\n\n`;
+        markdownContent += `## Dimensions\n${formData.subcategories.dimensions.content}\n\n`;
       }
       
       // Add materials if available
       if (formData.subcategories?.materials?.content) {
-        markdownContent += `# Materials\n${formData.subcategories.materials.content}\n\n`;
+        markdownContent += `## Materials\n${formData.subcategories.materials.content}\n\n`;
       }
       
       // Add finish and details if available
       if (formData.subcategories?.finish?.content) {
-        markdownContent += `# Finish and Details\n${formData.subcategories.finish.content}\n\n`;
+        markdownContent += `## Finish and Details\n${formData.subcategories.finish.content}\n\n`;
       }
       
       // Add location details if available
       if (formData.subcategories?.locationDetails?.content) {
-        markdownContent += `# Location-Specific Details\n${formData.subcategories.locationDetails.content}\n\n`;
+        markdownContent += `## Location-Specific Details\n${formData.subcategories.locationDetails.content}\n\n`;
       }
       
       // Add timeframe if available
       if (formData.subcategories?.timeframe?.content) {
-        markdownContent += `# Timeframe\n${formData.subcategories.timeframe.content}\n\n`;
+        markdownContent += `## Timeframe\n${formData.subcategories.timeframe.content}\n\n`;
       }
       
       // Add additional work if available
       if (formData.subcategories?.additionalWork?.content) {
-        markdownContent += `# Additional Work\n${formData.subcategories.additionalWork.content}\n\n`;
+        markdownContent += `## Additional Work\n${formData.subcategories.additionalWork.content}\n\n`;
       }
       
       // Add rates if available
       if (formData.subcategories?.rates?.content) {
-        markdownContent += `# Hourly Rates\n${formData.subcategories.rates.content}\n\n`;
+        markdownContent += `## Hourly Rates\n${formData.subcategories.rates.content}\n\n`;
       }
       
       // Add margin if available
       if (formData.subcategories?.margin?.content) {
-        markdownContent += `# Profit Margin\n${formData.subcategories.margin.content}\n\n`;
+        markdownContent += `## Profit Margin\n${formData.subcategories.margin.content}\n\n`;
       }
       
       // Add notes if available
       if (formData.subcategories?.notes?.content) {
-        markdownContent += `# Specific Notes and Terms\n${formData.subcategories.notes.content}\n\n`;
+        markdownContent += `## Specific Notes and Terms\n${formData.subcategories.notes.content}\n\n`;
       }
       
       return markdownContent;
@@ -148,13 +149,14 @@ export function FormSubmitter({
       
       console.log("Sending webhook data:", JSON.stringify(webhookData));
       
-      let webhookResponse = null;
+      // This will hold our response - either from the webhook or our fallback
+      let responseData = null;
       
       // Send data to webhook - using axios for better error handling
       try {
         const response = await axios.post(webhookUrl, webhookData);
         console.log("Webhook response:", response);
-        webhookResponse = response.data;
+        responseData = response.data;
         toast.success("Data sent to webhook successfully");
       } catch (error: any) {
         console.error("Error sending webhook data:", error);
@@ -174,8 +176,8 @@ export function FormSubmitter({
           console.log("Webhook fallback method completed", fallbackResponse);
           toast.success("Data sent to webhook using fallback method");
           
-          // Since no-cors mode doesn't return readable data, use a placeholder success response
-          webhookResponse = { status: "success", message: "Data received by webhook (fallback method)" };
+          // Since no-cors mode doesn't return readable data, we'll create a fallback response here
+          responseData = { status: "success" };
         } catch (fallbackError: any) {
           console.error("Fallback webhook method failed:", fallbackError);
           setWebhookError((fallbackError.message || "Fallback webhook method failed") + 
@@ -183,31 +185,49 @@ export function FormSubmitter({
         }
       }
       
-      // For development we will generate a response based on our data
-      // This simulates the response we'd get from a real API
-      // In production, you'd use the actual webhook response
-      
-      setTimeout(() => {
-        // Use the webhook response if available, otherwise create a mock one
-        const results = webhookResponse || {
-          markdownContent: createMarkdownDescription(),
-          webhookStatus: webhookError ? "failed" : "success"
+      // If we still don't have response data, use the markdown we generated as a fallback
+      if (!responseData) {
+        responseData = {
+          markdownContent: createMarkdownDescription()
         };
-        
-        setEstimationResults(results);
-        setIsLoading(false);
-        nextStep();
-        
-        // Display any webhook errors that occurred
-        if (webhookError) {
-          console.warn("Webhook error occurred but process continued:", webhookError);
-        }
-      }, 2000); // Simulate API call delay
+      }
       
+      // Check if the responseData is a string (sometimes webhooks return stringified JSON)
+      if (typeof responseData === 'string') {
+        try {
+          responseData = JSON.parse(responseData);
+        } catch (e) {
+          // If it's not valid JSON, treat the string as markdown content
+          responseData = { markdownContent: responseData };
+        }
+      }
+      
+      // If the responseData doesn't have markdownContent, add it
+      if (!responseData.markdownContent) {
+        responseData = {
+          ...responseData,
+          markdownContent: createMarkdownDescription()
+        };
+      }
+      
+      // Update the state with our results
+      setEstimationResults(responseData);
+      setIsLoading(false);
+      nextStep();
+      
+      // Display any webhook errors that occurred
+      if (webhookError) {
+        console.warn("Webhook error occurred but process continued:", webhookError);
+      }
     } catch (error: any) {
       console.error("Overall process error:", error);
       toast.error("Failed to generate estimate. Please try again.");
       setIsLoading(false);
+      
+      // Even if we fail, try to show something rather than the error message
+      const fallbackContent = createMarkdownDescription();
+      setEstimationResults({ markdownContent: fallbackContent });
+      nextStep();
     }
   };
 
