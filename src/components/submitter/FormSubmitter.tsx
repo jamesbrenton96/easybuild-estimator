@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { useEstimator } from "@/context/EstimatorContext";
 import axios from "axios";
 import { toast } from "sonner";
@@ -19,8 +19,11 @@ export function FormSubmitter({
   nextStep,
   isMobile,
 }: FormSubmitterProps) {
+  const [webhookError, setWebhookError] = useState<string | null>(null);
+  
   const handleSubmit = async () => {
     setIsLoading(true);
+    setWebhookError(null);
     
     // Extract data for the more readable markdown format
     const correspondenceType = formData.subcategories?.correspondence?.type || "";
@@ -120,12 +123,19 @@ export function FormSubmitter({
       // Create webhook data
       const webhookUrl = "https://hook.us2.make.com/niu1dp65y66kc2r3j56xdcl607sp8fyr";
       
-      // Prepare data for the webhook
+      // Prepare data for the webhook including file details
+      const fileDetails = formData.files ? formData.files.map((file: File) => ({
+        name: file.name,
+        type: file.type,
+        size: file.size,
+        lastModified: file.lastModified
+      })) : [];
+      
       const webhookData = {
         formData: {
           projectType: formData.projectType || "",
           location: formData.location || "",
-          files: formData.files ? formData.files.length : 0,
+          files: fileDetails,
           correspondence: {
             type: fullCorrespondenceType,
             clientName: clientName,
@@ -138,18 +148,22 @@ export function FormSubmitter({
       
       console.log("Sending webhook data:", JSON.stringify(webhookData));
       
+      let webhookResponse = null;
+      
       // Send data to webhook - using axios for better error handling
       try {
         const response = await axios.post(webhookUrl, webhookData);
         console.log("Webhook response:", response);
+        webhookResponse = response.data;
         toast.success("Data sent to webhook successfully");
-      } catch (error) {
+      } catch (error: any) {
         console.error("Error sending webhook data:", error);
+        setWebhookError(error.message || "Error sending data to webhook");
         toast.error("Error sending data to webhook. Using fallback method.");
         
         // Fallback method using fetch with no-cors mode
         try {
-          await fetch(webhookUrl, {
+          const fallbackResponse = await fetch(webhookUrl, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -157,27 +171,41 @@ export function FormSubmitter({
             mode: "no-cors",
             body: JSON.stringify(webhookData),
           });
-          console.log("Webhook fallback method completed");
+          console.log("Webhook fallback method completed", fallbackResponse);
           toast.success("Data sent to webhook using fallback method");
-        } catch (fallbackError) {
+          
+          // Since no-cors mode doesn't return readable data, use a placeholder success response
+          webhookResponse = { status: "success", message: "Data received by webhook (fallback method)" };
+        } catch (fallbackError: any) {
           console.error("Fallback webhook method failed:", fallbackError);
+          setWebhookError((fallbackError.message || "Fallback webhook method failed") + 
+            ". Please check your webhook configuration in Make.com.");
         }
       }
       
-      // For development we will load a mock response
-      // In a real application, this would be an API call to a service that generates the estimate
+      // For development we will generate a response based on our data
+      // This simulates the response we'd get from a real API
+      // In production, you'd use the actual webhook response
       
       setTimeout(() => {
-        setEstimationResults({
-          markdownContent: createMarkdownDescription()
-        });
+        // Use the webhook response if available, otherwise create a mock one
+        const results = webhookResponse || {
+          markdownContent: createMarkdownDescription(),
+          webhookStatus: webhookError ? "failed" : "success"
+        };
         
+        setEstimationResults(results);
         setIsLoading(false);
         nextStep();
+        
+        // Display any webhook errors that occurred
+        if (webhookError) {
+          console.warn("Webhook error occurred but process continued:", webhookError);
+        }
       }, 2000); // Simulate API call delay
       
-    } catch (error) {
-      console.error("Error:", error);
+    } catch (error: any) {
+      console.error("Overall process error:", error);
       toast.error("Failed to generate estimate. Please try again.");
       setIsLoading(false);
     }

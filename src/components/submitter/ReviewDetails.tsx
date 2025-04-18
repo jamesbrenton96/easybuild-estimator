@@ -1,5 +1,6 @@
 
 import React from "react";
+import { FileText, Image, File } from "lucide-react";
 
 interface ReviewDetailsProps {
   formData: any;
@@ -28,6 +29,19 @@ export default function ReviewDetails({ formData }: ReviewDetailsProps) {
   
   // Ensure files array exists
   const files = formData.files || [];
+  
+  // Get file type icon
+  const getFileIcon = (file: File) => {
+    if (file.type === 'application/pdf') {
+      return <FileText className="h-5 w-5 text-red-500" />;
+    }
+    
+    if (file.type === 'image/jpeg' || file.type === 'image/png') {
+      return <Image className="h-5 w-5 text-construction-orange" />;
+    }
+    
+    return <File className="h-5 w-5 text-blue-500" />;
+  };
   
   return (
     <div className="bg-white rounded-lg p-6 mb-6 shadow-md">
@@ -61,7 +75,18 @@ export default function ReviewDetails({ formData }: ReviewDetailsProps) {
         <div>
           <h3 className="text-gray-500 text-sm">Supporting Documents</h3>
           {files.length > 0 ? (
-            <p className="text-gray-700">{files.length} file(s) attached</p>
+            <div className="space-y-2">
+              <p className="text-gray-700">{files.length} file(s) attached</p>
+              <ul className="space-y-1 max-h-32 overflow-y-auto rounded-md bg-gray-50 p-2">
+                {files.map((file: File, index: number) => (
+                  <li key={index} className="flex items-center space-x-2 text-sm text-gray-600">
+                    {getFileIcon(file)}
+                    <span className="truncate">{file.name}</span>
+                    <span className="text-xs text-gray-400">({Math.round(file.size / 1024)} KB)</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
           ) : (
             <p className="text-gray-500">No files attached</p>
           )}
