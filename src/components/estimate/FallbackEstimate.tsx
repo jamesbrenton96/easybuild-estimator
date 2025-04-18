@@ -2,6 +2,7 @@
 import React from "react";
 import { AlertTriangle } from "lucide-react";
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 
 export default function FallbackEstimate({ errorDetails }: { errorDetails?: string }) {
   return (
@@ -29,18 +30,19 @@ export default function FallbackEstimate({ errorDetails }: { errorDetails?: stri
         )}
         
         <div className="flex flex-col sm:flex-row justify-center gap-4 mt-6">
-          <button 
+          <Button 
             onClick={() => window.history.back()}
-            className="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300 text-gray-800 transition-colors"
+            variant="outline"
+            className="px-4 py-2"
           >
             Go Back
-          </button>
-          <button 
+          </Button>
+          <Button 
             onClick={() => window.location.reload()}
-            className="px-4 py-2 rounded bg-construction-orange hover:bg-construction-orange/90 text-white transition-colors"
+            className="px-4 py-2 bg-construction-orange hover:bg-construction-orange/90 text-white"
           >
             Try Again
-          </button>
+          </Button>
         </div>
       </CardContent>
     </Card>
