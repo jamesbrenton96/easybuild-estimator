@@ -1,3 +1,4 @@
+
 import React, { useEffect, useRef, useState } from "react";
 import { useEstimator } from "@/context/EstimatorContext";
 import { motion } from "framer-motion";
@@ -195,6 +196,17 @@ export default function ReviewStep() {
       return null;
     }
     
+    // Log detailed information about what we received
+    console.log("Processing estimation results:", {
+      hasMarkdownContent: !!estimationResults.markdownContent,
+      markdownContentLength: estimationResults.markdownContent?.length || 0,
+      hasWebhookStatus: !!estimationResults.webhookStatus,
+      webhookStatus: estimationResults.webhookStatus || 'unknown',
+      hasStructuredEstimate: !!estimationResults.estimate,
+      hasWebhookResponseData: !!estimationResults.webhookResponseData,
+      hasError: !!estimationResults.error
+    });
+    
     // Check if we have webhook status information
     if (estimationResults.webhookStatus) {
       console.log("Webhook status:", estimationResults.webhookStatus);
@@ -206,17 +218,36 @@ export default function ReviewStep() {
       return <FallbackEstimate errorDetails={estimationResults.error} />;
     }
     
-    // If there's a string in markdownContent and it's not an error message
+    // If the markdownContent looks like a valid estimate (not just input data),
+    // use it directly
     if (estimationResults.markdownContent &&
-        !estimationResults.markdownContent.includes("Sorry, the estimate couldn't be generated")) {
-      console.log("Using webhook markdown content");
+        (estimationResults.markdownContent.includes("Total Project Cost") ||
+         estimationResults.markdownContent.includes("Materials & Cost Breakdown") ||
+         estimationResults.markdownContent.includes("Labour Costs"))) {
+      console.log("Using valid webhook estimate content");
       return <MarkdownEstimate markdownContent={estimationResults.markdownContent} />;
+    }
+    
+    // If there's a webhook response data that looks like a complete estimate, use that instead
+    if (typeof estimationResults.webhookResponseData === 'string' &&
+        (estimationResults.webhookResponseData.includes("Total Project Cost") ||
+         estimationResults.webhookResponseData.includes("Materials & Cost Breakdown"))) {
+      console.log("Using webhook response data as estimate");
+      return <MarkdownEstimate markdownContent={estimationResults.webhookResponseData} />;
     }
     
     // If there's a structured estimate object, use StructuredEstimate
     if (estimationResults.estimate) {
       console.log("Using structured estimate");
       return <StructuredEstimate estimate={estimationResults.estimate} />;
+    }
+    
+    // If there's a string in markdownContent and it's not an error message
+    // but we're not sure if it's a real estimate, we'll still display it
+    if (estimationResults.markdownContent &&
+        !estimationResults.markdownContent.includes("Sorry, the estimate couldn't be generated")) {
+      console.log("Using available markdown content");
+      return <MarkdownEstimate markdownContent={estimationResults.markdownContent} />;
     }
     
     // If the webhook returned some data but not in a format we recognize,
@@ -439,7 +470,7 @@ export default function ReviewStep() {
         
         <TabsContent value="edit">
           <EditableEstimate 
-            initialContent={estimationResults.markdownContent || ""} 
+            initialContent={estimationResults.markdownContent || ""}
             onSave={handleSaveEdits} 
           />
         </TabsContent>

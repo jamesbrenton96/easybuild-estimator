@@ -160,7 +160,7 @@ export function FormSubmitter({
       // Send data to webhook - using axios for better error handling
       try {
         const response = await axios.post(webhookUrl, webhookData, {
-          timeout: 15000 // 15 second timeout
+          timeout: 20000 // 20 second timeout - increased from 15s
         });
         
         console.log("Webhook response:", response);
@@ -169,6 +169,16 @@ export function FormSubmitter({
           responseData = response.data;
           webhookSuccess = true;
           toast.success("Estimate generated successfully");
+          
+          // Log the response structure to debug
+          console.log("Webhook response structure:", {
+            isString: typeof response.data === 'string',
+            isObject: typeof response.data === 'object',
+            hasMarkdownContent: typeof response.data === 'object' && 'markdownContent' in response.data,
+            contentLength: typeof response.data === 'string' ? response.data.length : 
+                          (typeof response.data === 'object' && 'markdownContent' in response.data ? 
+                           (response.data.markdownContent as string).length : 'N/A')
+          });
         } else {
           // Handle empty response
           toast.warning("Received empty response from estimation service. Using input data instead.");
@@ -209,27 +219,34 @@ export function FormSubmitter({
         console.log("Using generated markdown as fallback");
         responseData = {
           markdownContent: baseMarkdownContent,
-          webhookStatus: "fallback"
+          webhookStatus: "fallback",
+          webhookResponseData: null
         };
       }
       
       // Check if the responseData is a string (sometimes webhooks return stringified JSON)
       if (typeof responseData === 'string') {
         try {
-          responseData = JSON.parse(responseData);
+          // Try to parse it as JSON
+          const parsedData = JSON.parse(responseData);
+          console.log("Successfully parsed string response as JSON");
+          responseData = parsedData;
         } catch (e) {
           // If it's not valid JSON, treat the string as markdown content
+          console.log("Response is a string but not valid JSON, treating as markdown");
           if (responseData.includes("Sorry, the estimate couldn't be generated")) {
             // If the response is an error message, use our fallback
             responseData = { 
               markdownContent: baseMarkdownContent,
-              webhookStatus: "error-response"
+              webhookStatus: "error-response",
+              webhookResponseData: responseData // Store the original response too
             };
           } else {
             // Otherwise use the string response as the content
             responseData = { 
               markdownContent: responseData,
-              webhookStatus: "string-response" 
+              webhookStatus: "string-response",
+              webhookResponseData: responseData // Store the original response too
             };
           }
         }
@@ -237,17 +254,37 @@ export function FormSubmitter({
       
       // If the responseData doesn't have markdownContent, add it
       if (!responseData.markdownContent) {
-        responseData = {
-          ...responseData,
-          markdownContent: baseMarkdownContent,
-          webhookStatus: "no-markdown"
-        };
+        console.log("Response doesn't have markdownContent, adding it");
+        
+        // If the response has a "body" field that looks like markdown content
+        if (responseData.body && typeof responseData.body === 'string' && 
+           (responseData.body.includes("# ") || responseData.body.includes("## "))) {
+          console.log("Using 'body' field as markdownContent");
+          responseData = {
+            ...responseData,
+            markdownContent: responseData.body,
+            webhookStatus: "body-content"
+          };
+        } else {
+          // Otherwise use our input as fallback
+          responseData = {
+            ...responseData,
+            markdownContent: baseMarkdownContent,
+            webhookStatus: "no-markdown"
+          };
+        }
       }
       
       // If responseData.markdownContent is just the error message, replace it with our input
       if (responseData.markdownContent.includes("Sorry, the estimate couldn't be generated")) {
+        console.log("markdownContent contains error message, replacing with input data");
         responseData.markdownContent = baseMarkdownContent;
         responseData.webhookStatus = "error-content";
+      }
+      
+      // Store the webhook response in webhookResponseData if it's not already set
+      if (!responseData.webhookResponseData && typeof responseData.markdownContent === 'string') {
+        responseData.webhookResponseData = responseData.markdownContent;
       }
       
       // Update the state with our results
@@ -269,7 +306,8 @@ export function FormSubmitter({
       const fallbackContent = createMarkdownDescription();
       setEstimationResults({ 
         markdownContent: fallbackContent,
-        webhookStatus: "process-error"
+        webhookStatus: "process-error",
+        error: error.message || "Error processing estimate"
       });
       nextStep();
     }

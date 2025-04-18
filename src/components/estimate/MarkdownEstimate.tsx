@@ -42,20 +42,55 @@ export default function MarkdownEstimate({ markdownContent }: MarkdownEstimatePr
     );
   }
 
-  // Check if content has duplicate headers (a common issue when concatenating content)
-  const removeDuplicateHeaders = (content: string) => {
-    const lines = content.split('\n');
-    const uniqueLines: string[] = [];
+  // Process and clean the content
+  const cleanedContent = cleanMarkdown();
+  
+  // Remove duplicate headers and sections
+  const removeDuplicateContent = (content: string) => {
+    // Split content by headers
+    const sections = content.split(/(?=# )/g);
+    
+    // Filter out duplicate sections
+    const uniqueSections: string[] = [];
     const seenHeaders = new Set<string>();
     
+    sections.forEach(section => {
+      // Extract the header (first line) to use as a key
+      const headerMatch = section.match(/^(# [^\n]+)/);
+      const header = headerMatch ? headerMatch[1].trim() : '';
+      
+      // If this is a header section and we haven't seen it before, add it
+      if (header && !seenHeaders.has(header)) {
+        seenHeaders.add(header);
+        uniqueSections.push(section);
+      } 
+      // If it's not a header section (or header is empty), add it anyway
+      else if (!header) {
+        uniqueSections.push(section);
+      }
+    });
+    
+    return uniqueSections.join('');
+  };
+
+  // Apply deep deduplication
+  const deduplicateSubsections = (content: string) => {
+    // First handle main sections
+    let dedupedContent = removeDuplicateContent(content);
+    
+    // Then handle subsections (## headers)
+    const lines = dedupedContent.split('\n');
+    const uniqueLines: string[] = [];
+    const seenSubHeaders = new Set<string>();
+    
     lines.forEach(line => {
-      // Check if line is a header
-      if (line.startsWith('# ') || line.startsWith('## ')) {
-        // If we've seen this header before, skip it
-        if (seenHeaders.has(line.trim())) {
+      // Check if line is a subheader (## Header)
+      if (line.startsWith('## ')) {
+        // If we've seen this subheader before, skip it
+        if (seenSubHeaders.has(line.trim())) {
           return;
         }
-        seenHeaders.add(line.trim());
+        seenSubHeaders.add(line.trim());
       }
       
       // Add the line to our unique lines
@@ -65,14 +100,54 @@ export default function MarkdownEstimate({ markdownContent }: MarkdownEstimatePr
     return uniqueLines.join('\n');
   };
 
-  // Process and clean the content
-  const processedContent = removeDuplicateHeaders(cleanMarkdown());
+  // Process the content to remove duplicates at all levels
+  const processedContent = deduplicateSubsections(cleanedContent);
   
-  // If content starts with "Construction Cost Estimate" multiple times, remove duplicates
-  const dedupedContent = processedContent.replace(
-    /(# Construction Cost Estimate[\s\S]*?)(# Construction Cost Estimate)/g, 
-    "$1"
-  );
+  // Check if the processed content is actually the webhook response
+  const isActualEstimate = 
+    processedContent.includes("Total Estimate") || 
+    processedContent.includes("Total Project Cost") ||
+    processedContent.includes("Materials & Cost Breakdown");
+  
+  // If processed content is just input data and we don't have any actual estimate data,
+  // return a simplified version of just the input data
+  if (!isActualEstimate && processedContent.includes("Project Overview")) {
+    // This is likely just the input data, format it nicer
+    return (
+      <Card className="bg-white rounded-lg overflow-hidden shadow-lg mb-8">
+        <div className="p-5 border-b border-gray-200 bg-gray-50">
+          <h2 className="text-gray-800 font-semibold text-xl">Construction Cost Estimate</h2>
+        </div>
+        <div className="p-6 markdown-content text-gray-800">
+          <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6">
+            <p className="text-yellow-700">
+              <strong>Note:</strong> The estimate service returned your input data only. 
+              This may be due to a connection issue with our estimation service.
+            </p>
+          </div>
+          <ReactMarkdown 
+            className="prose max-w-none 
+              prose-headings:text-construction-orange prose-headings:font-semibold 
+              prose-h1:text-2xl prose-h1:mb-6 prose-h1:border-b prose-h1:border-gray-200 prose-h1:pb-3
+              prose-h2:text-xl prose-h2:mt-6 prose-h2:mb-4 
+              prose-h3:text-lg prose-h3:mt-5 prose-h3:mb-3
+              prose-h4:text-base prose-h4:mt-4 prose-h4:mb-2
+              prose-p:my-3 prose-p:leading-relaxed
+              prose-a:text-blue-600 
+              prose-strong:text-gray-900 prose-strong:font-medium
+              prose-li:my-1 prose-li:ml-2
+              prose-table:border-collapse prose-table:w-full prose-table:my-4 prose-table:table-fixed
+              prose-th:bg-gray-100 prose-th:p-2 prose-th:border prose-th:border-gray-300 prose-th:text-left
+              prose-td:border prose-td:border-gray-300 prose-td:p-2 prose-td:break-words
+              prose-hr:my-6"
+            remarkPlugins={[remarkGfm]}
+          >
+            {processedContent}
+          </ReactMarkdown>
+        </div>
+      </Card>
+    );
+  }
 
   return (
     <Card className="bg-white rounded-lg overflow-hidden shadow-lg mb-8">
@@ -97,7 +172,7 @@ export default function MarkdownEstimate({ markdownContent }: MarkdownEstimatePr
             prose-hr:my-6"
           remarkPlugins={[remarkGfm]}
         >
-          {dedupedContent}
+          {processedContent}
         </ReactMarkdown>
       </div>
     </Card>
