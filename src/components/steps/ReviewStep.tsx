@@ -1,10 +1,9 @@
-
 import React, { useEffect, useRef, useState } from "react";
 import { useEstimator } from "@/context/EstimatorContext";
 import { motion } from "framer-motion";
 import html2pdf from "html2pdf.js";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Pencil, Save, FileText, Share2, Mail, Facebook, Twitter, Linkedin } from "lucide-react";
+import { Pencil, FileText } from "lucide-react";
 import { toast } from "sonner";
 
 // Import components
@@ -26,6 +25,8 @@ export default function ReviewStep() {
   useEffect(() => {
     if (!estimationResults) {
       setStep(1);
+    } else {
+      console.log("Estimation results received:", estimationResults);
     }
   }, [estimationResults, setStep]);
   
@@ -167,43 +168,6 @@ export default function ReviewStep() {
     html2pdf().from(clone).set(opt).save();
   };
 
-  // Determine if we have valid JSON or a string response
-  const processEstimationResults = () => {
-    // If there's no estimationResults, return null
-    if (!estimationResults) return null;
-    
-    // If there's a string in markdownContent, use MarkdownEstimate
-    if (estimationResults.markdownContent) {
-      return <MarkdownEstimate markdownContent={estimationResults.markdownContent} />;
-    }
-    
-    // If there's a structured estimate object, use StructuredEstimate
-    if (estimationResults.estimate) {
-      return <StructuredEstimate estimate={estimationResults.estimate} />;
-    }
-    
-    // If the webhook returned some data but not in a format we recognize,
-    // try to convert it to markdown
-    if (Object.keys(estimationResults).length > 0) {
-      // Create a simple markdown representation of the data
-      const fallbackMarkdown = "# Construction Cost Estimate\n\n" + 
-        Object.entries(estimationResults)
-          .filter(([key]) => key !== 'webhookStatus' && key !== 'status')
-          .map(([key, value]) => {
-            if (typeof value === 'object') {
-              return `## ${key.charAt(0).toUpperCase() + key.slice(1)}\n${JSON.stringify(value, null, 2)}`;
-            }
-            return `## ${key.charAt(0).toUpperCase() + key.slice(1)}\n${value}`;
-          })
-          .join('\n\n');
-      
-      return <MarkdownEstimate markdownContent={fallbackMarkdown} />;
-    }
-    
-    // If there's no valid format, use FallbackEstimate
-    return <FallbackEstimate />;
-  };
-
   const handleSaveEdits = (editedContent: string) => {
     setEstimationResults({
       ...estimationResults,
@@ -222,6 +186,54 @@ export default function ReviewStep() {
     // Save current form data before starting a new estimate
     saveFormData(formData);
     setStep(1);
+  };
+
+  const processEstimationResults = () => {
+    // If there's no estimationResults, return null
+    if (!estimationResults) {
+      console.log("No estimation results available");
+      return null;
+    }
+    
+    // Check if we have webhook status information
+    if (estimationResults.webhookStatus) {
+      console.log("Webhook status:", estimationResults.webhookStatus);
+    }
+    
+    // If there's a string in markdownContent, use MarkdownEstimate
+    if (estimationResults.markdownContent) {
+      console.log("Using markdown content");
+      return <MarkdownEstimate markdownContent={estimationResults.markdownContent} />;
+    }
+    
+    // If there's a structured estimate object, use StructuredEstimate
+    if (estimationResults.estimate) {
+      console.log("Using structured estimate");
+      return <StructuredEstimate estimate={estimationResults.estimate} />;
+    }
+    
+    // If the webhook returned some data but not in a format we recognize,
+    // try to convert it to markdown
+    if (Object.keys(estimationResults).length > 0) {
+      console.log("Creating fallback markdown from estimation results");
+      // Create a simple markdown representation of the data
+      const fallbackMarkdown = "# Construction Cost Estimate\n\n" + 
+        Object.entries(estimationResults)
+          .filter(([key]) => key !== 'webhookStatus' && key !== 'status')
+          .map(([key, value]) => {
+            if (typeof value === 'object') {
+              return `## ${key.charAt(0).toUpperCase() + key.slice(1)}\n${JSON.stringify(value, null, 2)}`;
+            }
+            return `## ${key.charAt(0).toUpperCase() + key.slice(1)}\n${value}`;
+          })
+          .join('\n\n');
+      
+      return <MarkdownEstimate markdownContent={fallbackMarkdown} />;
+    }
+    
+    console.log("Using fallback estimate component");
+    // If there's no valid format, use FallbackEstimate
+    return <FallbackEstimate errorDetails={estimationResults.error || "Unknown error occurred"} />;
   };
 
   return (

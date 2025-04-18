@@ -3,7 +3,7 @@ import React from "react";
 import { AlertTriangle } from "lucide-react";
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
 
-export default function FallbackEstimate() {
+export default function FallbackEstimate({ errorDetails }: { errorDetails?: string }) {
   return (
     <Card className="bg-white rounded-lg overflow-hidden shadow-lg mb-8">
       <CardHeader className="p-5 border-b border-gray-200 bg-gray-50">
@@ -20,6 +20,14 @@ export default function FallbackEstimate() {
           <li>Incomplete project information in your submission</li>
           <li>An issue with file uploads or project details</li>
         </ul>
+        
+        {errorDetails && (
+          <div className="bg-gray-100 p-3 rounded text-left text-sm text-gray-700 mb-4">
+            <p className="font-medium mb-1">Error details:</p>
+            <p>{errorDetails}</p>
+          </div>
+        )}
+        
         <div className="flex flex-col sm:flex-row justify-center gap-4 mt-6">
           <button 
             onClick={() => window.history.back()}

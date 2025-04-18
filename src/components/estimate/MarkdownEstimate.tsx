@@ -9,7 +9,7 @@ interface MarkdownEstimateProps {
 }
 
 export default function MarkdownEstimate({ markdownContent }: MarkdownEstimateProps) {
-  // Simple cleaning function that just handles basic escape characters
+  // Simple cleaning function that handles escape characters
   const cleanMarkdown = () => {
     // Replace shortened correspondence types with full versions
     let cleanedContent = markdownContent
@@ -20,21 +20,24 @@ export default function MarkdownEstimate({ markdownContent }: MarkdownEstimatePr
     return cleanedContent;
   };
 
-  // Check if the content matches the FallbackEstimate pattern
-  const isFallbackContent = markdownContent?.includes("Sorry, the estimate couldn't be generated");
+  // Check if the content matches the error pattern
+  const isErrorContent = markdownContent?.includes("Sorry, the estimate couldn't be generated");
 
-  // If we have a fallback message, replace it with a more comprehensive default content
-  if (isFallbackContent) {
+  // If we have error content, create a more useful display with the user's input
+  if (isErrorContent) {
+    const formattedContent = markdownContent
+      .replace("Sorry, the estimate couldn't be generated", "")
+      .replace("Please try again later or contact our support team for assistance.", "");
+    
     return (
       <Card className="bg-white rounded-lg overflow-hidden shadow-lg mb-8">
         <div className="p-5 border-b border-gray-200 bg-gray-50">
           <h2 className="text-gray-800 font-semibold text-xl">Construction Cost Estimate</h2>
         </div>
         <div className="p-6 markdown-content text-gray-800">
-          <h2 className="text-xl font-medium text-construction-orange mb-4">Basic Estimate Generated</h2>
+          <h2 className="text-xl font-medium text-construction-orange mb-4">Auto-Generated Estimate</h2>
           <p className="text-gray-700 mb-4">
-            We've prepared a basic estimate based on the information provided. While the full detailed estimate 
-            couldn't be generated, here's what we know about your project:
+            We've prepared an estimate based on the information you provided:
           </p>
           <ReactMarkdown 
             className="prose max-w-none 

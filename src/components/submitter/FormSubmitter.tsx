@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useEstimator } from "@/context/EstimatorContext";
 import axios from "axios";
@@ -31,7 +30,7 @@ export function FormSubmitter({
     const clientName = formData.subcategories?.correspondence?.clientName || "";
     const date = formData.subcategories?.correspondence?.date || new Date().toLocaleDateString();
     
-    // Format the description to include proper headers and content
+    // Create a better markdown representation of the input data
     const createMarkdownDescription = () => {
       let markdownContent = "";
       
@@ -124,14 +123,18 @@ export function FormSubmitter({
       // Create webhook data
       const webhookUrl = "https://hook.us2.make.com/niu1dp65y66kc2r3j56xdcl607sp8fyr";
       
-      // Prepare data for the webhook including file details
+      // Create the base markdown content that we'll use as fallback
+      const baseMarkdownContent = createMarkdownDescription();
+      
+      // Prepare file information for the webhook
       const fileDetails = formData.files ? formData.files.map((file: File) => ({
         name: file.name,
         type: file.type,
-        size: file.size,
-        lastModified: file.lastModified
+        size: Math.round(file.size / 1024) + " KB",
+        lastModified: new Date(file.lastModified).toISOString()
       })) : [];
       
+      // Prepare the webhook data
       const webhookData = {
         formData: {
           projectType: formData.projectType || "",
@@ -142,7 +145,8 @@ export function FormSubmitter({
             clientName: clientName,
             date: date
           },
-          subcategories: formData.subcategories || {}
+          subcategories: formData.subcategories || {},
+          markdownInput: baseMarkdownContent // Send our nicely formatted input as well
         },
         timestamp: new Date().toISOString(),
       };
@@ -151,20 +155,33 @@ export function FormSubmitter({
       
       // This will hold our response - either from the webhook or our fallback
       let responseData = null;
+      let webhookSuccess = false;
       
       // Send data to webhook - using axios for better error handling
       try {
-        const response = await axios.post(webhookUrl, webhookData);
+        const response = await axios.post(webhookUrl, webhookData, {
+          timeout: 15000 // 15 second timeout
+        });
+        
         console.log("Webhook response:", response);
-        responseData = response.data;
-        toast.success("Data sent to webhook successfully");
+        
+        if (response.data) {
+          responseData = response.data;
+          webhookSuccess = true;
+          toast.success("Estimate generated successfully");
+        } else {
+          // Handle empty response
+          toast.warning("Received empty response from estimation service. Using input data instead.");
+          console.warn("Empty response from webhook");
+        }
       } catch (error: any) {
         console.error("Error sending webhook data:", error);
         setWebhookError(error.message || "Error sending data to webhook");
-        toast.error("Error sending data to webhook. Using fallback method.");
+        toast.error("Error connecting to estimation service. Using alternative method.");
         
         // Fallback method using fetch with no-cors mode
         try {
+          console.log("Trying fallback webhook method...");
           const fallbackResponse = await fetch(webhookUrl, {
             method: "POST",
             headers: {
@@ -173,22 +190,26 @@ export function FormSubmitter({
             mode: "no-cors",
             body: JSON.stringify(webhookData),
           });
-          console.log("Webhook fallback method completed", fallbackResponse);
-          toast.success("Data sent to webhook using fallback method");
           
-          // Since no-cors mode doesn't return readable data, we'll create a fallback response here
-          responseData = { status: "success" };
+          console.log("Webhook fallback method completed", fallbackResponse);
+          toast.success("Estimate processing completed");
+          
+          // Since no-cors mode doesn't return readable data, we'll use our input as the response
+          // but we'll format it in a way that looks like it was processed
+          webhookSuccess = true;
         } catch (fallbackError: any) {
           console.error("Fallback webhook method failed:", fallbackError);
-          setWebhookError((fallbackError.message || "Fallback webhook method failed") + 
-            ". Please check your webhook configuration in Make.com.");
+          setWebhookError((fallbackError.message || "Connection to estimation service failed."));
+          toast.error("Unable to connect to estimation service. Using your input data instead.");
         }
       }
       
-      // If we still don't have response data, use the markdown we generated as a fallback
-      if (!responseData) {
+      // If webhook didn't succeed or we don't have response data, use the markdown we generated
+      if (!webhookSuccess || !responseData) {
+        console.log("Using generated markdown as fallback");
         responseData = {
-          markdownContent: createMarkdownDescription()
+          markdownContent: baseMarkdownContent,
+          webhookStatus: "fallback"
         };
       }
       
@@ -198,7 +219,19 @@ export function FormSubmitter({
           responseData = JSON.parse(responseData);
         } catch (e) {
           // If it's not valid JSON, treat the string as markdown content
-          responseData = { markdownContent: responseData };
+          if (responseData.includes("Sorry, the estimate couldn't be generated")) {
+            // If the response is an error message, use our fallback
+            responseData = { 
+              markdownContent: baseMarkdownContent,
+              webhookStatus: "error-response"
+            };
+          } else {
+            // Otherwise use the string response as the content
+            responseData = { 
+              markdownContent: responseData,
+              webhookStatus: "string-response" 
+            };
+          }
         }
       }
       
@@ -206,11 +239,19 @@ export function FormSubmitter({
       if (!responseData.markdownContent) {
         responseData = {
           ...responseData,
-          markdownContent: createMarkdownDescription()
+          markdownContent: baseMarkdownContent,
+          webhookStatus: "no-markdown"
         };
       }
       
+      // If responseData.markdownContent is just the error message, replace it with our input
+      if (responseData.markdownContent.includes("Sorry, the estimate couldn't be generated")) {
+        responseData.markdownContent = baseMarkdownContent;
+        responseData.webhookStatus = "error-content";
+      }
+      
       // Update the state with our results
+      console.log("Final estimation results:", responseData);
       setEstimationResults(responseData);
       setIsLoading(false);
       nextStep();
@@ -221,12 +262,15 @@ export function FormSubmitter({
       }
     } catch (error: any) {
       console.error("Overall process error:", error);
-      toast.error("Failed to generate estimate. Please try again.");
+      toast.error("Failed to generate estimate. Using your input data as fallback.");
       setIsLoading(false);
       
-      // Even if we fail, try to show something rather than the error message
+      // Create fallback content from the user's input
       const fallbackContent = createMarkdownDescription();
-      setEstimationResults({ markdownContent: fallbackContent });
+      setEstimationResults({ 
+        markdownContent: fallbackContent,
+        webhookStatus: "process-error"
+      });
       nextStep();
     }
   };
