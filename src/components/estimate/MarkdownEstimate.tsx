@@ -75,6 +75,36 @@ export default function MarkdownEstimate({ markdownContent, rawResponse }: Markd
   // Check if we have a real estimate or just input data
   const hasRealEstimate = isRealEstimate(cleanedContent);
 
+  // Function to check if content is likely just input data
+  const checkIfJustInputData = (content: string) => {
+    if (!content) return false;
+    
+    const inputDataMarkers = [
+      "## Correspondence Details",
+      "## Project Name",
+      "## Project Overview",
+      "## Dimensions",
+      "## Materials",
+      "## Finish and Details",
+      "## Location-Specific Details",
+      "## Timeframe"
+    ];
+    
+    // Count how many input data markers exist in the content
+    let markerCount = 0;
+    inputDataMarkers.forEach(marker => {
+      if (content.includes(marker)) {
+        markerCount++;
+      }
+    });
+    
+    // If it has several input data markers and doesn't have estimate indicators
+    return markerCount >= 3 && !hasRealEstimate;
+  };
+  
+  // Check if this is just input data
+  const isJustInputData = checkIfJustInputData(cleanedContent);
+
   // If it's a real estimate
   if (hasRealEstimate) {
     return (

@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { useEstimator } from "@/context/EstimatorContext";
 import { toast } from "sonner";
 
@@ -18,66 +18,134 @@ export function FormSubmitter({
   nextStep,
   isMobile,
 }: FormSubmitterProps) {
+  const [webhookError, setWebhookError] = useState<string | null>(null);
   
   const handleSubmit = async () => {
     setIsLoading(true);
+    setWebhookError(null);
     
     try {
-      // Extract data for the more readable markdown format
+      // Extract data for the estimate
       const correspondenceType = formData.subcategories?.correspondence?.type || "";
       const fullCorrespondenceType = getFullCorrespondenceType(correspondenceType);
       const clientName = formData.subcategories?.correspondence?.clientName || "";
       const date = formData.subcategories?.correspondence?.date || new Date().toLocaleDateString();
       
-      // Create markdown representation of the input data
+      // Create a formatted object to send to the webhook
+      const webhookData = {
+        clientInfo: {
+          name: clientName,
+          date: date,
+          correspondenceType: fullCorrespondenceType,
+        },
+        projectDetails: {
+          name: formData.subcategories?.projectName?.content || "Custom building project",
+          overview: formData.subcategories?.overview?.content || "",
+          type: formData.projectType || "",
+          dimensions: formData.subcategories?.dimensions?.content || "",
+          materials: formData.subcategories?.materials?.content || "",
+          timeframe: formData.subcategories?.timeframe?.content || "",
+          additionalWork: formData.subcategories?.additionalWork?.content || "",
+          location: formData.subcategories?.locationDetails?.content || "",
+          notes: formData.subcategories?.notes?.content || "",
+        },
+      };
+      
+      console.log("Sending webhook data:", webhookData);
+      
+      // Send data to the webhook
+      const webhookUrl = "https://hook.us2.make.com/niu1dp65y66kc2r3j56xdcl607sp8fyr";
+      
+      const webhookResponse = await fetch(webhookUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(webhookData),
+      });
+      
+      if (!webhookResponse.ok) {
+        throw new Error(`Webhook error: ${webhookResponse.status} ${webhookResponse.statusText}`);
+      }
+      
+      console.log("Webhook response status:", webhookResponse.status);
+      
+      // Try to get JSON response
+      let webhookResponseData;
+      try {
+        webhookResponseData = await webhookResponse.json();
+        console.log("Webhook response data:", webhookResponseData);
+      } catch (error) {
+        console.log("Webhook didn't return JSON. Using text response instead.");
+        const textResponse = await webhookResponse.text();
+        console.log("Webhook text response:", textResponse);
+        webhookResponseData = { textContent: textResponse };
+      }
+      
+      // Generate local estimate as fallback
       const markdownContent = createMarkdownDescription();
-
-      // Create a structured estimate object
-      const structuredEstimate = {
-        projectOverview: formData.subcategories?.overview?.content || "Custom building project",
-        scopeOfWork: formData.subcategories?.projectName?.content || "",
-        dimensions: formData.subcategories?.dimensions?.content || "",
-        timeline: formData.subcategories?.timeframe?.content || "Not specified",
-        totalCost: calculateTotalCost(),
-        labor: {
-          cost: calculateLaborCost(),
-          hours: estimateHours()
-        },
-        materials: {
-          cost: calculateMaterialsCost(),
-          breakdown: createMaterialsBreakdown()
-        },
-        materialDetails: formData.subcategories?.materials?.content || "",
-        notes: formData.subcategories?.notes?.content || ""
-      };
+      const structuredEstimate = createStructuredEstimate();
       
-      // Set the results
-      const estimationResults = {
-        markdownContent: markdownContent,
-        estimate: structuredEstimate,
-        estimateGenerated: true
-      };
-      
-      console.log("Generated estimate:", estimationResults);
-      
-      setEstimationResults(estimationResults);
-      setIsLoading(false);
-      nextStep();
-      toast.success("Estimate generated successfully");
+      // Check if webhook provided valid data
+      if (webhookResponseData && 
+          (webhookResponseData.estimate || 
+           webhookResponseData.textContent || 
+           webhookResponseData.markdownContent)) {
+        
+        console.log("Using webhook response for estimate");
+        
+        // Set the results from the webhook
+        const estimationResults = {
+          markdownContent: webhookResponseData.markdownContent || 
+                          webhookResponseData.textContent || 
+                          markdownContent,
+          estimate: webhookResponseData.estimate || structuredEstimate,
+          webhookResponseData,
+          estimateGenerated: true
+        };
+        
+        setEstimationResults(estimationResults);
+        setIsLoading(false);
+        nextStep();
+        toast.success("Estimate generated successfully");
+      } else {
+        console.log("Webhook response doesn't contain valid data. Using local fallback.");
+        // Use fallback data
+        const estimationResults = {
+          markdownContent,
+          estimate: structuredEstimate,
+          webhookResponseData, // Include for debugging
+          fallbackContent: markdownContent,
+          estimateGenerated: true,
+          debugInfo: "Used local fallback due to invalid webhook response"
+        };
+        
+        setEstimationResults(estimationResults);
+        setIsLoading(false);
+        nextStep();
+        toast.success("Estimate generated (using local calculator)");
+      }
       
     } catch (error: any) {
       console.error("Error generating estimate:", error);
+      setWebhookError(error.message);
       
       // Create fallback content from the user's input
       const fallbackContent = createMarkdownDescription();
+      const structuredEstimate = createStructuredEstimate();
+      
       setEstimationResults({ 
         markdownContent: fallbackContent,
-        error: error.message || "Error processing estimate"
+        estimate: structuredEstimate,
+        error: error.message || "Error processing estimate",
+        fallbackContent,
+        estimateGenerated: true,
+        debugInfo: `Used fallback due to error: ${error.message}`
       });
       
       setIsLoading(false);
       nextStep();
-      toast.error("There was an error generating your estimate");
+      toast.warning("Using local estimate due to connection issues");
     }
   };
   
@@ -99,6 +167,27 @@ export function FormSubmitter({
       default:
         return type || "Estimate";
     }
+  }
+  
+  // Helper function to create structured estimate
+  function createStructuredEstimate() {
+    return {
+      projectOverview: formData.subcategories?.overview?.content || "Custom building project",
+      scopeOfWork: formData.subcategories?.projectName?.content || "",
+      dimensions: formData.subcategories?.dimensions?.content || "",
+      timeline: formData.subcategories?.timeframe?.content || "Not specified",
+      totalCost: calculateTotalCost(),
+      labor: {
+        cost: calculateLaborCost(),
+        hours: estimateHours()
+      },
+      materials: {
+        cost: calculateMaterialsCost(),
+        breakdown: createMaterialsBreakdown()
+      },
+      materialDetails: formData.subcategories?.materials?.content || "",
+      notes: formData.subcategories?.notes?.content || ""
+    };
   }
   
   // Helper function to calculate total cost
@@ -348,11 +437,18 @@ export function FormSubmitter({
   }
 
   return (
-    <button
-      onClick={handleSubmit}
-      className={`btn-next ${isMobile ? 'order-1' : ''}`}
-    >
-      Generate Estimate
-    </button>
+    <>
+      {webhookError && (
+        <div className="text-white/80 text-sm mb-4 p-3 bg-red-500/20 rounded border border-red-400/30">
+          <strong>Connection Error:</strong> The estimate service couldn't be reached. Local fallback used.
+        </div>
+      )}
+      <button
+        onClick={handleSubmit}
+        className={`btn-next ${isMobile ? 'order-1' : ''}`}
+      >
+        Generate Estimate
+      </button>
+    </>
   );
 }
