@@ -24,13 +24,27 @@ export function useWebhookEstimate() {
 
       try {
         // Try JSON first
-        return await response.json();
-      } catch {
-        // Fallback, maybe it's just text
-        const textContent = await response.text();
-        return { textContent };
+        const jsonData = await response.json();
+        console.log("Webhook JSON response:", jsonData);
+        return jsonData;
+      } catch (jsonError) {
+        // If not JSON, try as text
+        try {
+          const textContent = await response.text();
+          console.log("Webhook text response:", textContent);
+          
+          // Check if it looks like markdown
+          if (textContent.includes('# ') || textContent.includes('\n## ')) {
+            return { markdownContent: textContent };
+          }
+          
+          return { textContent };
+        } catch (textError) {
+          throw new Error("Failed to parse response as JSON or text");
+        }
       }
     } catch (error: any) {
+      console.error("Webhook error:", error);
       throw new Error(error?.message || "Unknown error with estimate generation.");
     }
   }, []);

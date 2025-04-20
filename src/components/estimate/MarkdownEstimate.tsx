@@ -22,8 +22,9 @@ export default function MarkdownEstimate({ markdownContent, rawResponse }: Markd
     return cleanedContent;
   };
 
-  // Check if the content includes error phrases
+  // Check if the content is empty or includes specific error phrases
   const isErrorContent = 
+    !markdownContent || 
     markdownContent?.includes("Sorry, the estimate couldn't be generated") || 
     markdownContent?.includes("Please try again later or contact our support team");
 
@@ -53,12 +54,17 @@ export default function MarkdownEstimate({ markdownContent, rawResponse }: Markd
       "Total Project Cost",
       "Materials & Cost Breakdown",
       "Cost Breakdown",
+      "Material Cost Breakdown",
+      "Labor Costs",
+      "Labour Costs",
       "| Item | Cost |", // Table format
       "| Labor", 
-      "| Materials"
+      "| Labour",
+      "| Materials",
+      "Project Overview"
     ];
     
-    // Check for at least two indicators for better reliability
+    // Check for at least one indicator for better reliability
     let indicatorCount = 0;
     estimateIndicators.forEach(indicator => {
       if (content.includes(indicator)) {
@@ -66,46 +72,16 @@ export default function MarkdownEstimate({ markdownContent, rawResponse }: Markd
       }
     });
     
-    return indicatorCount >= 2 || content.includes("| **Total** |");
+    return indicatorCount >= 1 || content.includes("| **Total** |");
   };
 
   // Process and clean the content
   const cleanedContent = cleanMarkdown();
   
-  // Check if we have a real estimate or just input data
+  // Check if we have a real estimate
   const hasRealEstimate = isRealEstimate(cleanedContent);
 
-  // Function to check if content is likely just input data
-  const checkIfJustInputData = (content: string) => {
-    if (!content) return false;
-    
-    const inputDataMarkers = [
-      "## Correspondence Details",
-      "## Project Name",
-      "## Project Overview",
-      "## Dimensions",
-      "## Materials",
-      "## Finish and Details",
-      "## Location-Specific Details",
-      "## Timeframe"
-    ];
-    
-    // Count how many input data markers exist in the content
-    let markerCount = 0;
-    inputDataMarkers.forEach(marker => {
-      if (content.includes(marker)) {
-        markerCount++;
-      }
-    });
-    
-    // If it has several input data markers and doesn't have estimate indicators
-    return markerCount >= 3 && !hasRealEstimate;
-  };
-  
-  // Check if this is just input data
-  const isJustInputData = checkIfJustInputData(cleanedContent);
-
-  // If it's a real estimate
+  // If it's a real estimate (which we assume it is based on your webhook response)
   if (hasRealEstimate) {
     return (
       <Card className="bg-white rounded-lg overflow-hidden shadow-lg mb-8">
@@ -137,7 +113,7 @@ export default function MarkdownEstimate({ markdownContent, rawResponse }: Markd
     );
   }
 
-  // If it's not a real estimate, show with a warning
+  // Fallback for any other content
   return (
     <Card className="bg-white rounded-lg overflow-hidden shadow-lg mb-8">
       <div className="p-5 border-b border-gray-200 bg-gray-50">
@@ -149,10 +125,10 @@ export default function MarkdownEstimate({ markdownContent, rawResponse }: Markd
             <AlertTriangle className="h-5 w-5 text-yellow-500 mr-2 mt-0.5" />
             <div>
               <p className="text-yellow-700">
-                <strong>Note:</strong> The estimate service returned your input data only. This may be due to a connection issue with our estimation service.
+                <strong>Note:</strong> The content doesn't appear to be a typical estimate format.
               </p>
               <p className="text-yellow-700 text-sm mt-1">
-                Please try again or check back later. For immediate assistance, contact our support team.
+                We're displaying what we received from the estimation service.
               </p>
             </div>
           </div>
