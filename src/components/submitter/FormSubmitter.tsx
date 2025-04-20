@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useEstimator } from "@/context/EstimatorContext";
 import axios from "axios";
@@ -228,203 +227,42 @@ export function FormSubmitter({
         }
       }
       
-      // If webhook succeeded but we don't have valid response data, use the real response from Make.com
-      if (!responseData || !webhookSuccess) {
-        console.log("Using the real response data from Make.com");
-        
-        // For production - always use the received textLong value from Make.com
-        const makeDotComResponse = `# Planter Box Construction Cost Estimate
-
-Client Name: Not provided
-Project Address: Auckland, New Zealand
-Date: Not provided
-
-## 1. Project Overview
-
-This estimate covers the construction of an L-shaped planter box made from 200mm x 75mm hardwood sleepers, positioned against an existing fence line in a small townhouse backyard of approximately 25 square meters. The planter box will be 800mm high from ground level with a soil depth of 600mm, creating an L-shape measuring 3.5m long by 2.5m wide.
-
-## 2. Scope of Work
-
-- Construction of an L-shaped planter box using 200mm x 75mm hardwood sleepers
-- Installation of backing timber against the fence to prevent soil contact with fence
-- Securing sleepers with appropriate fixings and hardware
-- Creating a neat appearance with staggered joints
-- All materials to be carried through the house and down a long driveway to access the backyard
-
-## 3. Materials & Cost Breakdown
-
-| Item | Quantity | Unit Price (NZD) | Total (NZD) | Source |
-|------|----------|------------------|-------------|--------|
-| Hardwood Sleepers (200mm x 75mm x 2.4m) | 12 | $69.98 | $839.76 | Bunnings NZ |
-| Stainless Steel Batten Screws (14g x 100mm, 50pk) | 2 | $39.98 | $79.96 | Bunnings NZ |
-| H3.2 Treated Pine (150mm x 25mm x 1.8m) for fence backing | 8 | $14.98 | $119.84 | Mitre 10 NZ |
-| Stainless Steel Angle Brackets (75mm) | 20 | $4.55 | $91.00 | Bunnings NZ |
-| Long Drill Bit (6mm x 300mm) | 1 | $24.98 | $24.98 | Mitre 10 NZ |
-| Circular Saw Blade (184mm) | 1 | $49.98 | $49.98 | Bunnings NZ |
-| **Materials Subtotal** | | | **$1,205.52** | |
-| **Materials + 15% GST** | | | **$1,386.35** | |
-| **Materials + 18% Builder's Margin** | | | **$1,635.89** | |
-
-## 4. Labor Costs
-
-| Task | Hours | Rate (NZD/hr) | Total (NZD) |
-|------|-------|---------------|-------------|
-| Material transport to backyard | 2.5 | $55.00 | $137.50 |
-| Preparation and layout | 1 | $55.00 | $55.00 |
-| Cutting sleepers to size | 2 | $55.00 | $110.00 |
-| Assembly of planter box | 6 | $55.00 | $330.00 |
-| Installation of fence backing | 2 | $55.00 | $110.00 |
-| Final adjustments and cleanup | 1 | $55.00 | $55.00 |
-| **Labor Subtotal** | **14.5** | | **$797.50** |
-| **Labor + 15% GST** | | | **$917.13** |
-
-## 5. Total Estimate
-
-| Description | Amount (NZD) |
-|-------------|--------------|
-| Materials (including GST and Builder's Margin) | $1,635.89 |
-| Labor (including GST) | $917.13 |
-| **Total Project Cost** | **$2,553.02** |
-
-## 6. Material Details & Calculations
-
-- **Hardwood Sleepers**: For an 800mm high planter box, we need 4 rows of sleepers (200mm each). With a total perimeter of 7.2m and standard sleeper length of 2.4m, we need 12 sleepers (7.2m × 4 rows ÷ 2.4m = 12 sleepers).
-- **Fence Backing**: Using H3.2 treated pine boards to protect the fence from soil contact.
-- **Fixings**: Stainless steel screws for joining sleepers and angle brackets for securing backing timber to fence.
-- **Tools**: Long drill bit for pilot holes and circular saw blade for precise cutting.
-
-## 7. Project Timeline
-
-- Estimated project duration: 2-3 days depending on weather conditions
-- Material procurement: 1-2 days
-- Construction time: 1-2 days
-
-## 8. Notes & Terms
-
-- This estimate is based on current market prices in Auckland, New Zealand, and may vary due to changes in material costs or unforeseen site conditions.
-- Additional costs for soil, drainage materials, or plants are not included in this estimate.
-- The estimate accounts for the challenging access through the house and down a long driveway.
-- Recommended payment terms: 50% deposit upfront, 50% upon completion.
-- Any changes or additions to the scope of work will need to be discussed and agreed upon in writing before proceeding.
-- The staggered joints in the sleepers will enhance structural integrity while providing an aesthetically pleasing finish.
-- Waste disposal costs are included in the labor estimate.
-- All wood components in contact with soil will be suitably treated to prevent rot.
-
-Thank you for considering this estimate for your planter box project. Please feel free to reach out if you have any questions or would like to discuss any aspects further.`;
-        
-        responseData = {
-          markdownContent: makeDotComResponse,
-          webhookStatus: "direct-response-from-make",
-          estimateGenerated: true,
-          textLong: makeDotComResponse // Add the textLong field to match Make.com's response format
-        };
-        
-        toast.success("Estimate successfully retrieved");
+      // --------- MARK: Make.com response handling section ----------
+      // If we have a stringified JSON as a response (Make.com might do this)
+      if (typeof responseData === "string") {
+        try {
+          responseData = JSON.parse(responseData);
+        } catch (e) {
+          // fallback: treat as markdown
+          responseData = { markdownContent: responseData };
+        }
       }
-      
-      // Handle different response formats from Make.com
-      if (responseData && typeof responseData === 'object' && responseData.textLong) {
-        console.log("Using textLong field from Make.com response");
-        // If we have a Make.com response with textLong, use that as the markdown content
+      // Now always use textLong if it exists
+      if (responseData && typeof responseData === "object" && responseData.textLong) {
         responseData = {
           ...responseData,
           markdownContent: responseData.textLong,
-          webhookStatus: "textLong-field",
+          webhookStatus: "textLong-used",
           estimateGenerated: true
         };
+      } else if (!responseData?.markdownContent || responseData.markdownContent.trim().length < 10) {
+        // If no valid markdownContent, fallback to user's original markdown input
+        responseData = {
+          ...responseData,
+          markdownContent: baseMarkdownContent,
+          webhookStatus: "no-valid-markdown-content"
+        };
       }
-      
-      // Check if the responseData is a string (sometimes webhooks return stringified JSON)
-      if (typeof responseData === 'string') {
-        try {
-          // Try to parse it as JSON
-          const parsedData = JSON.parse(responseData);
-          console.log("Successfully parsed string response as JSON");
-          responseData = parsedData;
-        } catch (e) {
-          // If it's not valid JSON, treat the string as markdown content
-          console.log("Response is a string but not valid JSON, treating as markdown");
-          if (responseData.includes("Sorry, the estimate couldn't be generated")) {
-            // If the response is an error message, use our fallback
-            responseData = { 
-              markdownContent: baseMarkdownContent,
-              webhookStatus: "error-response",
-              webhookResponseData: responseData // Store the original response too
-            };
-          } else {
-            // Otherwise use the string response as the content
-            responseData = { 
-              markdownContent: responseData,
-              webhookStatus: "string-response",
-              estimateGenerated: true // Mark as properly generated
-            };
-          }
-        }
-      }
-      
-      // If the responseData doesn't have markdownContent, add it
-      if (!responseData.markdownContent) {
-        console.log("Response doesn't have markdownContent, adding it");
-        
-        // If the response has a "body" field that looks like markdown content
-        if (responseData.body && typeof responseData.body === 'string' && 
-           (responseData.body.includes("# ") || responseData.body.includes("## "))) {
-          console.log("Using 'body' field as markdownContent");
-          responseData = {
-            ...responseData,
-            markdownContent: responseData.body,
-            webhookStatus: "body-content",
-            estimateGenerated: true
-          };
-        } else if (responseData.textLong && typeof responseData.textLong === 'string' &&
-                  (responseData.textLong.includes("# ") || responseData.textLong.includes("## "))) {
-          // If Make.com uses textLong field for the response
-          console.log("Using 'textLong' field as markdownContent");
-          responseData = {
-            ...responseData,
-            markdownContent: responseData.textLong,
-            webhookStatus: "textLong-field",
-            estimateGenerated: true
-          };
-        } else {
-          // Otherwise use our input as fallback
-          responseData = {
-            ...responseData,
-            markdownContent: baseMarkdownContent,
-            webhookStatus: "no-markdown"
-          };
-        }
-      }
-      
-      // Store the webhook response in webhookResponseData if it's not already set
-      if (!responseData.webhookResponseData && typeof responseData.markdownContent === 'string') {
-        responseData.webhookResponseData = responseData.markdownContent;
-      }
-      
-      // If markdownContent looks like an estimate with a cost table, mark it as generated
-      if (typeof responseData.markdownContent === 'string' && 
-          (responseData.markdownContent.includes("Total Project Cost") || 
-           responseData.markdownContent.includes("Materials & Cost Breakdown") ||
-           responseData.markdownContent.includes("Labor Costs") ||
-           responseData.markdownContent.includes("Labour Costs"))) {
-        responseData.estimateGenerated = true;
-      }
-      
-      // Update the state with our results
-      console.log("Final estimation results:", responseData);
+      // ---- END: always use Make.com textLong if available for estimate rendering ----
+
       setEstimationResults(responseData);
       setIsLoading(false);
       nextStep();
-      
-      // Display any webhook errors that occurred
+
       if (webhookError) {
         console.warn("Webhook error occurred but process continued:", webhookError);
       }
     } catch (error: any) {
-      console.error("Overall process error:", error);
-      toast.error("Failed to generate estimate. Using your input data as fallback.");
-      setIsLoading(false);
-      
       // Create fallback content from the user's input
       const fallbackContent = createMarkdownDescription();
       setEstimationResults({ 

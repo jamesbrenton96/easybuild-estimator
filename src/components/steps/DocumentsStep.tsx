@@ -1,203 +1,90 @@
-import React, { useState } from "react";
+
+import React from "react";
 import { useEstimator } from "@/context/EstimatorContext";
-import { motion } from "framer-motion";
-import { Upload, X, FileText, Image } from "lucide-react";
-import { toast } from "sonner";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { Card, CardContent } from "@/components/ui/card";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { File, Image } from "lucide-react";
 
 export default function DocumentsStep() {
-  const { formData, updateFormData, nextStep, prevStep } = useEstimator();
-  const [dragActive, setDragActive] = useState(false);
-  
+  const { formData, setFormData, prevStep, nextStep } = useEstimator();
+  const isMobile = useIsMobile();
+
+  // Remove empty files on mount or field change
   React.useEffect(() => {
-    if (formData.files === undefined || formData.files === null) {
-      updateFormData({ files: [] });
+    if (formData.files && Array.isArray(formData.files)) {
+      const cleanedFiles = formData.files.filter(
+        file => file && file.name && file.size > 0
+      );
+      if (cleanedFiles.length !== formData.files.length) {
+        setFormData({ ...formData, files: cleanedFiles });
+      }
     }
-  }, [formData.files, updateFormData]);
-  
-  const handleDrag = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    
-    if (e.type === "dragenter" || e.type === "dragover") {
-      setDragActive(true);
-    } else if (e.type === "dragleave") {
-      setDragActive(false);
-    }
-  };
-  
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setDragActive(false);
-    
-    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-      handleFiles(e.dataTransfer.files);
-    }
-  };
-  
+  }, [formData.files, setFormData]); // Only runs when files change
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      handleFiles(e.target.files);
-    }
-  };
-  
-  const handleFiles = (files: FileList) => {
-    const newFiles = Array.from(files);
-    const pdfFiles = newFiles.filter(file => file.type === 'application/pdf');
-    const imageFiles = newFiles.filter(file => 
-      file.type === 'image/jpeg' || 
-      file.type === 'image/png'
-    );
-    
-    const currentFiles = formData.files || [];
-    
-    const existingPdfFiles = currentFiles.filter(file => 
-      file.type === 'application/pdf'
-    );
-    
-    if (pdfFiles.length > 1 || (existingPdfFiles.length > 0 && pdfFiles.length > 0)) {
-      toast.error("Only one PDF file is allowed", {
-        description: "Please remove existing PDF before uploading a new one."
-      });
-      return;
-    }
-    
-    if (newFiles.some(file => 
-      !['application/pdf', 'image/jpeg', 'image/png'].includes(file.type)
-    )) {
-      toast.error("Invalid file type", {
-        description: "Only PDF, JPEG, and PNG files are allowed."
-      });
-      return;
-    }
-    
-    const existingNonPdfFiles = currentFiles.filter(file => 
-      file.type !== 'application/pdf'
-    );
-    
-    updateFormData({ 
-      files: [...existingNonPdfFiles, ...imageFiles, ...pdfFiles] 
+    const files = Array.from(e.target.files || []);
+    // Filter blank/empty files
+    const cleanedFiles = files.filter(file => file && file.name && file.size > 0);
+    setFormData({
+      ...formData,
+      files: cleanedFiles
     });
   };
-  
-  const removeFile = (index: number) => {
-    if (!formData.files) return;
-    
-    const updatedFiles = [...formData.files];
-    updatedFiles.splice(index, 1);
-    updateFormData({ files: updatedFiles });
-  };
-  
-  const getFileIcon = (file: File) => {
-    if (file.type === 'application/pdf') {
-      return <FileText className="h-5 w-5 text-red-500" />;
-    }
-    
-    if (file.type === 'image/jpeg' || file.type === 'image/png') {
-      return <Image className="h-5 w-5 text-construction-orange" />;
-    }
-    
-    return <FileText className="h-5 w-5 text-construction-orange" />;
-  };
 
-  const handleNextStep = () => {
-    const files = formData.files || [];
-    
-    if (files.length === 0) {
-      toast.error("Please upload at least one document", {
-        description: "At least one file (PDF or image) is required to proceed."
-      });
-      return;
-    }
-    
-    nextStep();
-  };
-
-  const files = formData.files || [];
+  const files = (formData.files && Array.isArray(formData.files))
+    ? formData.files.filter(f => f && f.name && f.size > 0)
+    : [];
 
   return (
-    <motion.div 
-      className="step-container"
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4 }}
-    >
+    <div className="step-container">
       <div className="text-center mb-8">
-        <h1 className="text-2xl sm:text-3xl font-bold text-white mb-3">Upload Documents</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold text-white mb-3">Attach Documents</h1>
         <p className="text-white/80 max-w-2xl mx-auto">
-          Upload supporting documents for your project. You may include one optional PDF document and multiple images (JPEG, PNG).
+          Please add only relevant documents for your project. Accepted formats are PDF, images, etc.
         </p>
       </div>
-      
       <div className="max-w-2xl mx-auto">
-        <div 
-          className={`relative border-2 border-dashed rounded-lg p-6 transition-all ${
-            dragActive ? "border-construction-orange bg-white/10" : "border-white/30"
-          }`}
-          onDragEnter={handleDrag}
-          onDragOver={handleDrag}
-          onDragLeave={handleDrag}
-          onDrop={handleDrop}
-        >
-          <input
-            type="file"
-            id="file-upload"
-            multiple
-            onChange={handleFileChange}
-            className="hidden"
-            accept=".pdf,.jpg,.jpeg,.png"
-          />
-          
-          <label htmlFor="file-upload" className="flex flex-col items-center justify-center cursor-pointer py-6">
-            <motion.div 
-              animate={{ y: dragActive ? -5 : 0 }}
-              transition={{ duration: 0.2 }}
-              className="mb-3 bg-white/10 p-3 rounded-full"
-            >
-              <Upload className="h-6 w-6 text-construction-orange" />
-            </motion.div>
-            <p className="text-white font-medium">Drag and drop files here, or click to browse</p>
-            <p className="text-white/60 text-sm mt-1">Optional PDF file (maximum one) and JPEG/PNG images</p>
-          </label>
-        </div>
-        
-        {files.length > 0 && (
-          <div className="mt-6">
-            <h3 className="text-white font-medium mb-3">Uploaded Files ({files.length})</h3>
-            <ul className="space-y-2 max-h-60 overflow-y-auto rounded-md bg-white/5 p-2">
-              {files.map((file, index) => (
-                <li key={index} className="flex items-center justify-between py-2 px-3 rounded-md bg-white/5">
-                  <div className="flex items-center space-x-2 overflow-hidden">
-                    {getFileIcon(file)}
-                    <span className="text-white text-sm truncate">{file.name}</span>
-                  </div>
-                  <button 
-                    onClick={() => removeFile(index)}
-                    className="text-white/60 hover:text-white transition-colors"
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-        
-        <div className="mt-8 flex justify-between">
-          <button
-            onClick={prevStep}
-            className="btn-back"
-          >
-            Back
-          </button>
-          <button
-            onClick={handleNextStep}
-            className="btn-next"
-          >
-            Continue
-          </button>
+        <Card className="mb-8 bg-white/5 border-white/20">
+          <CardContent className="p-4">
+            <input
+              type="file"
+              multiple
+              onChange={handleFileChange}
+              className="block w-full bg-white rounded p-2 mb-4"
+              accept=".pdf,image/*"
+            />
+            <ScrollArea className="h-[200px] rounded-md border border-white/20 bg-white/10 p-4">
+              {files.length > 0 ? (
+                <ul className="space-y-2">
+                  {files.map((file, idx) => (
+                    <li
+                      key={idx}
+                      className="flex items-center justify-between py-1 px-2 rounded-md bg-white/5"
+                    >
+                      <div className="flex items-center space-x-2 overflow-hidden">
+                        {file.type.startsWith("image/")
+                          ? <Image className="h-4 w-4 text-construction-orange" />
+                          : <File className="h-4 w-4 text-blue-500" />}
+                        <span className="text-white text-sm truncate">{file.name}</span>
+                      </div>
+                      <span className="text-white/60 text-xs">
+                        {Math.round(file.size / 1024)} KB
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-white/60 italic">No documents attached yet.</p>
+              )}
+            </ScrollArea>
+          </CardContent>
+        </Card>
+        <div className={`flex ${isMobile ? "flex-col space-y-4" : "justify-between"}`}>
+          <button onClick={prevStep} className={`btn-back ${isMobile ? "order-2" : ""}`}>Back</button>
+          <button onClick={nextStep} className={`btn-next ${isMobile ? "order-1" : ""}`}>Next</button>
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 }
