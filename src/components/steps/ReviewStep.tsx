@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef, useState } from "react";
 import { useEstimator } from "@/context/EstimatorContext";
 import { motion } from "framer-motion";
@@ -194,16 +193,19 @@ export default function ReviewStep() {
       return null;
     }
     
-    console.log("Processing estimation results:", {
+    // Log the raw response information for debugging
+    console.log("Processing estimation results in ReviewStep:", {
       hasMarkdownContent: !!estimationResults.markdownContent,
       markdownContentLength: estimationResults.markdownContent?.length || 0,
       hasWebhookStatus: !!estimationResults.webhookStatus,
       webhookStatus: estimationResults.webhookStatus || 'unknown',
       hasStructuredEstimate: !!estimationResults.estimate,
       hasWebhookResponseData: !!estimationResults.webhookResponseData,
+      hasRawResponse: !!estimationResults.rawResponse,
+      hasTextLong: !!estimationResults.textLong,
       hasError: !!estimationResults.error,
       estimateGenerated: !!estimationResults.estimateGenerated,
-      hasTextLong: !!estimationResults.textLong
+      debugInfo: estimationResults.debugInfo || 'none'
     });
     
     // If we have a direct response in textLong from Make.com, use it
@@ -213,13 +215,19 @@ export default function ReviewStep() {
          estimationResults.textLong.includes("## Materials Cost") ||
          estimationResults.textLong.includes("Total Project Cost"))) {
       console.log("Using textLong field from Make.com as estimate");
-      return <MarkdownEstimate markdownContent={estimationResults.textLong} />;
+      return <MarkdownEstimate 
+        markdownContent={estimationResults.textLong} 
+        rawResponse={estimationResults.rawResponse} 
+      />;
     }
     
     // Check explicitly marked estimate generated flag
     if (estimationResults.estimateGenerated === true && estimationResults.markdownContent) {
       console.log("Using explicitly marked generated estimate content");
-      return <MarkdownEstimate markdownContent={estimationResults.markdownContent} />;
+      return <MarkdownEstimate 
+        markdownContent={estimationResults.markdownContent} 
+        rawResponse={estimationResults.rawResponse} 
+      />;
     }
     
     if (estimationResults.webhookStatus) {
@@ -266,14 +274,20 @@ export default function ReviewStep() {
     // Check if content includes direct webhook response
     if (estimationResults.markdownContent && isValidEstimateContent(estimationResults.markdownContent)) {
       console.log("Using valid webhook estimate content from markdownContent");
-      return <MarkdownEstimate markdownContent={estimationResults.markdownContent} />;
+      return <MarkdownEstimate 
+        markdownContent={estimationResults.markdownContent} 
+        rawResponse={estimationResults.rawResponse} 
+      />;
     }
     
     // Check webhook response data field
     if (typeof estimationResults.webhookResponseData === 'string' && 
         isValidEstimateContent(estimationResults.webhookResponseData)) {
       console.log("Using webhook response data as estimate");
-      return <MarkdownEstimate markdownContent={estimationResults.webhookResponseData} />;
+      return <MarkdownEstimate 
+        markdownContent={estimationResults.webhookResponseData} 
+        rawResponse={estimationResults.rawResponse} 
+      />;
     }
     
     // Use structured estimate if available
@@ -285,13 +299,19 @@ export default function ReviewStep() {
     // If we have markdown but it doesn't look like an estimate, it might be input data
     if (estimationResults.markdownContent) {
       console.log("Using available markdown content (might be input data)");
-      return <MarkdownEstimate markdownContent={estimationResults.markdownContent} />;
+      return <MarkdownEstimate 
+        markdownContent={estimationResults.markdownContent} 
+        rawResponse={estimationResults.rawResponse} 
+      />;
     }
     
     // Check for fallback content
     if (estimationResults.fallbackContent) {
       console.log("Using fallback content");
-      return <MarkdownEstimate markdownContent={estimationResults.fallbackContent} />;
+      return <MarkdownEstimate 
+        markdownContent={estimationResults.fallbackContent} 
+        rawResponse={estimationResults.rawResponse} 
+      />;
     }
     
     console.log("Using fallback estimate component due to no valid data");

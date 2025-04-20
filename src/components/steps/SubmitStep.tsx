@@ -80,6 +80,16 @@ export default function SubmitStep() {
   // Make sure files array exists and is not empty
   const files = Array.isArray(formData.files) ? formData.files.filter(file => file && file.name) : [];
   
+  // Log files for debugging
+  React.useEffect(() => {
+    if (files.length > 0) {
+      console.log(`Attached files (${files.length}):`, 
+        files.map((f: any) => ({name: f.name, type: f.type, size: `${Math.round(f.size/1024)} KB`})));
+    } else {
+      console.log("No files attached");
+    }
+  }, [files]);
+  
   return (
     <motion.div 
       className="step-container"

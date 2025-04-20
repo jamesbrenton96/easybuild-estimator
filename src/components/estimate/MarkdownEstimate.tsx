@@ -1,15 +1,38 @@
 
-import React from "react";
+import React, { useEffect } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { Card } from "@/components/ui/card";
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, Info } from "lucide-react";
 
 interface MarkdownEstimateProps {
   markdownContent: string;
+  rawResponse?: any;
 }
 
-export default function MarkdownEstimate({ markdownContent }: MarkdownEstimateProps) {
+export default function MarkdownEstimate({ markdownContent, rawResponse }: MarkdownEstimateProps) {
+  // Log raw response data when available for debugging
+  useEffect(() => {
+    if (rawResponse) {
+      console.log("MarkdownEstimate received raw response:", rawResponse);
+      
+      // Check if rawResponse contains expected estimate data structures
+      if (typeof rawResponse === 'object') {
+        console.log("Raw response contains these keys:", Object.keys(rawResponse));
+        
+        if (rawResponse.textLong) {
+          console.log("textLong field is present with length:", rawResponse.textLong.length);
+          console.log("textLong preview:", rawResponse.textLong.substring(0, 100) + "...");
+        }
+        
+        if (rawResponse.markdownContent) {
+          console.log("markdownContent field is present with length:", rawResponse.markdownContent.length);
+          console.log("markdownContent preview:", rawResponse.markdownContent.substring(0, 100) + "...");
+        }
+      }
+    }
+  }, [rawResponse]);
+
   // Simple cleaning function that handles escape characters
   const cleanMarkdown = () => {
     // Replace shortened correspondence types with full versions
@@ -50,10 +73,15 @@ export default function MarkdownEstimate({ markdownContent }: MarkdownEstimatePr
   const isActualEstimate = (content: string) => {
     if (!content) return false;
     
+    // Log the content for debugging
+    console.log("Checking if content is a real estimate. Content preview:", 
+      content.substring(0, 100) + "...");
+    
     // Look for the specific Make.com response markers
     if (content.includes("Planter Box Construction Cost Estimate") &&
         content.includes("Materials & Cost Breakdown") &&
         content.includes("Total Project Cost")) {
+      console.log("Content identified as a real estimate based on specific markers");
       return true;
     }
     
@@ -75,7 +103,21 @@ export default function MarkdownEstimate({ markdownContent }: MarkdownEstimatePr
       "Labour (including GST"               // Common total line
     ];
     
-    return estimateIndicators.some(indicator => content.includes(indicator));
+    // Check each indicator and log when found
+    let foundIndicators = [];
+    estimateIndicators.forEach(indicator => {
+      if (content.includes(indicator)) {
+        foundIndicators.push(indicator);
+      }
+    });
+    
+    if (foundIndicators.length > 0) {
+      console.log("Content identified as a real estimate based on indicators:", foundIndicators);
+      return true;
+    }
+    
+    console.log("Content does not appear to be a real estimate");
+    return false;
   };
   
   // Remove duplicate headers and sections
@@ -138,6 +180,7 @@ export default function MarkdownEstimate({ markdownContent }: MarkdownEstimatePr
   
   // Use improved detection logic for Make.com response
   const estimateReceived = isActualEstimate(processedContent);
+  console.log("Estimate detection result:", estimateReceived);
   
   // Check if content contains input data headers that would indicate it's just the input
   const isJustInputData = 
@@ -147,8 +190,11 @@ export default function MarkdownEstimate({ markdownContent }: MarkdownEstimatePr
      processedContent.includes("Hourly Rates") ||
      processedContent.includes("Additional Work"));
   
+  console.log("Is this just input data?", isJustInputData);
+  
   // If it looks like a real estimate or has tables (including the Make.com response)
   if (estimateReceived || processedContent.includes("|")) {
+    console.log("Rendering actual estimate content");
     return (
       <Card className="bg-white rounded-lg overflow-hidden shadow-lg mb-8">
         <div className="p-5 border-b border-gray-200 bg-gray-50">
@@ -181,6 +227,7 @@ export default function MarkdownEstimate({ markdownContent }: MarkdownEstimatePr
   
   // If it's just input data, show a better fallback
   if (isJustInputData) {
+    console.log("Rendering input data with warning");
     return (
       <Card className="bg-white rounded-lg overflow-hidden shadow-lg mb-8">
         <div className="p-5 border-b border-gray-200 bg-gray-50">
@@ -200,6 +247,21 @@ export default function MarkdownEstimate({ markdownContent }: MarkdownEstimatePr
               </div>
             </div>
           </div>
+          
+          <div className="bg-blue-50 border-l-4 border-blue-400 p-4 mb-6">
+            <div className="flex items-start">
+              <Info className="h-5 w-5 text-blue-500 mr-2 mt-0.5" />
+              <div>
+                <p className="text-blue-700">
+                  <strong>Debug Info:</strong> We're investigating why the estimate generation returned input data only.
+                </p>
+                <p className="text-blue-700 text-sm mt-1">
+                  Please check the browser console (F12) for more technical details that can help support diagnose the issue.
+                </p>
+              </div>
+            </div>
+          </div>
+          
           <ReactMarkdown 
             className="prose max-w-none 
               prose-headings:text-construction-orange prose-headings:font-semibold 
@@ -225,6 +287,7 @@ export default function MarkdownEstimate({ markdownContent }: MarkdownEstimatePr
   }
 
   // Default case - just show the content with a warning
+  console.log("Rendering default content with warning");
   return (
     <Card className="bg-white rounded-lg overflow-hidden shadow-lg mb-8">
       <div className="p-5 border-b border-gray-200 bg-gray-50">
@@ -237,6 +300,9 @@ export default function MarkdownEstimate({ markdownContent }: MarkdownEstimatePr
             <div>
               <p className="text-yellow-700">
                 <strong>Note:</strong> The content below may not be a complete estimate.
+              </p>
+              <p className="text-yellow-700 text-sm mt-1">
+                Debug information has been logged to the browser console (F12) to help troubleshoot the estimate generation.
               </p>
             </div>
           </div>

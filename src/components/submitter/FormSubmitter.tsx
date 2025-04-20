@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { useEstimator } from "@/context/EstimatorContext";
 import axios from "axios";
@@ -156,6 +157,7 @@ export function FormSubmitter({
       // This will hold our response - either from the webhook or our fallback
       let responseData = null;
       let webhookSuccess = false;
+      let rawResponse = null;
       
       try {
         // First attempt with proper axios request
@@ -167,22 +169,28 @@ export function FormSubmitter({
           }
         });
         
-        console.log("Webhook response received:", response);
+        // Log the entire raw response for debugging
+        rawResponse = response.data;
+        console.log("RAW Make.com Response:", JSON.stringify(rawResponse));
+        
+        // Log additional debug information about the response structure
+        console.log("Response debug info:", {
+          hasData: !!response.data,
+          dataType: typeof response.data,
+          isString: typeof response.data === 'string',
+          isObject: typeof response.data === 'object',
+          hasTextLong: typeof response.data === 'object' && 'textLong' in response.data,
+          hasMarkdownContent: typeof response.data === 'object' && 'markdownContent' in response.data,
+          keyNames: typeof response.data === 'object' ? Object.keys(response.data) : 'N/A',
+          contentPreview: typeof response.data === 'string' 
+            ? response.data.substring(0, 100) + '...' 
+            : (typeof response.data === 'object' ? JSON.stringify(response.data).substring(0, 100) + '...' : 'N/A')
+        });
         
         if (response.data) {
           responseData = response.data;
           webhookSuccess = true;
           toast.success("Estimate generated successfully");
-          
-          // Log the response structure to debug
-          console.log("Webhook response structure:", {
-            isString: typeof response.data === 'string',
-            isObject: typeof response.data === 'object',
-            hasMarkdownContent: typeof response.data === 'object' && 'markdownContent' in response.data,
-            contentLength: typeof response.data === 'string' ? response.data.length : 
-                          (typeof response.data === 'object' && 'markdownContent' in response.data ? 
-                           (response.data.markdownContent as string).length : 'N/A')
-          });
         } else {
           // Handle empty response
           toast.warning("Received empty response from estimation service. Using input data instead.");
@@ -211,9 +219,10 @@ export function FormSubmitter({
           // Try to read the response if available
           try {
             const responseText = await fetchResponse.text();
-            console.log("Fetch response text:", responseText);
+            console.log("RAW Fetch Response:", responseText);
             if (responseText) {
               responseData = responseText;
+              rawResponse = responseText;
               webhookSuccess = true;
               toast.success("Estimate generated successfully");
             }
@@ -231,14 +240,34 @@ export function FormSubmitter({
       // If we have a stringified JSON as a response (Make.com might do this)
       if (typeof responseData === "string") {
         try {
+          console.log("Attempting to parse string response as JSON:", responseData.substring(0, 100) + "...");
           responseData = JSON.parse(responseData);
+          console.log("Successfully parsed string response to JSON with keys:", Object.keys(responseData));
         } catch (e) {
           // fallback: treat as markdown
+          console.log("Failed to parse string as JSON, treating as markdown:", e);
           responseData = { markdownContent: responseData };
         }
       }
+      
+      // Store the raw response for debugging
+      responseData = {
+        ...responseData,
+        rawResponse,
+        debugInfo: {
+          receivedAt: new Date().toISOString(),
+          responseType: typeof rawResponse,
+          isTextLongPresent: responseData?.textLong ? true : false,
+          isMarkdownContentPresent: responseData?.markdownContent ? true : false,
+          rawResponsePreview: typeof rawResponse === 'string' 
+            ? rawResponse.substring(0, 100) 
+            : (typeof rawResponse === 'object' ? JSON.stringify(rawResponse).substring(0, 100) : 'N/A')
+        }
+      };
+      
       // Now always use textLong if it exists
       if (responseData && typeof responseData === "object" && responseData.textLong) {
+        console.log("Using textLong field for estimate rendering:", responseData.textLong.substring(0, 100) + "...");
         responseData = {
           ...responseData,
           markdownContent: responseData.textLong,
@@ -247,6 +276,7 @@ export function FormSubmitter({
         };
       } else if (!responseData?.markdownContent || responseData.markdownContent.trim().length < 10) {
         // If no valid markdownContent, fallback to user's original markdown input
+        console.log("No valid markdown content found, using fallback to input data");
         responseData = {
           ...responseData,
           markdownContent: baseMarkdownContent,
@@ -263,6 +293,7 @@ export function FormSubmitter({
         console.warn("Webhook error occurred but process continued:", webhookError);
       }
     } catch (error: any) {
+      console.error("Error in overall process:", error);
       // Create fallback content from the user's input
       const fallbackContent = createMarkdownDescription();
       setEstimationResults({ 
