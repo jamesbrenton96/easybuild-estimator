@@ -1,4 +1,3 @@
-
 import React, { useEffect } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -19,9 +18,7 @@ export default function MarkdownEstimate({ markdownContent, rawResponse }: Markd
     });
   }, [markdownContent]);
 
-  // Skip rendering if no content
   if (!markdownContent) {
-    console.error("No markdown content provided to MarkdownEstimate");
     return (
       <Card className="bg-white rounded-lg overflow-hidden shadow-lg mb-8">
         <div className="p-5 border-b border-gray-200 bg-gray-50">
@@ -38,46 +35,44 @@ export default function MarkdownEstimate({ markdownContent, rawResponse }: Markd
     );
   }
 
-  // Clean the markdown by handling escape characters and ensuring proper line breaks
   const cleanMarkdown = () => {
-    // Replace shortened correspondence types with full versions
-    let cleanedContent = markdownContent
-      .replace(/\\n/g, '\n')
-      .replace(/\\"/g, '"')
-      .replace(/\\\\/g, '\\')
-      .replace(/\\t/g, '    ');
-      
-    // Ensure proper line breaks between sections
-    // Add proper line breaks before headers if missing
-    cleanedContent = cleanedContent.replace(/([^\n])#{1,6}\s/g, '$1\n\n#');
-    
-    // Ensure tables have proper formatting with line breaks
-    if (cleanedContent.includes('|')) {
-      // Make sure there are proper line breaks before and after tables
-      cleanedContent = cleanedContent
-        .replace(/(\w+)(\s*\|)/g, '$1\n$2')  // Add line break before table if needed
-        .replace(/\|\s*\n/g, '|\n')          // Ensure line breaks after table rows
-        .replace(/\n+## /g, '\n\n## ');      // Ensure double line breaks before section headers
-    }
-    
-    // Ensure headers have space after #
-    cleanedContent = cleanedContent.replace(/^(#{1,6})([^\s#])/gm, '$1 $2');
-    
-    // Fix any missing line breaks before/after lists
-    cleanedContent = cleanedContent
-      .replace(/([^\n])(- )/g, '$1\n$2')
-      .replace(/(- [^\n]+)([^\n-])/g, '$1\n$2');
-    
-    return cleanedContent;
+    let cleaned = markdownContent;
+
+    cleaned = cleaned.replace(/\\n/g, "\n")
+      .replace(/\\t/g, "    ")
+      .replace(/\\"/g, "\"")
+      .replace(/\\\\/g, "\\");
+
+    cleaned = cleaned.replace(/\n{3,}/g, "\n\n");
+
+    cleaned = cleaned.replace(/([^\n])(\#{1,6}\s)/g, '$1\n\n$2');
+
+    cleaned = cleaned.replace(/([^\n])(\|[^\n]*\|)/g, '$1\n$2');
+    cleaned = cleaned.replace(/\|[^\n]*\|\s*\n?/g, match => match.trimEnd() + '\n');
+
+    cleaned = cleaned.replace(/([^\n])(- )/g, '$1\n$2');
+    cleaned = cleaned.replace(/\n{2,}- /g, '\n\n- ');
+
+    cleaned = cleaned.replace(/(\n-\s[^\n]+)\n(?!- )/g, '$1\n');
+    cleaned = cleaned.replace(/(\n\d+\.\s[^\n]+)\n(?!\d+\. )/g, '$1\n');
+
+    cleaned = cleaned.replace(/^```(\w*)/gm, '').replace(/```$/gm, '');
+
+    cleaned = cleaned.replace(/(#{1,6})([^\s#])/gm, '$1 $2');
+
+    cleaned = cleaned.replace(/\*\*([^*]+)\*\*/g, '**$1**');
+    cleaned = cleaned.replace(/\*([^*]+)\*/g, '*$1*');
+
+    cleaned = cleaned.trim();
+
+    return cleaned;
   };
 
-  // Check if the content is empty or includes specific error phrases
   const isErrorContent = 
     !markdownContent || 
     markdownContent?.includes("Sorry, the estimate couldn't be generated") || 
     markdownContent?.includes("Please try again later or contact our support team");
 
-  // If we have error content, show error message
   if (isErrorContent) {
     return (
       <Card className="bg-white rounded-lg overflow-hidden shadow-lg mb-8">
@@ -94,48 +89,25 @@ export default function MarkdownEstimate({ markdownContent, rawResponse }: Markd
     );
   }
 
-  // Function to detect if content is likely a real estimate or just input data
   const isRealEstimate = (content: string) => {
     if (!content) return false;
-    
     const estimateIndicators = [
-      "Total Estimate", 
-      "Total Project Cost",
-      "Materials & Cost Breakdown",
-      "Cost Breakdown",
-      "Material Cost Breakdown",
-      "Labor Costs",
-      "Labour Costs",
-      "Construction Cost Estimate",
-      "| Item | Cost |", // Table format
-      "| Labor", 
-      "| Labour",
-      "| Materials",
-      "Project Overview"
+      "Total Estimate", "Total Project Cost", "Materials & Cost Breakdown", "Cost Breakdown",
+      "Material Cost Breakdown", "Labor Costs", "Labour Costs", "Construction Cost Estimate",
+      "| Item | Cost |", "| Labor", "| Labour", "| Materials", "Project Overview"
     ];
-    
-    // Check for at least one indicator for better reliability
     let indicatorCount = 0;
     estimateIndicators.forEach(indicator => {
-      if (content.includes(indicator)) {
-        indicatorCount++;
-      }
+      if (content.includes(indicator)) indicatorCount++;
     });
-    
     return indicatorCount >= 1 || 
            content.includes("| **Total** |") || 
            (content.includes("|") && content.includes("---"));
   };
 
-  // Process and clean the content
   const cleanedContent = cleanMarkdown();
-  console.log("Cleaned content first 100 chars:", cleanedContent.substring(0, 100));
-  
-  // Check if we have a real estimate
   const hasRealEstimate = isRealEstimate(cleanedContent);
-  console.log("Is real estimate:", hasRealEstimate);
 
-  // If it's a real estimate
   if (hasRealEstimate) {
     return (
       <Card className="bg-white rounded-lg overflow-hidden shadow-lg mb-8">
@@ -143,6 +115,33 @@ export default function MarkdownEstimate({ markdownContent, rawResponse }: Markd
           <h2 className="text-gray-800 font-semibold text-xl">Construction Cost Estimate</h2>
         </div>
         <div className="p-6 markdown-content text-gray-800">
+          <style>{`
+            .markdown-content table {
+              border-collapse: collapse;
+              margin: 0.75rem auto 1.5rem auto;
+              width: 100%;
+              background: #f7fafc;
+              font-size: 0.98rem;
+              box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+            }
+            .markdown-content th, .markdown-content td {
+              border: 1px solid #e5e7eb;
+              padding: 0.35em 0.6em;
+              text-align: left;
+            }
+            .markdown-content th {
+              background: #f1f5f9;
+              font-weight: bold;
+              color: #ff8600;
+            }
+            .markdown-content tr:nth-child(even) td {
+              background: #f9fafb;
+            }
+            .markdown-content tr:last-child td {
+              font-weight: 600;
+              color: #166534;
+            }
+          `}</style>
           <ReactMarkdown 
             className="prose max-w-none 
               prose-headings:text-construction-orange prose-headings:font-semibold 
@@ -167,7 +166,6 @@ export default function MarkdownEstimate({ markdownContent, rawResponse }: Markd
     );
   }
 
-  // Add debugging alert if we have content that doesn't match our estimate pattern
   return (
     <Card className="bg-white rounded-lg overflow-hidden shadow-lg mb-8">
       <div className="p-5 border-b border-gray-200 bg-gray-50">
@@ -182,7 +180,6 @@ export default function MarkdownEstimate({ markdownContent, rawResponse }: Markd
             We're displaying what we received from the estimation service.
           </AlertDescription>
         </Alert>
-        
         <div className="markdown-content text-gray-800">
           <ReactMarkdown 
             className="prose max-w-none 
