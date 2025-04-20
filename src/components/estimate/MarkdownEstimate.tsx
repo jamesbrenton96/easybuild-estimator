@@ -47,13 +47,26 @@ export default function MarkdownEstimate({ markdownContent, rawResponse }: Markd
       .replace(/\\\\/g, '\\')
       .replace(/\\t/g, '    ');
       
-    // Ensure proper line breaks for tables
+    // Ensure proper line breaks between sections
+    // Add proper line breaks before headers if missing
+    cleanedContent = cleanedContent.replace(/([^\n])#{1,6}\s/g, '$1\n\n#');
+    
+    // Ensure tables have proper formatting with line breaks
     if (cleanedContent.includes('|')) {
-      cleanedContent = cleanedContent.replace(/\|\s*\n/g, '|\n');
+      // Make sure there are proper line breaks before and after tables
+      cleanedContent = cleanedContent
+        .replace(/(\w+)(\s*\|)/g, '$1\n$2')  // Add line break before table if needed
+        .replace(/\|\s*\n/g, '|\n')          // Ensure line breaks after table rows
+        .replace(/\n+## /g, '\n\n## ');      // Ensure double line breaks before section headers
     }
     
     // Ensure headers have space after #
     cleanedContent = cleanedContent.replace(/^(#{1,6})([^\s#])/gm, '$1 $2');
+    
+    // Fix any missing line breaks before/after lists
+    cleanedContent = cleanedContent
+      .replace(/([^\n])(- )/g, '$1\n$2')
+      .replace(/(- [^\n]+)([^\n-])/g, '$1\n$2');
     
     return cleanedContent;
   };

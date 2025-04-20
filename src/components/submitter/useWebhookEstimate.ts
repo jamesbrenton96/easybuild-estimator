@@ -29,6 +29,30 @@ export function useWebhookEstimate() {
         const jsonData = await response.json();
         console.log("Webhook JSON response:", jsonData);
         
+        // Handle array response format (Make.com typical format)
+        if (Array.isArray(jsonData)) {
+          console.log("Detected array response format");
+          
+          // Look for a text entry in the array
+          const textEntry = jsonData.find(
+            item => item && typeof item === "object" && item.type === "text" && typeof item.text === "string"
+          );
+          
+          if (textEntry) {
+            console.log("Found text entry in array response");
+            return {
+              markdownContent: textEntry.text,
+              rawResponse: jsonData
+            };
+          }
+          
+          return {
+            rawResponse: jsonData,
+            // Just provide the raw response since we didn't find structured text
+            textContent: JSON.stringify(jsonData)
+          };
+        }
+        
         // If the response contains markdown content
         if (jsonData.markdownContent || 
             (jsonData.textContent && isMarkdownLike(jsonData.textContent)) || 

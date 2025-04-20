@@ -1,4 +1,3 @@
-
 import React from "react";
 import MarkdownEstimate from "../estimate/MarkdownEstimate";
 import StructuredEstimate from "../estimate/StructuredEstimate";
@@ -14,22 +13,45 @@ export function useProcessEstimationResults(estimationResults: any) {
 
   // NEW: Handle if estimationResults is an array of objects with .type and .text (for Make.com/other bots)
   if (Array.isArray(estimationResults)) {
+    console.log("Detected array response with", estimationResults.length, "items");
+    
     // Try to find the first object with type === 'text' and a .text property
     const textEntry = estimationResults.find(
       (item: any) => item && typeof item === "object" && item.type === "text" && typeof item.text === "string"
     );
+    
     if (textEntry) {
+      console.log("Found text entry in array with content:", textEntry.text.substring(0, 100));
       const textContent = textEntry.text;
+      
+      // Ensure proper line breaks between sections
+      const formattedContent = textContent
+        // Ensure proper line breaks before section headers
+        .replace(/##(\s*)(\d+)\.(\s*)/g, "\n\n## $2.$3")
+        // Ensure each table row has a proper line break
+        .replace(/\|\s*\n/g, "|\n");
+      
       // Check if textContent is valid estimate markdown
-      if (textContent && textContent.trim().length > 0) {
+      if (formattedContent && formattedContent.trim().length > 0) {
+        console.log("Using text content from array item");
         return (
           <MarkdownEstimate
-            markdownContent={textContent}
+            markdownContent={formattedContent}
             rawResponse={estimationResults}
           />
         );
       }
     }
+    
+    // If we couldn't find a text entry, try to stringify the whole array
+    console.log("No text entry found in array, trying to stringify");
+    const stringifiedArray = JSON.stringify(estimationResults, null, 2);
+    return (
+      <MarkdownEstimate
+        markdownContent={stringifiedArray}
+        rawResponse={estimationResults}
+      />
+    );
   }
 
   // Function to check if the content looks like a valid estimate
@@ -179,4 +201,3 @@ export function useProcessEstimationResults(estimationResults: any) {
   console.log("No valid estimate found in response:", estimationResults);
   return <FallbackEstimate errorDetails="No valid estimation data received from the service." />;
 }
-
