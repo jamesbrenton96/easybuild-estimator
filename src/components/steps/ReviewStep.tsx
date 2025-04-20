@@ -5,8 +5,8 @@ import html2pdf from "html2pdf.js";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Pencil, FileText } from "lucide-react";
 import { toast } from "sonner";
+import { useProcessEstimationResults } from "../submitter/useProcessEstimationResults";
 
-// Import components
 import EstimateHeader from "../estimate/EstimateHeader";
 import MarkdownEstimate from "../estimate/MarkdownEstimate";
 import StructuredEstimate from "../estimate/StructuredEstimate";
@@ -21,7 +21,6 @@ export default function ReviewStep() {
   const [activeTab, setActiveTab] = useState("view");
   const [showShareModal, setShowShareModal] = useState(false);
   
-  // If there are no results, redirect to step 1
   useEffect(() => {
     if (!estimationResults) {
       setStep(1);
@@ -47,16 +46,13 @@ export default function ReviewStep() {
       pagebreak: { mode: ['avoid-all', 'css', 'legacy'] } // Try to avoid breaking inside elements
     };
     
-    // Create a clone of the element so we can add a logo to just the PDF
     const clone = element.cloneNode(true) as HTMLElement;
     
-    // Create a header element with the logo
     const header = document.createElement('div');
     header.style.textAlign = 'center';
     header.style.marginBottom = '30px';
     header.style.padding = '20px';
     
-    // Use the new logo
     const logo = document.createElement('img');
     logo.src = "/lovable-uploads/54be63ea-83fd-4f4a-8c94-dba12936b674.png";
     logo.style.height = '150px';
@@ -64,23 +60,16 @@ export default function ReviewStep() {
     
     header.appendChild(logo);
     
-    // Don't add title text since we'll use the Project Name field instead
-    
-    // Insert the header at the top of the clone
     clone.insertBefore(header, clone.firstChild);
     
-    // Set Arial font for the entire document
     clone.style.fontFamily = 'Arial, sans-serif';
     clone.style.fontSize = '12px';
     
-    // Apply specific PDF styling to ensure content doesn't get cut off
     const style = document.createElement('style');
     style.textContent = `
-      /* PDF-specific styles */
       table { page-break-inside: avoid; }
       h1, h2, h3 { page-break-after: avoid; }
       
-      /* Improve table layout for PDF */
       table { 
         width: 98%; 
         max-width: 98%;
@@ -96,7 +85,6 @@ export default function ReviewStep() {
         font-size: 8px;
       }
       
-      /* Create more compact tables */
       .markdown-content table {
         margin: 0.5rem auto;
       }
@@ -108,7 +96,6 @@ export default function ReviewStep() {
         line-height: 1.1;
       }
       
-      /* Adjust table column widths */
       .markdown-content table th:first-child,
       .markdown-content table td:first-child {
         width: 40%;
@@ -129,30 +116,23 @@ export default function ReviewStep() {
         width: 26%;
       }
       
-      /* Ensure tables don't get cut off */
       @media print {
         table { page-break-inside: avoid; }
         tr    { page-break-inside: avoid; }
         td    { page-break-inside: avoid; }
         
-        /* Reduce margins for print */
         @page {
           margin: 10mm;
         }
         
-        /* Force page breaks before major sections */
         h1 { page-break-before: always; }
-        
-        /* But don't start with a page break */
         h1:first-of-type { page-break-before: avoid; }
         
-        /* Reduce spacing between sections */
         p, h2, h3, h4, ul, ol {
           margin-top: 0.3em;
           margin-bottom: 0.3em;
         }
         
-        /* Smaller font sizes for PDF */
         body, p, li, td, th {
           font-size: 8px !important;
           line-height: 1.2 !important;
@@ -187,120 +167,7 @@ export default function ReviewStep() {
     setStep(1);
   };
 
-  const processEstimationResults = () => {
-    if (!estimationResults) {
-      console.log("No estimation results available");
-      return null;
-    }
-    
-    // Log the raw response information for debugging
-    console.log("Processing estimation results in ReviewStep:", {
-      hasMarkdownContent: !!estimationResults.markdownContent,
-      markdownContentLength: estimationResults.markdownContent?.length || 0,
-      hasWebhookStatus: !!estimationResults.webhookStatus,
-      webhookStatus: estimationResults.webhookStatus || 'unknown',
-      hasStructuredEstimate: !!estimationResults.estimate,
-      hasWebhookResponseData: !!estimationResults.webhookResponseData,
-      hasRawResponse: !!estimationResults.rawResponse,
-      hasTextLong: !!estimationResults.textLong,
-      hasError: !!estimationResults.error,
-      estimateGenerated: !!estimationResults.estimateGenerated,
-      debugInfo: estimationResults.debugInfo || 'none'
-    });
-    
-    // Improved detection function to check if content looks like a real estimate
-    const isValidEstimateContent = (content: string) => {
-      if (!content) return false;
-      
-      const estimateIndicators = [
-        "Total Project Cost",
-        "Materials & Cost Breakdown",
-        "Material Cost Breakdown",
-        "Labor Costs",
-        "Labour Costs",
-        "| Materials Subtotal |",
-        "| Labor Subtotal |",
-        "| Labour Subtotal |",
-        "| Item | Quantity | Unit Price",
-        "Cost Breakdown",
-        "Project Timeline",
-        "Material Details & Calculations",
-        "Notes & Terms"
-      ];
-      
-      // Check if the content has at least two of these indicators (more reliable)
-      let matchCount = 0;
-      estimateIndicators.forEach(indicator => {
-        if (content.includes(indicator)) matchCount++;
-      });
-      
-      // Also check if it has tables which are common in estimates
-      const hasTable = content.includes("|") && content.includes("---");
-      
-      return matchCount >= 2 || (hasTable && matchCount >= 1);
-    };
-    
-    // Check explicitly marked estimate generated flag first
-    if (estimationResults.estimateGenerated === true && estimationResults.markdownContent) {
-      console.log("Using explicitly marked generated estimate content");
-      return <MarkdownEstimate 
-        markdownContent={estimationResults.markdownContent} 
-        rawResponse={estimationResults.rawResponse} 
-      />;
-    }
-    
-    // Check if direct textLong field from Make.com exists and looks like an estimate
-    if (estimationResults.textLong && typeof estimationResults.textLong === 'string' &&
-        isValidEstimateContent(estimationResults.textLong)) {
-      console.log("Using textLong field from Make.com as estimate");
-      return <MarkdownEstimate 
-        markdownContent={estimationResults.textLong} 
-        rawResponse={estimationResults.rawResponse} 
-      />;
-    }
-    
-    // If we have markdown content that looks like an estimate (has estimate indicators or tables)
-    if (estimationResults.markdownContent && isValidEstimateContent(estimationResults.markdownContent)) {
-      console.log("Using valid webhook estimate content from markdownContent");
-      return <MarkdownEstimate 
-        markdownContent={estimationResults.markdownContent} 
-        rawResponse={estimationResults.rawResponse} 
-      />;
-    }
-    
-    // Use structured estimate if available
-    if (estimationResults.estimate) {
-      console.log("Using structured estimate");
-      return <StructuredEstimate estimate={estimationResults.estimate} />;
-    }
-    
-    // If we have any kind of markdown content, show it
-    if (estimationResults.markdownContent) {
-      console.log("Using available markdown content (might be input data)");
-      return <MarkdownEstimate 
-        markdownContent={estimationResults.markdownContent} 
-        rawResponse={estimationResults.rawResponse} 
-      />;
-    }
-    
-    // Check for fallback content
-    if (estimationResults.fallbackContent) {
-      console.log("Using fallback content");
-      return <MarkdownEstimate 
-        markdownContent={estimationResults.fallbackContent} 
-        rawResponse={estimationResults.rawResponse} 
-      />;
-    }
-    
-    // If the webhook had an error
-    if (estimationResults.error) {
-      console.log("Error in estimation results:", estimationResults.error);
-      return <FallbackEstimate errorDetails={estimationResults.error} />;
-    }
-    
-    console.log("Using fallback estimate component due to no valid data");
-    return <FallbackEstimate errorDetails="No estimation data received from the service." />;
-  };
+  const processEstimationResults = useProcessEstimationResults(estimationResults);
 
   return (
     <motion.div 
@@ -326,14 +193,12 @@ export default function ReviewStep() {
         <TabsContent value="view">
           <div ref={estimateRef} className="max-w-3xl mx-auto pdf-content bg-white p-8 rounded-lg shadow-lg">
             <style dangerouslySetInnerHTML={{ __html: `
-              /* Base font for PDF content */
               .pdf-content {
                 font-family: Arial, sans-serif;
                 font-size: 12px;
                 line-height: 1.6;
               }
               
-              /* Custom styles for markdown tables */
               .markdown-content table {
                 width: 100%;
                 border-collapse: collapse;
@@ -360,7 +225,6 @@ export default function ReviewStep() {
                 word-wrap: break-word;
               }
               
-              /* Adjust column widths for better formatting */
               .markdown-content table th:first-child,
               .markdown-content table td:first-child {
                 width: 40%;
@@ -381,7 +245,6 @@ export default function ReviewStep() {
                 width: 30%;
               }
               
-              /* Improve heading styles */
               .markdown-content h1 {
                 color: #e58c33;
                 font-size: 20px;
@@ -424,7 +287,6 @@ export default function ReviewStep() {
                 page-break-after: avoid;
               }
               
-              /* Improve list and text styling */
               .markdown-content ul, 
               .markdown-content ol,
               .markdown-content p,
@@ -435,7 +297,6 @@ export default function ReviewStep() {
                 page-break-inside: avoid;
               }
               
-              /* Improve text styling */
               .markdown-content p {
                 margin-bottom: 1rem;
                 line-height: 1.6;
@@ -446,7 +307,6 @@ export default function ReviewStep() {
                 color: #374151;
               }
               
-              /* Add divider styles */
               .markdown-content hr {
                 margin: 1.5rem 0;
                 border: 0;
@@ -454,7 +314,6 @@ export default function ReviewStep() {
                 background-color: #e5e7eb;
               }
               
-              /* Fix pre-formatted text */
               .markdown-content pre {
                 background-color: #f9fafb;
                 padding: 1rem;
@@ -474,7 +333,7 @@ export default function ReviewStep() {
                 font-size: 0.875rem;
               }
             `}} />
-            {processEstimationResults()}
+            {processEstimationResults}
           </div>
         </TabsContent>
         
