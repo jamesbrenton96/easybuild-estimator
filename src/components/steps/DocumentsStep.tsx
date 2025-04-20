@@ -7,7 +7,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { File, Image } from "lucide-react";
 
 export default function DocumentsStep() {
-  const { formData, setFormData, prevStep, nextStep } = useEstimator();
+  const { formData, updateFormData, prevStep, nextStep } = useEstimator();
   const isMobile = useIsMobile();
 
   // Remove empty files on mount or field change
@@ -17,17 +17,16 @@ export default function DocumentsStep() {
         file => file && file.name && file.size > 0
       );
       if (cleanedFiles.length !== formData.files.length) {
-        setFormData({ ...formData, files: cleanedFiles });
+        updateFormData({ files: cleanedFiles });
       }
     }
-  }, [formData.files, setFormData]); // Only runs when files change
+  }, [formData.files, updateFormData]); // Only runs when files change
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     // Filter blank/empty files
     const cleanedFiles = files.filter(file => file && file.name && file.size > 0);
-    setFormData({
-      ...formData,
+    updateFormData({
       files: cleanedFiles
     });
   };
