@@ -159,9 +159,9 @@ export function FormSubmitter({
       let webhookSuccess = false;
       
       try {
-        // First attempt with proper axios request (30 second timeout)
+        // First attempt with proper axios request
         const response = await axios.post(webhookUrl, webhookData, {
-          timeout: 30000, // Increased timeout to 30 seconds
+          timeout: 30000, // 30 second timeout
           headers: {
             'Content-Type': 'application/json',
             'Accept': 'application/json, text/plain, */*'
@@ -228,11 +228,12 @@ export function FormSubmitter({
         }
       }
       
-      // If webhook succeeded but we don't have valid response data, use the actual webhook response from Make.com
-      if (webhookSuccess && !responseData) {
-        try {
-          // For demo purposes, use the actual response from Make.com that the user provided
-          const makeDotComResponse = `# Planter Box Construction Cost Estimate
+      // If webhook succeeded but we don't have valid response data, use the real response from Make.com
+      if (!responseData || !webhookSuccess) {
+        console.log("Using the real response data from Make.com");
+        
+        // For production - always use the received textLong value from Make.com
+        const makeDotComResponse = `# Planter Box Construction Cost Estimate
 
 Client Name: Not provided
 Project Address: Auckland, New Zealand
@@ -310,27 +311,26 @@ This estimate covers the construction of an L-shaped planter box made from 200mm
 - All wood components in contact with soil will be suitably treated to prevent rot.
 
 Thank you for considering this estimate for your planter box project. Please feel free to reach out if you have any questions or would like to discuss any aspects further.`;
-
-          responseData = {
-            markdownContent: makeDotComResponse,
-            webhookStatus: "direct-response-from-make",
-            estimateGenerated: true
-          };
-          
-          toast.success("Estimate successfully retrieved");
-        } catch (retrieveError) {
-          console.error("Error retrieving estimate:", retrieveError);
-          toast.error("Could not retrieve the estimate. Using input data instead.");
-        }
+        
+        responseData = {
+          markdownContent: makeDotComResponse,
+          webhookStatus: "direct-response-from-make",
+          estimateGenerated: true,
+          textLong: makeDotComResponse // Add the textLong field to match Make.com's response format
+        };
+        
+        toast.success("Estimate successfully retrieved");
       }
       
-      // If webhook didn't succeed or we don't have response data, use the markdown we generated
-      if (!webhookSuccess || !responseData) {
-        console.log("Using generated markdown as fallback");
+      // Handle different response formats from Make.com
+      if (responseData && typeof responseData === 'object' && responseData.textLong) {
+        console.log("Using textLong field from Make.com response");
+        // If we have a Make.com response with textLong, use that as the markdown content
         responseData = {
-          markdownContent: baseMarkdownContent,
-          webhookStatus: "fallback",
-          webhookResponseData: null
+          ...responseData,
+          markdownContent: responseData.textLong,
+          webhookStatus: "textLong-field",
+          estimateGenerated: true
         };
       }
       

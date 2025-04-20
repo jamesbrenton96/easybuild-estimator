@@ -77,8 +77,8 @@ export default function SubmitStep() {
     return <File className="h-4 w-4 text-blue-500" />;
   };
   
-  // Make sure files array exists
-  const files = formData.files || [];
+  // Make sure files array exists and is not empty
+  const files = Array.isArray(formData.files) ? formData.files.filter(file => file && file.name) : [];
   
   return (
     <motion.div 

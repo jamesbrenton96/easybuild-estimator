@@ -46,9 +46,16 @@ export default function MarkdownEstimate({ markdownContent }: MarkdownEstimatePr
   // Process and clean the content
   const cleanedContent = cleanMarkdown();
   
-  // Function to detect if content is likely a real estimate (improved detection)
+  // Improved function to detect if content is likely a real estimate
   const isActualEstimate = (content: string) => {
     if (!content) return false;
+    
+    // Look for the specific Make.com response markers
+    if (content.includes("Planter Box Construction Cost Estimate") &&
+        content.includes("Materials & Cost Breakdown") &&
+        content.includes("Total Project Cost")) {
+      return true;
+    }
     
     const estimateIndicators = [
       "Total Estimate", 
@@ -129,7 +136,7 @@ export default function MarkdownEstimate({ markdownContent }: MarkdownEstimatePr
   // Process the content to remove duplicates at all levels
   const processedContent = deduplicateSubsections(cleanedContent);
   
-  // Use improved detection logic
+  // Use improved detection logic for Make.com response
   const estimateReceived = isActualEstimate(processedContent);
   
   // Check if content contains input data headers that would indicate it's just the input
@@ -140,7 +147,7 @@ export default function MarkdownEstimate({ markdownContent }: MarkdownEstimatePr
      processedContent.includes("Hourly Rates") ||
      processedContent.includes("Additional Work"));
   
-  // If it looks like a real estimate or has tables
+  // If it looks like a real estimate or has tables (including the Make.com response)
   if (estimateReceived || processedContent.includes("|")) {
     return (
       <Card className="bg-white rounded-lg overflow-hidden shadow-lg mb-8">

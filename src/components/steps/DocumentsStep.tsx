@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useEstimator } from "@/context/EstimatorContext";
 import { motion } from "framer-motion";
@@ -9,10 +8,11 @@ export default function DocumentsStep() {
   const { formData, updateFormData, nextStep, prevStep } = useEstimator();
   const [dragActive, setDragActive] = useState(false);
   
-  // Initialize files array if it doesn't exist
-  if (!formData.files) {
-    updateFormData({ files: [] });
-  }
+  React.useEffect(() => {
+    if (formData.files === undefined || formData.files === null) {
+      updateFormData({ files: [] });
+    }
+  }, [formData.files, updateFormData]);
   
   const handleDrag = (e: React.DragEvent) => {
     e.preventDefault();
@@ -49,7 +49,6 @@ export default function DocumentsStep() {
       file.type === 'image/png'
     );
     
-    // Ensure files array exists in formData
     const currentFiles = formData.files || [];
     
     const existingPdfFiles = currentFiles.filter(file => 
@@ -82,7 +81,6 @@ export default function DocumentsStep() {
   };
   
   const removeFile = (index: number) => {
-    // Ensure files array exists
     if (!formData.files) return;
     
     const updatedFiles = [...formData.files];
@@ -103,7 +101,6 @@ export default function DocumentsStep() {
   };
 
   const handleNextStep = () => {
-    // Ensure files array exists
     const files = formData.files || [];
     
     if (files.length === 0) {
@@ -116,7 +113,6 @@ export default function DocumentsStep() {
     nextStep();
   };
 
-  // Ensure files array exists for the JSX rendering
   const files = formData.files || [];
 
   return (
