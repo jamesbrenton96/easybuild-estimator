@@ -5,6 +5,7 @@ export interface WebhookResponse {
   markdownContent?: string;
   estimate?: any;
   textContent?: string;
+  error?: string;
   [key: string]: any;
 }
 
@@ -14,6 +15,7 @@ export function useWebhookEstimate() {
 
   const getEstimate = useCallback(async (payload: Record<string, any>): Promise<WebhookResponse> => {
     try {
+      console.log("Sending payload to webhook:", payload);
       const response = await fetch(webhookUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -26,16 +28,33 @@ export function useWebhookEstimate() {
         // Try JSON first
         const jsonData = await response.json();
         console.log("Webhook JSON response:", jsonData);
+        
+        // If the response contains markdown content
+        if (jsonData.markdownContent || 
+            (jsonData.textContent && isMarkdownLike(jsonData.textContent)) || 
+            (typeof jsonData === 'string' && isMarkdownLike(jsonData))) {
+          
+          return {
+            markdownContent: jsonData.markdownContent || jsonData.textContent || jsonData,
+            rawResponse: jsonData
+          };
+        }
+        
         return jsonData;
       } catch (jsonError) {
+        console.log("Not a JSON response, trying as text");
         // If not JSON, try as text
         try {
           const textContent = await response.text();
           console.log("Webhook text response:", textContent);
           
           // Check if it looks like markdown
-          if (textContent.includes('# ') || textContent.includes('\n## ')) {
-            return { markdownContent: textContent };
+          if (isMarkdownLike(textContent)) {
+            console.log("Detected markdown-like content in response");
+            return { 
+              markdownContent: textContent,
+              rawResponse: textContent
+            };
           }
           
           return { textContent };
@@ -45,9 +64,32 @@ export function useWebhookEstimate() {
       }
     } catch (error: any) {
       console.error("Webhook error:", error);
-      throw new Error(error?.message || "Unknown error with estimate generation.");
+      return { 
+        error: error?.message || "Unknown error with estimate generation.",
+        markdownContent: null
+      };
     }
   }, []);
+
+  // Helper function to detect markdown-like content
+  const isMarkdownLike = (text: string): boolean => {
+    if (!text) return false;
+    
+    // Check for markdown headers, lists, tables
+    const markdownPatterns = [
+      /^#\s+.+$/m,                 // Headers
+      /^-\s+.+$/m,                 // Unordered list
+      /^\d+\.\s+.+$/m,             // Ordered list
+      /^\|(.+\|)+$/m,              // Table rows
+      /^\|(\s*[-:]+\s*\|)+$/m,     // Table header separator
+      /^\*\*[^*]+\*\*$/m,          // Bold text
+      /^##\s+\d+\.\s+.+$/m,        // Numbered section headers
+      /^Construction Cost Estimate/m // Specific to your estimate
+    ];
+    
+    // Return true if any markdown pattern is found
+    return markdownPatterns.some(pattern => pattern.test(text));
+  };
 
   return { getEstimate };
 }

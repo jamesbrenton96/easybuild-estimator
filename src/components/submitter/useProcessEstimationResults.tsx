@@ -5,7 +5,12 @@ import StructuredEstimate from "../estimate/StructuredEstimate";
 import FallbackEstimate from "../estimate/FallbackEstimate";
 
 export function useProcessEstimationResults(estimationResults: any) {
-  if (!estimationResults) return null;
+  console.log("Processing estimation results:", estimationResults);
+  
+  if (!estimationResults) {
+    console.log("No estimation results provided");
+    return <FallbackEstimate errorDetails="No estimation data received from the service." />;
+  }
   
   // Function to check if the content looks like a valid estimate
   const isValidEstimateContent = (content: string) => {
@@ -17,6 +22,7 @@ export function useProcessEstimationResults(estimationResults: any) {
       "Material Cost Breakdown",
       "Labor Costs",
       "Labour Costs",
+      "Construction Cost Estimate",
       "| Materials Subtotal |",
       "| Labor Subtotal |",
       "| Labour Subtotal |",
@@ -39,60 +45,52 @@ export function useProcessEstimationResults(estimationResults: any) {
     return matchCount >= 1 || hasTable;
   };
 
-  // Case 1: We have a clearly marked successful estimate
-  if (estimationResults.estimateGenerated === true && estimationResults.markdownContent) {
-    console.log("Using marked successful estimate");
-    return (
-      <MarkdownEstimate
-        markdownContent={estimationResults.markdownContent}
-        rawResponse={estimationResults.rawResponse}
-      />
-    );
+  // Case 1: Check for error
+  if (estimationResults.error) {
+    console.log("Error in estimation results:", estimationResults.error);
+    return <FallbackEstimate errorDetails={estimationResults.error} />;
   }
 
-  // Case 2: Check for textLong field (common webhook response format)
-  if (
-    estimationResults.textLong &&
-    typeof estimationResults.textLong === "string" &&
-    estimationResults.textLong.length > 0
-  ) {
+  // Case 2: We have a clearly marked successful estimate with markdownContent
+  if (estimationResults.markdownContent) {
+    console.log("Found markdownContent in results");
+    const content = estimationResults.markdownContent;
+    
+    if (typeof content === 'string' && content.trim().length > 0 && isValidEstimateContent(content)) {
+      console.log("Using markdown content from markdownContent field");
+      return (
+        <MarkdownEstimate
+          markdownContent={content}
+          rawResponse={estimationResults.rawResponse}
+        />
+      );
+    }
+  }
+
+  // Case 3: Check for textLong field (common webhook response format)
+  if (estimationResults.textLong && typeof estimationResults.textLong === "string" && estimationResults.textLong.trim().length > 0) {
     console.log("Using textLong field");
-    return (
-      <MarkdownEstimate
-        markdownContent={estimationResults.textLong}
-        rawResponse={estimationResults.rawResponse}
-      />
-    );
+    if (isValidEstimateContent(estimationResults.textLong)) {
+      return (
+        <MarkdownEstimate
+          markdownContent={estimationResults.textLong}
+          rawResponse={estimationResults.rawResponse}
+        />
+      );
+    }
   }
 
-  // Case 3: Check for just textContent field (basic webhook response)
-  if (
-    estimationResults.textContent &&
-    typeof estimationResults.textContent === "string" &&
-    estimationResults.textContent.length > 0
-  ) {
+  // Case 4: Check for just textContent field (basic webhook response)
+  if (estimationResults.textContent && typeof estimationResults.textContent === "string" && estimationResults.textContent.trim().length > 0) {
     console.log("Using textContent field");
-    return (
-      <MarkdownEstimate
-        markdownContent={estimationResults.textContent}
-        rawResponse={estimationResults.rawResponse}
-      />
-    );
-  }
-
-  // Case 4: Check markdownContent 
-  if (
-    estimationResults.markdownContent &&
-    typeof estimationResults.markdownContent === "string" &&
-    estimationResults.markdownContent.length > 0
-  ) {
-    console.log("Using markdownContent field");
-    return (
-      <MarkdownEstimate
-        markdownContent={estimationResults.markdownContent}
-        rawResponse={estimationResults.rawResponse}
-      />
-    );
+    if (isValidEstimateContent(estimationResults.textContent)) {
+      return (
+        <MarkdownEstimate
+          markdownContent={estimationResults.textContent}
+          rawResponse={estimationResults.rawResponse}
+        />
+      );
+    }
   }
 
   // Case 5: Check for structured estimate
@@ -101,7 +99,41 @@ export function useProcessEstimationResults(estimationResults: any) {
     return <StructuredEstimate estimate={estimationResults.estimate} />;
   }
 
-  // Case 6: Fallback content if provided
+  // Case 6: Check if the raw response itself might be markdown content
+  if (typeof estimationResults === "string" && estimationResults.trim().length > 0) {
+    console.log("Using raw string response");
+    if (isValidEstimateContent(estimationResults)) {
+      return <MarkdownEstimate markdownContent={estimationResults} />;
+    }
+  }
+
+  // Case 7: Handle raw data that might be in an unexpected format
+  if (typeof estimationResults === 'object') {
+    console.log("Trying to extract markdown from unknown object structure");
+    
+    // Try to find any string property that might contain markdown
+    for (const key in estimationResults) {
+      const value = estimationResults[key];
+      if (typeof value === 'string' && value.trim().length > 0 && isValidEstimateContent(value)) {
+        console.log(`Found potential markdown content in field: ${key}`);
+        return <MarkdownEstimate markdownContent={value} />;
+      }
+    }
+    
+    // If we have a data property, try that
+    if (estimationResults.data) {
+      console.log("Checking data property for markdown");
+      if (typeof estimationResults.data === 'string' && isValidEstimateContent(estimationResults.data)) {
+        return <MarkdownEstimate markdownContent={estimationResults.data} />;
+      } else if (typeof estimationResults.data === 'object') {
+        // Recursively try to process the data property
+        const result = useProcessEstimationResults(estimationResults.data);
+        if (result) return result;
+      }
+    }
+  }
+
+  // If no valid estimate format was found but we have a fallback
   if (estimationResults.fallbackContent) {
     console.log("Using fallback content");
     return (
@@ -112,18 +144,18 @@ export function useProcessEstimationResults(estimationResults: any) {
     );
   }
 
-  // Case 7: Check if the raw response itself might be markdown content
-  if (typeof estimationResults === "string" && estimationResults.length > 0) {
-    console.log("Using raw string response");
-    return <MarkdownEstimate markdownContent={estimationResults} />;
-  }
-
-  // Error case
-  if (estimationResults.error) {
-    console.log("Showing error response");
-    return <FallbackEstimate errorDetails={estimationResults.error} />;
+  // As a last resort, stringify the entire response and display as raw text
+  if (estimationResults) {
+    const stringified = typeof estimationResults === 'string' 
+      ? estimationResults 
+      : JSON.stringify(estimationResults, null, 2);
+      
+    if (stringified && stringified.length > 0) {
+      console.log("Displaying raw stringified response as last resort");
+      return <MarkdownEstimate markdownContent={`\`\`\`json\n${stringified}\n\`\`\``} />;
+    }
   }
 
   console.log("No valid estimate found in response:", estimationResults);
-  return <FallbackEstimate errorDetails="No estimation data received from the service." />;
+  return <FallbackEstimate errorDetails="No valid estimation data received from the service." />;
 }
