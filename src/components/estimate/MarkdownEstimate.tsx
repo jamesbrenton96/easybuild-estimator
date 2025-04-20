@@ -11,79 +11,6 @@ interface MarkdownEstimateProps {
 }
 
 export default function MarkdownEstimate({ markdownContent, rawResponse }: MarkdownEstimateProps) {
-  // Log raw response data when available for debugging
-  useEffect(() => {
-    if (rawResponse) {
-      console.log("MarkdownEstimate received raw response:", rawResponse);
-      
-      // Check if rawResponse contains expected estimate data structures
-      if (typeof rawResponse === 'object') {
-        console.log("Raw response contains these keys:", Object.keys(rawResponse));
-        
-        if (rawResponse.textLong) {
-          console.log("textLong field is present with length:", rawResponse.textLong.length);
-          console.log("textLong preview:", rawResponse.textLong.substring(0, 100) + "...");
-        }
-        
-        if (rawResponse.markdownContent) {
-          console.log("markdownContent field is present with length:", rawResponse.markdownContent.length);
-          console.log("markdownContent preview:", rawResponse.markdownContent.substring(0, 100) + "...");
-        }
-        
-        // Log additional debug info
-        if (rawResponse.debugInfo) {
-          console.log("Debug info:", rawResponse.debugInfo);
-        }
-        
-        // Log whether the content contains estimate indicators
-        console.log("Content contains estimate indicators:", isActualEstimate(markdownContent));
-      }
-    }
-    
-    // Also log the markdownContent being rendered
-    console.log("Markdown content being rendered (length):", markdownContent?.length || 0);
-    console.log("Markdown content preview:", markdownContent?.substring(0, 200) + "...");
-    
-    // Log if the content is just input data
-    console.log("Is content just input data?", isJustInputData(markdownContent));
-  }, [rawResponse, markdownContent]);
-
-  // Simple cleaning function that handles escape characters
-  const cleanMarkdown = () => {
-    // Replace shortened correspondence types with full versions
-    let cleanedContent = markdownContent
-      .replace(/\\n/g, '\n')
-      .replace(/\\"/g, '"')
-      .replace(/\\\\/g, '\\');
-      
-    return cleanedContent;
-  };
-
-  // Check if the content includes error phrases
-  const isErrorContent = 
-    markdownContent?.includes("Sorry, the estimate couldn't be generated") || 
-    markdownContent?.includes("Please try again later or contact our support team");
-
-  // If we have error content, use FallbackEstimate component instead
-  if (isErrorContent) {
-    return (
-      <Card className="bg-white rounded-lg overflow-hidden shadow-lg mb-8">
-        <div className="p-5 border-b border-gray-200 bg-gray-50">
-          <h2 className="text-gray-800 font-semibold text-xl">Construction Cost Estimate</h2>
-        </div>
-        <div className="p-6 text-center">
-          <h2 className="text-xl font-medium text-construction-orange mb-4">Unable to Generate Estimate</h2>
-          <p className="text-gray-700 mb-4">
-            We were unable to generate an estimate based on the information provided. Please try again or contact support.
-          </p>
-        </div>
-      </Card>
-    );
-  }
-
-  // Process and clean the content
-  const cleanedContent = cleanMarkdown();
-  
   // Improved function to detect if content is likely a real estimate
   const isActualEstimate = (content: string) => {
     if (!content) return false;
@@ -136,7 +63,7 @@ export default function MarkdownEstimate({ markdownContent, rawResponse }: Markd
   };
   
   // Check if content contains input data headers that would indicate it's just the input
-  const isJustInputData = (content: string) => {
+  const checkIfJustInputData = (content: string) => {
     if (!content) return false;
     
     const inputDataMarkers = [
@@ -166,6 +93,79 @@ export default function MarkdownEstimate({ markdownContent, rawResponse }: Markd
     
     return isLikelyJustInput;
   };
+
+  // Log raw response data when available for debugging
+  useEffect(() => {
+    if (rawResponse) {
+      console.log("MarkdownEstimate received raw response:", rawResponse);
+      
+      // Check if rawResponse contains expected estimate data structures
+      if (typeof rawResponse === 'object') {
+        console.log("Raw response contains these keys:", Object.keys(rawResponse));
+        
+        if (rawResponse.textLong) {
+          console.log("textLong field is present with length:", rawResponse.textLong.length);
+          console.log("textLong preview:", rawResponse.textLong.substring(0, 100) + "...");
+        }
+        
+        if (rawResponse.markdownContent) {
+          console.log("markdownContent field is present with length:", rawResponse.markdownContent.length);
+          console.log("markdownContent preview:", rawResponse.markdownContent.substring(0, 100) + "...");
+        }
+        
+        // Log additional debug info
+        if (rawResponse.debugInfo) {
+          console.log("Debug info:", rawResponse.debugInfo);
+        }
+        
+        // Log whether the content contains estimate indicators
+        console.log("Content contains estimate indicators:", isActualEstimate(markdownContent));
+      }
+    }
+    
+    // Also log the markdownContent being rendered
+    console.log("Markdown content being rendered (length):", markdownContent?.length || 0);
+    console.log("Markdown content preview:", markdownContent?.substring(0, 200) + "...");
+    
+    // Log if the content is just input data
+    console.log("Is content just input data?", checkIfJustInputData(markdownContent));
+  }, [rawResponse, markdownContent]);
+
+  // Simple cleaning function that handles escape characters
+  const cleanMarkdown = () => {
+    // Replace shortened correspondence types with full versions
+    let cleanedContent = markdownContent
+      .replace(/\\n/g, '\n')
+      .replace(/\\"/g, '"')
+      .replace(/\\\\/g, '\\');
+      
+    return cleanedContent;
+  };
+
+  // Check if the content includes error phrases
+  const isErrorContent = 
+    markdownContent?.includes("Sorry, the estimate couldn't be generated") || 
+    markdownContent?.includes("Please try again later or contact our support team");
+
+  // If we have error content, use FallbackEstimate component instead
+  if (isErrorContent) {
+    return (
+      <Card className="bg-white rounded-lg overflow-hidden shadow-lg mb-8">
+        <div className="p-5 border-b border-gray-200 bg-gray-50">
+          <h2 className="text-gray-800 font-semibold text-xl">Construction Cost Estimate</h2>
+        </div>
+        <div className="p-6 text-center">
+          <h2 className="text-xl font-medium text-construction-orange mb-4">Unable to Generate Estimate</h2>
+          <p className="text-gray-700 mb-4">
+            We were unable to generate an estimate based on the information provided. Please try again or contact support.
+          </p>
+        </div>
+      </Card>
+    );
+  }
+
+  // Process and clean the content
+  const cleanedContent = cleanMarkdown();
   
   // Remove duplicate headers and sections
   const removeDuplicateContent = (content: string) => {
@@ -229,8 +229,8 @@ export default function MarkdownEstimate({ markdownContent, rawResponse }: Markd
   const estimateReceived = isActualEstimate(processedContent);
   console.log("Estimate detection result:", estimateReceived);
   
-  // Check if content contains input data headers that would indicate it's just the input
-  const isJustInputData = isJustInputData(processedContent);
+  // Check if the content is just input data using our function
+  const isJustInputData = checkIfJustInputData(processedContent);
   
   console.log("Is this just input data?", isJustInputData);
   
