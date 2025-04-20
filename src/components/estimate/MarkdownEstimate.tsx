@@ -3,6 +3,7 @@ import React from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { Card } from "@/components/ui/card";
+import { AlertTriangle } from "lucide-react";
 
 interface MarkdownEstimateProps {
   markdownContent: string;
@@ -44,6 +45,23 @@ export default function MarkdownEstimate({ markdownContent }: MarkdownEstimatePr
 
   // Process and clean the content
   const cleanedContent = cleanMarkdown();
+  
+  // Function to detect if content is likely a real estimate (improved detection)
+  const isActualEstimate = (content: string) => {
+    const estimateIndicators = [
+      "Total Estimate", 
+      "Total Project Cost",
+      "Materials & Cost Breakdown",
+      "Labour Costs",
+      "Cost Breakdown",
+      "Material Details & Calculations",
+      "| Item | Quantity | Unit Price",  // Table header formats
+      "| Materials Subtotal |",          // Common table formats
+      "| Labour Subtotal |"             // Common table formats
+    ];
+    
+    return estimateIndicators.some(indicator => content.includes(indicator));
+  };
   
   // Remove duplicate headers and sections
   const removeDuplicateContent = (content: string) => {
@@ -103,16 +121,19 @@ export default function MarkdownEstimate({ markdownContent }: MarkdownEstimatePr
   // Process the content to remove duplicates at all levels
   const processedContent = deduplicateSubsections(cleanedContent);
   
-  // Check if the processed content is actually the webhook response
-  const isActualEstimate = 
-    processedContent.includes("Total Estimate") || 
-    processedContent.includes("Total Project Cost") ||
-    processedContent.includes("Materials & Cost Breakdown");
+  // Use improved detection logic
+  const estimateReceived = isActualEstimate(processedContent);
   
-  // If processed content is just input data and we don't have any actual estimate data,
-  // return a simplified version of just the input data
-  if (!isActualEstimate && processedContent.includes("Project Overview")) {
-    // This is likely just the input data, format it nicer
+  // Check if content contains input data headers that would indicate it's just the input
+  const isJustInputData = 
+    processedContent.includes("Project Overview") && 
+    !estimateReceived &&
+    (processedContent.includes("Specific Notes and terms") || 
+     processedContent.includes("Hourly Rates") ||
+     processedContent.includes("Additional Work"));
+  
+  // If it's just input data, show a better fallback
+  if (isJustInputData) {
     return (
       <Card className="bg-white rounded-lg overflow-hidden shadow-lg mb-8">
         <div className="p-5 border-b border-gray-200 bg-gray-50">
@@ -120,10 +141,17 @@ export default function MarkdownEstimate({ markdownContent }: MarkdownEstimatePr
         </div>
         <div className="p-6 markdown-content text-gray-800">
           <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6">
-            <p className="text-yellow-700">
-              <strong>Note:</strong> The estimate service returned your input data only. 
-              This may be due to a connection issue with our estimation service.
-            </p>
+            <div className="flex items-start">
+              <AlertTriangle className="h-5 w-5 text-yellow-500 mr-2 mt-0.5" />
+              <div>
+                <p className="text-yellow-700">
+                  <strong>Note:</strong> We were unable to generate a complete estimate at this time.
+                </p>
+                <p className="text-yellow-700 text-sm mt-1">
+                  Our estimation service is experiencing a temporary connection issue. Please try again in a few minutes.
+                </p>
+              </div>
+            </div>
           </div>
           <ReactMarkdown 
             className="prose max-w-none 

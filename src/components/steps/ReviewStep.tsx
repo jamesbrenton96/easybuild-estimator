@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef, useState } from "react";
 import { useEstimator } from "@/context/EstimatorContext";
 import { motion } from "framer-motion";
@@ -184,19 +183,16 @@ export default function ReviewStep() {
   };
   
   const handleStartNew = () => {
-    // Save current form data before starting a new estimate
     saveFormData(formData);
     setStep(1);
   };
 
   const processEstimationResults = () => {
-    // If there's no estimationResults, return null
     if (!estimationResults) {
       console.log("No estimation results available");
       return null;
     }
     
-    // Log detailed information about what we received
     console.log("Processing estimation results:", {
       hasMarkdownContent: !!estimationResults.markdownContent,
       markdownContentLength: estimationResults.markdownContent?.length || 0,
@@ -204,91 +200,69 @@ export default function ReviewStep() {
       webhookStatus: estimationResults.webhookStatus || 'unknown',
       hasStructuredEstimate: !!estimationResults.estimate,
       hasWebhookResponseData: !!estimationResults.webhookResponseData,
-      hasError: !!estimationResults.error
+      hasError: !!estimationResults.error,
+      estimateGenerated: !!estimationResults.estimateGenerated
     });
     
-    // Check if we have webhook status information
+    if (estimationResults.estimateGenerated === true && estimationResults.markdownContent) {
+      console.log("Using directly generated estimate content");
+      return <MarkdownEstimate markdownContent={estimationResults.markdownContent} />;
+    }
+    
     if (estimationResults.webhookStatus) {
       console.log("Webhook status:", estimationResults.webhookStatus);
     }
     
-    // Check if there's an explicit error in the estimation results
     if (estimationResults.error) {
       console.log("Error in estimation results:", estimationResults.error);
       return <FallbackEstimate errorDetails={estimationResults.error} />;
     }
     
-    // If the markdownContent looks like a valid estimate (not just input data),
-    // use it directly
-    if (estimationResults.markdownContent &&
-        (estimationResults.markdownContent.includes("Total Project Cost") ||
-         estimationResults.markdownContent.includes("Materials & Cost Breakdown") ||
-         estimationResults.markdownContent.includes("Labour Costs"))) {
+    const isValidEstimateContent = (content: string) => {
+      if (!content) return false;
+      
+      const estimateIndicators = [
+        "Total Project Cost",
+        "Materials & Cost Breakdown",
+        "Labour Costs",
+        "| Materials Subtotal |",
+        "| Labour Subtotal |",
+        "| Item | Quantity | Unit Price",
+        "cost breakdown"
+      ];
+      
+      return estimateIndicators.some(indicator => 
+        content.toLowerCase().includes(indicator.toLowerCase())
+      );
+    };
+    
+    if (estimationResults.markdownContent && isValidEstimateContent(estimationResults.markdownContent)) {
       console.log("Using valid webhook estimate content");
       return <MarkdownEstimate markdownContent={estimationResults.markdownContent} />;
     }
     
-    // If there's a webhook response data that looks like a complete estimate, use that instead
-    if (typeof estimationResults.webhookResponseData === 'string' &&
-        (estimationResults.webhookResponseData.includes("Total Project Cost") ||
-         estimationResults.webhookResponseData.includes("Materials & Cost Breakdown"))) {
+    if (typeof estimationResults.webhookResponseData === 'string' && 
+        isValidEstimateContent(estimationResults.webhookResponseData)) {
       console.log("Using webhook response data as estimate");
       return <MarkdownEstimate markdownContent={estimationResults.webhookResponseData} />;
     }
     
-    // If there's a structured estimate object, use StructuredEstimate
     if (estimationResults.estimate) {
       console.log("Using structured estimate");
       return <StructuredEstimate estimate={estimationResults.estimate} />;
     }
     
-    // If there's a string in markdownContent and it's not an error message
-    // but we're not sure if it's a real estimate, we'll still display it
-    if (estimationResults.markdownContent &&
-        !estimationResults.markdownContent.includes("Sorry, the estimate couldn't be generated")) {
-      console.log("Using available markdown content");
+    if (estimationResults.markdownContent) {
+      console.log("Using available markdown content (might be input data)");
       return <MarkdownEstimate markdownContent={estimationResults.markdownContent} />;
     }
     
-    // If the webhook returned some data but not in a format we recognize,
-    // check if we have a fallback content or try to convert it to markdown
     if (estimationResults.fallbackContent) {
       console.log("Using fallback content");
       return <MarkdownEstimate markdownContent={estimationResults.fallbackContent} />;
     }
     
-    // If we have raw webhook response data but no formatted content
-    if (estimationResults.webhookResponseData) {
-      console.log("Creating markdown from webhook response data");
-      // Try to use the webhook response data directly
-      const responseContent = 
-        typeof estimationResults.webhookResponseData === 'string' 
-          ? estimationResults.webhookResponseData 
-          : JSON.stringify(estimationResults.webhookResponseData, null, 2);
-          
-      return <MarkdownEstimate markdownContent={responseContent} />;
-    }
-    
-    // If we have some kind of data in the results but it's not in a format we handled above
-    if (Object.keys(estimationResults).length > 0) {
-      console.log("Creating fallback markdown from estimation results");
-      // Create a simple markdown representation of the data
-      const fallbackMarkdown = "# Construction Cost Estimate\n\n" + 
-        Object.entries(estimationResults)
-          .filter(([key]) => key !== 'webhookStatus' && key !== 'status')
-          .map(([key, value]) => {
-            if (typeof value === 'object' && value !== null) {
-              return `## ${key.charAt(0).toUpperCase() + key.slice(1)}\n${JSON.stringify(value, null, 2)}`;
-            }
-            return `## ${key.charAt(0).toUpperCase() + key.slice(1)}\n${value}`;
-          })
-          .join('\n\n');
-      
-      return <MarkdownEstimate markdownContent={fallbackMarkdown} />;
-    }
-    
     console.log("Using fallback estimate component");
-    // If there's no valid format, use FallbackEstimate
     return <FallbackEstimate errorDetails="No estimation data received from the service." />;
   };
 
