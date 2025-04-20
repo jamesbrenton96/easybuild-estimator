@@ -126,6 +126,9 @@ export function FormSubmitter({
       // Create the base markdown content that we'll use as fallback
       const baseMarkdownContent = createMarkdownDescription();
       
+      // Generate a unique request ID
+      const requestId = `req_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+      
       // Prepare file information for the webhook
       const fileDetails = formData.files ? formData.files.map((file: File) => ({
         name: file.name,
@@ -149,7 +152,7 @@ export function FormSubmitter({
           markdownInput: baseMarkdownContent // Send our nicely formatted input as well
         },
         timestamp: new Date().toISOString(),
-        requestId: Math.random().toString(36).substring(2, 15)
+        requestId: requestId
       };
       
       console.log("Sending webhook data:", JSON.stringify(webhookData));
@@ -167,13 +170,26 @@ export function FormSubmitter({
             'Content-Type': 'application/json',
             'Accept': 'application/json, text/plain, */*',
             'Cache-Control': 'no-cache, no-store',
-            'Pragma': 'no-cache'
+            'Pragma': 'no-cache',
+            'X-Request-ID': requestId
           }
         });
         
         // Log the entire raw response for debugging
         rawResponse = response.data;
         console.log("RAW Make.com Response:", JSON.stringify(rawResponse));
+        
+        // Try to detect if this is valid JSON that was stringified
+        if (typeof response.data === 'string' && 
+            (response.data.startsWith('{') || response.data.startsWith('['))) {
+          try {
+            const parsedData = JSON.parse(response.data);
+            console.log("Successfully parsed response data as JSON:", parsedData);
+            rawResponse = parsedData;
+          } catch (e) {
+            console.log("Response is string but not valid JSON", e);
+          }
+        }
         
         // Log additional debug information about the response structure
         console.log("Response debug info:", {
@@ -186,7 +202,8 @@ export function FormSubmitter({
           keyNames: typeof response.data === 'object' ? Object.keys(response.data) : 'N/A',
           contentPreview: typeof response.data === 'string' 
             ? response.data.substring(0, 100) + '...' 
-            : (typeof response.data === 'object' ? JSON.stringify(response.data).substring(0, 100) + '...' : 'N/A')
+            : (typeof response.data === 'object' ? JSON.stringify(response.data).substring(0, 100) + '...' : 'N/A'),
+          requestId: requestId
         });
         
         if (response.data) {
@@ -222,7 +239,8 @@ export function FormSubmitter({
             headers: {
               "Content-Type": "application/json",
               "Cache-Control": "no-cache, no-store",
-              "Pragma": "no-cache"
+              "Pragma": "no-cache",
+              "X-Request-ID": requestId
             },
             body: JSON.stringify(webhookData),
           });
@@ -258,6 +276,8 @@ export function FormSubmitter({
       
       // Helper function to check if response contains estimate indicators
       function checkForEstimateIndicators(responseData: any): boolean {
+        if (!responseData) return false;
+        
         // Convert to string if it's an object
         const contentToCheck = typeof responseData === 'object' 
           ? JSON.stringify(responseData) 
@@ -285,8 +305,16 @@ export function FormSubmitter({
       if (typeof responseData === "string") {
         try {
           console.log("Attempting to parse string response as JSON:", responseData.substring(0, 100) + "...");
-          responseData = JSON.parse(responseData);
-          console.log("Successfully parsed string response to JSON with keys:", Object.keys(responseData));
+          let parsed = JSON.parse(responseData);
+          console.log("Successfully parsed string response to JSON with keys:", Object.keys(parsed));
+          
+          // Check if this is an array with just one element
+          if (Array.isArray(parsed) && parsed.length === 1) {
+            console.log("Parsed JSON is an array with one element, using first item");
+            parsed = parsed[0];
+          }
+          
+          responseData = parsed;
         } catch (e) {
           // fallback: treat as markdown
           console.log("Failed to parse string as JSON, treating as markdown:", e);
@@ -307,36 +335,63 @@ export function FormSubmitter({
           containsEstimateIndicators: checkForEstimateIndicators(rawResponse),
           rawResponsePreview: typeof rawResponse === 'string' 
             ? rawResponse.substring(0, 100) 
-            : (typeof rawResponse === 'object' ? JSON.stringify(rawResponse).substring(0, 100) : 'N/A')
+            : (typeof rawResponse === 'object' ? JSON.stringify(rawResponse).substring(0, 100) : 'N/A'),
+          requestId: requestId
         }
       };
       
-      // Now always use textLong if it exists
-      if (responseData && typeof responseData === "object" && responseData.textLong) {
-        console.log("Using textLong field for estimate rendering:", responseData.textLong.substring(0, 100) + "...");
-        responseData = {
-          ...responseData,
-          markdownContent: responseData.textLong,
-          webhookStatus: "textLong-used",
-          estimateGenerated: checkForEstimateIndicators(responseData.textLong)
-        };
-      } else if (!responseData?.markdownContent || responseData.markdownContent.trim().length < 10) {
-        // If no valid markdownContent, fallback to user's original markdown input
-        console.log("No valid markdown content found, using fallback to input data");
-        responseData = {
-          ...responseData,
-          markdownContent: baseMarkdownContent,
-          webhookStatus: "no-valid-markdown-content",
-          estimateGenerated: false
-        };
-      } else {
-        // Otherwise check if markdownContent contains estimate indicators
-        responseData = {
-          ...responseData,
-          estimateGenerated: checkForEstimateIndicators(responseData.markdownContent)
-        };
+      // Now try to extract estimate content from different possible response formats
+      let extractedMarkdownContent = null;
+      
+      // Check all possible paths where the actual content might be
+      if (responseData && typeof responseData === "object") {
+        // Option 1: textLong field (direct from Make.com)
+        if (responseData.textLong && typeof responseData.textLong === 'string' && responseData.textLong.trim().length > 100) {
+          console.log("Using textLong field for estimate rendering:", responseData.textLong.substring(0, 100) + "...");
+          extractedMarkdownContent = responseData.textLong;
+        }
+        // Option 2: markdownContent field
+        else if (responseData.markdownContent && typeof responseData.markdownContent === 'string' && responseData.markdownContent.trim().length > 100) {
+          console.log("Using markdownContent field:", responseData.markdownContent.substring(0, 100) + "...");
+          extractedMarkdownContent = responseData.markdownContent;
+        }
+        // Option 3: content or text field 
+        else if (responseData.content && typeof responseData.content === 'string' && responseData.content.trim().length > 100) {
+          console.log("Using content field:", responseData.content.substring(0, 100) + "...");
+          extractedMarkdownContent = responseData.content;
+        }
+        // Option 4: text field
+        else if (responseData.text && typeof responseData.text === 'string' && responseData.text.trim().length > 100) {
+          console.log("Using text field:", responseData.text.substring(0, 100) + "...");
+          extractedMarkdownContent = responseData.text;
+        }
+        // Option 5: Check if entire response is actually a string we can use
+        else if (rawResponse && typeof rawResponse === 'string' && rawResponse.trim().length > 100) {
+          console.log("Using raw response as markdown:", rawResponse.substring(0, 100) + "...");
+          extractedMarkdownContent = rawResponse;
+        }
       }
-      // ---- END: always use Make.com textLong if available for estimate rendering ----
+      
+      // If we found content that looks like it might be a good estimate
+      if (extractedMarkdownContent && checkForEstimateIndicators(extractedMarkdownContent)) {
+        console.log("Valid estimate content found!");
+        responseData.markdownContent = extractedMarkdownContent;
+        responseData.estimateGenerated = true;
+      } 
+      // Otherwise, if we have some content but it doesn't look like an estimate
+      else if (extractedMarkdownContent) {
+        console.log("Content found but it doesn't look like an estimate");
+        responseData.markdownContent = extractedMarkdownContent;
+        responseData.estimateGenerated = false;
+      }
+      // Fallback: Use original user input
+      else {
+        console.log("No valid markdown content found, using fallback to input data");
+        responseData.markdownContent = baseMarkdownContent;
+        responseData.webhookStatus = "no-valid-markdown-content";
+        responseData.estimateGenerated = false;
+      }
+      // ---- END ----
 
       setEstimationResults(responseData);
       setIsLoading(false);
@@ -354,6 +409,7 @@ export function FormSubmitter({
         webhookStatus: "process-error",
         error: error.message || "Error processing estimate"
       });
+      setIsLoading(false);
       nextStep();
     }
   };

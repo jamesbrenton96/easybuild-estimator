@@ -208,37 +208,6 @@ export default function ReviewStep() {
       debugInfo: estimationResults.debugInfo || 'none'
     });
     
-    // If we have a direct response in textLong from Make.com, use it
-    if (estimationResults.textLong && typeof estimationResults.textLong === 'string' &&
-        (estimationResults.textLong.includes("## Materials & Cost Breakdown") ||
-         estimationResults.textLong.includes("## Labor Costs") ||
-         estimationResults.textLong.includes("## Materials Cost") ||
-         estimationResults.textLong.includes("Total Project Cost"))) {
-      console.log("Using textLong field from Make.com as estimate");
-      return <MarkdownEstimate 
-        markdownContent={estimationResults.textLong} 
-        rawResponse={estimationResults.rawResponse} 
-      />;
-    }
-    
-    // Check explicitly marked estimate generated flag
-    if (estimationResults.estimateGenerated === true && estimationResults.markdownContent) {
-      console.log("Using explicitly marked generated estimate content");
-      return <MarkdownEstimate 
-        markdownContent={estimationResults.markdownContent} 
-        rawResponse={estimationResults.rawResponse} 
-      />;
-    }
-    
-    if (estimationResults.webhookStatus) {
-      console.log("Webhook status:", estimationResults.webhookStatus);
-    }
-    
-    if (estimationResults.error) {
-      console.log("Error in estimation results:", estimationResults.error);
-      return <FallbackEstimate errorDetails={estimationResults.error} />;
-    }
-    
     // Improved detection function to check if content looks like a real estimate
     const isValidEstimateContent = (content: string) => {
       if (!content) return false;
@@ -271,21 +240,30 @@ export default function ReviewStep() {
       return matchCount >= 2 || (hasTable && matchCount >= 1);
     };
     
-    // Check if content includes direct webhook response
-    if (estimationResults.markdownContent && isValidEstimateContent(estimationResults.markdownContent)) {
-      console.log("Using valid webhook estimate content from markdownContent");
+    // Check explicitly marked estimate generated flag first
+    if (estimationResults.estimateGenerated === true && estimationResults.markdownContent) {
+      console.log("Using explicitly marked generated estimate content");
       return <MarkdownEstimate 
         markdownContent={estimationResults.markdownContent} 
         rawResponse={estimationResults.rawResponse} 
       />;
     }
     
-    // Check webhook response data field
-    if (typeof estimationResults.webhookResponseData === 'string' && 
-        isValidEstimateContent(estimationResults.webhookResponseData)) {
-      console.log("Using webhook response data as estimate");
+    // Check if direct textLong field from Make.com exists and looks like an estimate
+    if (estimationResults.textLong && typeof estimationResults.textLong === 'string' &&
+        isValidEstimateContent(estimationResults.textLong)) {
+      console.log("Using textLong field from Make.com as estimate");
       return <MarkdownEstimate 
-        markdownContent={estimationResults.webhookResponseData} 
+        markdownContent={estimationResults.textLong} 
+        rawResponse={estimationResults.rawResponse} 
+      />;
+    }
+    
+    // If we have markdown content that looks like an estimate (has estimate indicators or tables)
+    if (estimationResults.markdownContent && isValidEstimateContent(estimationResults.markdownContent)) {
+      console.log("Using valid webhook estimate content from markdownContent");
+      return <MarkdownEstimate 
+        markdownContent={estimationResults.markdownContent} 
         rawResponse={estimationResults.rawResponse} 
       />;
     }
@@ -296,7 +274,7 @@ export default function ReviewStep() {
       return <StructuredEstimate estimate={estimationResults.estimate} />;
     }
     
-    // If we have markdown but it doesn't look like an estimate, it might be input data
+    // If we have any kind of markdown content, show it
     if (estimationResults.markdownContent) {
       console.log("Using available markdown content (might be input data)");
       return <MarkdownEstimate 
@@ -312,6 +290,12 @@ export default function ReviewStep() {
         markdownContent={estimationResults.fallbackContent} 
         rawResponse={estimationResults.rawResponse} 
       />;
+    }
+    
+    // If the webhook had an error
+    if (estimationResults.error) {
+      console.log("Error in estimation results:", estimationResults.error);
+      return <FallbackEstimate errorDetails={estimationResults.error} />;
     }
     
     console.log("Using fallback estimate component due to no valid data");

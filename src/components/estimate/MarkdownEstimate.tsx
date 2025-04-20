@@ -166,7 +166,7 @@ export default function MarkdownEstimate({ markdownContent, rawResponse }: Markd
 
   // Process and clean the content
   const cleanedContent = cleanMarkdown();
-  
+
   // Remove duplicate headers and sections
   const removeDuplicateContent = (content: string) => {
     // Split content by headers
