@@ -29,9 +29,24 @@ export default function MarkdownEstimate({ markdownContent, rawResponse }: Markd
           console.log("markdownContent field is present with length:", rawResponse.markdownContent.length);
           console.log("markdownContent preview:", rawResponse.markdownContent.substring(0, 100) + "...");
         }
+        
+        // Log additional debug info
+        if (rawResponse.debugInfo) {
+          console.log("Debug info:", rawResponse.debugInfo);
+        }
+        
+        // Log whether the content contains estimate indicators
+        console.log("Content contains estimate indicators:", isActualEstimate(markdownContent));
       }
     }
-  }, [rawResponse]);
+    
+    // Also log the markdownContent being rendered
+    console.log("Markdown content being rendered (length):", markdownContent?.length || 0);
+    console.log("Markdown content preview:", markdownContent?.substring(0, 200) + "...");
+    
+    // Log if the content is just input data
+    console.log("Is content just input data?", isJustInputData(markdownContent));
+  }, [rawResponse, markdownContent]);
 
   // Simple cleaning function that handles escape characters
   const cleanMarkdown = () => {
@@ -120,6 +135,38 @@ export default function MarkdownEstimate({ markdownContent, rawResponse }: Markd
     return false;
   };
   
+  // Check if content contains input data headers that would indicate it's just the input
+  const isJustInputData = (content: string) => {
+    if (!content) return false;
+    
+    const inputDataMarkers = [
+      "## Correspondence Details",
+      "## Project Name",
+      "## Project Overview",
+      "## Dimensions",
+      "## Materials",
+      "## Finish and Details",
+      "## Location-Specific Details",
+      "## Timeframe"
+    ];
+    
+    // Count how many input data markers exist in the content
+    let markerCount = 0;
+    inputDataMarkers.forEach(marker => {
+      if (content.includes(marker)) {
+        markerCount++;
+      }
+    });
+    
+    // If it has several input data markers and doesn't have estimate indicators
+    const hasEstimateIndicators = isActualEstimate(content);
+    const isLikelyJustInput = markerCount >= 3 && !hasEstimateIndicators;
+    
+    console.log(`Input data analysis: markers=${markerCount}, hasEstimateIndicators=${hasEstimateIndicators}, conclusion=${isLikelyJustInput}`);
+    
+    return isLikelyJustInput;
+  };
+  
   // Remove duplicate headers and sections
   const removeDuplicateContent = (content: string) => {
     // Split content by headers
@@ -183,12 +230,7 @@ export default function MarkdownEstimate({ markdownContent, rawResponse }: Markd
   console.log("Estimate detection result:", estimateReceived);
   
   // Check if content contains input data headers that would indicate it's just the input
-  const isJustInputData = 
-    processedContent.includes("Project Overview") && 
-    !estimateReceived &&
-    (processedContent.includes("Specific Notes and terms") || 
-     processedContent.includes("Hourly Rates") ||
-     processedContent.includes("Additional Work"));
+  const isJustInputData = isJustInputData(processedContent);
   
   console.log("Is this just input data?", isJustInputData);
   

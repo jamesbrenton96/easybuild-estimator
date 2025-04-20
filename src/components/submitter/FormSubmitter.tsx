@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useEstimator } from "@/context/EstimatorContext";
 import axios from "axios";
@@ -150,6 +149,7 @@ export function FormSubmitter({
           markdownInput: baseMarkdownContent // Send our nicely formatted input as well
         },
         timestamp: new Date().toISOString(),
+        requestId: Math.random().toString(36).substring(2, 15)
       };
       
       console.log("Sending webhook data:", JSON.stringify(webhookData));
@@ -162,10 +162,12 @@ export function FormSubmitter({
       try {
         // First attempt with proper axios request
         const response = await axios.post(webhookUrl, webhookData, {
-          timeout: 30000, // 30 second timeout
+          timeout: 60000,
           headers: {
             'Content-Type': 'application/json',
-            'Accept': 'application/json, text/plain, */*'
+            'Accept': 'application/json, text/plain, */*',
+            'Cache-Control': 'no-cache, no-store',
+            'Pragma': 'no-cache'
           }
         });
         
@@ -190,7 +192,16 @@ export function FormSubmitter({
         if (response.data) {
           responseData = response.data;
           webhookSuccess = true;
-          toast.success("Estimate generated successfully");
+          
+          // Check if response actually contains an estimate or just input data
+          const containsEstimateIndicators = checkForEstimateIndicators(response.data);
+          
+          if (containsEstimateIndicators) {
+            toast.success("Estimate generated successfully");
+          } else {
+            toast.warning("Received response, but it may not contain a complete estimate.");
+            console.warn("Response does not appear to contain a complete estimate");
+          }
         } else {
           // Handle empty response
           toast.warning("Received empty response from estimation service. Using input data instead.");
@@ -210,6 +221,8 @@ export function FormSubmitter({
             method: "POST",
             headers: {
               "Content-Type": "application/json",
+              "Cache-Control": "no-cache, no-store",
+              "Pragma": "no-cache"
             },
             body: JSON.stringify(webhookData),
           });
@@ -224,7 +237,14 @@ export function FormSubmitter({
               responseData = responseText;
               rawResponse = responseText;
               webhookSuccess = true;
-              toast.success("Estimate generated successfully");
+              
+              // Check if response actually contains an estimate
+              const containsEstimateIndicators = checkForEstimateIndicators(responseText);
+              if (containsEstimateIndicators) {
+                toast.success("Estimate generated successfully");
+              } else {
+                toast.warning("Received response, but it may not contain a complete estimate");
+              }
             }
           } catch (readError) {
             console.log("Could not read fetch response:", readError);
@@ -234,6 +254,30 @@ export function FormSubmitter({
           setWebhookError((fallbackError.message || "Connection to estimation service failed."));
           toast.error("Unable to connect to estimation service. Using your input data instead.");
         }
+      }
+      
+      // Helper function to check if response contains estimate indicators
+      function checkForEstimateIndicators(responseData: any): boolean {
+        // Convert to string if it's an object
+        const contentToCheck = typeof responseData === 'object' 
+          ? JSON.stringify(responseData) 
+          : String(responseData);
+        
+        const estimateIndicators = [
+          "Total Project Cost",
+          "Materials & Cost Breakdown",
+          "Materials Cost Breakdown",
+          "Labor Costs",
+          "Labour Costs",
+          "Cost Breakdown",
+          "| Item | Quantity | Unit Price",
+          "| Materials Subtotal |",
+          "| Labor Subtotal |",
+          "| Labour Subtotal |"
+        ];
+        
+        // Check each indicator and return true if at least one is found
+        return estimateIndicators.some(indicator => contentToCheck.includes(indicator));
       }
       
       // --------- MARK: Make.com response handling section ----------
@@ -259,6 +303,8 @@ export function FormSubmitter({
           responseType: typeof rawResponse,
           isTextLongPresent: responseData?.textLong ? true : false,
           isMarkdownContentPresent: responseData?.markdownContent ? true : false,
+          webhookMethod: webhookSuccess ? "success" : "failure",
+          containsEstimateIndicators: checkForEstimateIndicators(rawResponse),
           rawResponsePreview: typeof rawResponse === 'string' 
             ? rawResponse.substring(0, 100) 
             : (typeof rawResponse === 'object' ? JSON.stringify(rawResponse).substring(0, 100) : 'N/A')
@@ -272,7 +318,7 @@ export function FormSubmitter({
           ...responseData,
           markdownContent: responseData.textLong,
           webhookStatus: "textLong-used",
-          estimateGenerated: true
+          estimateGenerated: checkForEstimateIndicators(responseData.textLong)
         };
       } else if (!responseData?.markdownContent || responseData.markdownContent.trim().length < 10) {
         // If no valid markdownContent, fallback to user's original markdown input
@@ -280,7 +326,14 @@ export function FormSubmitter({
         responseData = {
           ...responseData,
           markdownContent: baseMarkdownContent,
-          webhookStatus: "no-valid-markdown-content"
+          webhookStatus: "no-valid-markdown-content",
+          estimateGenerated: false
+        };
+      } else {
+        // Otherwise check if markdownContent contains estimate indicators
+        responseData = {
+          ...responseData,
+          estimateGenerated: checkForEstimateIndicators(responseData.markdownContent)
         };
       }
       // ---- END: always use Make.com textLong if available for estimate rendering ----
