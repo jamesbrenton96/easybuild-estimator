@@ -12,8 +12,8 @@ export default function StructuredEstimate({ estimate }: StructuredEstimateProps
   const hasValidStructure = 
     estimate && 
     (estimate.labor || estimate.labour) && 
-    (estimate.materials) && 
-    typeof estimate.totalCost === 'number';
+    estimate.materials && 
+    (typeof estimate.totalCost === 'number' || typeof estimate.totalCost === 'string');
   
   if (!hasValidStructure) {
     return (
@@ -45,6 +45,11 @@ export default function StructuredEstimate({ estimate }: StructuredEstimateProps
   
   // Normalize labor/labour differences
   const laborData = estimate.labor || estimate.labour || { cost: 0, hours: 0 };
+  
+  // Make sure totalCost is a number
+  const totalCost = typeof estimate.totalCost === 'string' 
+    ? parseFloat(estimate.totalCost.replace(/[^\d.-]/g, '')) 
+    : estimate.totalCost;
   
   return (
     <>
@@ -87,7 +92,7 @@ export default function StructuredEstimate({ estimate }: StructuredEstimateProps
         <div className="p-6 text-center">
           <h2 className="text-gray-800 text-lg font-medium mb-2">Total Estimated Cost</h2>
           <div className="text-4xl font-bold text-construction-orange mb-2">
-            {formatCurrency(estimate.totalCost)}
+            {formatCurrency(totalCost)}
           </div>
           <div className="flex items-center justify-center text-gray-600">
             <Clock className="w-4 h-4 mr-1" />
@@ -155,18 +160,6 @@ export default function StructuredEstimate({ estimate }: StructuredEstimateProps
           <div>
             <h3 className="text-gray-800 font-medium mb-1">Notes</h3>
             <p className="text-gray-600 text-sm">{estimate.notes}</p>
-          </div>
-        </div>
-      )}
-      
-      {/* Terms and Conditions */}
-      {estimate.termsAndConditions && (
-        <div className="bg-white rounded-lg overflow-hidden shadow-lg mb-8">
-          <div className="p-4 border-b border-gray-200 bg-gray-50">
-            <h2 className="text-gray-800 font-medium text-lg">Terms & Conditions</h2>
-          </div>
-          <div className="p-6">
-            <p className="text-gray-700">{estimate.termsAndConditions}</p>
           </div>
         </div>
       )}

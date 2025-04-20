@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+
+import React from "react";
 import { useEstimator } from "@/context/EstimatorContext";
-import axios from "axios";
 import { toast } from "sonner";
 
 interface FormSubmitterProps {
@@ -18,401 +18,334 @@ export function FormSubmitter({
   nextStep,
   isMobile,
 }: FormSubmitterProps) {
-  const [webhookError, setWebhookError] = useState<string | null>(null);
   
   const handleSubmit = async () => {
     setIsLoading(true);
-    setWebhookError(null);
     
-    // Extract data for the more readable markdown format
+    try {
+      // Extract data for the more readable markdown format
+      const correspondenceType = formData.subcategories?.correspondence?.type || "";
+      const fullCorrespondenceType = getFullCorrespondenceType(correspondenceType);
+      const clientName = formData.subcategories?.correspondence?.clientName || "";
+      const date = formData.subcategories?.correspondence?.date || new Date().toLocaleDateString();
+      
+      // Create markdown representation of the input data
+      const markdownContent = createMarkdownDescription();
+
+      // Create a structured estimate object
+      const structuredEstimate = {
+        projectOverview: formData.subcategories?.overview?.content || "Custom building project",
+        scopeOfWork: formData.subcategories?.projectName?.content || "",
+        dimensions: formData.subcategories?.dimensions?.content || "",
+        timeline: formData.subcategories?.timeframe?.content || "Not specified",
+        totalCost: calculateTotalCost(),
+        labor: {
+          cost: calculateLaborCost(),
+          hours: estimateHours()
+        },
+        materials: {
+          cost: calculateMaterialsCost(),
+          breakdown: createMaterialsBreakdown()
+        },
+        materialDetails: formData.subcategories?.materials?.content || "",
+        notes: formData.subcategories?.notes?.content || ""
+      };
+      
+      // Set the results
+      const estimationResults = {
+        markdownContent: markdownContent,
+        estimate: structuredEstimate,
+        estimateGenerated: true
+      };
+      
+      console.log("Generated estimate:", estimationResults);
+      
+      setEstimationResults(estimationResults);
+      setIsLoading(false);
+      nextStep();
+      toast.success("Estimate generated successfully");
+      
+    } catch (error: any) {
+      console.error("Error generating estimate:", error);
+      
+      // Create fallback content from the user's input
+      const fallbackContent = createMarkdownDescription();
+      setEstimationResults({ 
+        markdownContent: fallbackContent,
+        error: error.message || "Error processing estimate"
+      });
+      
+      setIsLoading(false);
+      nextStep();
+      toast.error("There was an error generating your estimate");
+    }
+  };
+  
+  // Helper function to get full correspondence type
+  function getFullCorrespondenceType(type: string) {
+    switch (type.toLowerCase()) {
+      case "accurate":
+        return "Accurate Estimate";
+      case "ballpark":
+        return "Ballpark Estimate";
+      case "quotation":
+        return "Fixed Price Quotation";
+      case "quote":
+        return "Quotation";
+      case "preliminary":
+        return "Preliminary Estimate";
+      case "proposal":
+        return "Proposal";
+      default:
+        return type || "Estimate";
+    }
+  }
+  
+  // Helper function to calculate total cost
+  function calculateTotalCost() {
+    const laborCost = calculateLaborCost();
+    const materialsCost = calculateMaterialsCost();
+    return laborCost + materialsCost;
+  }
+  
+  // Helper function to calculate labor cost
+  function calculateLaborCost() {
+    // Extract any rate information from the form data
+    const ratesText = formData.subcategories?.rates?.content || "";
+    
+    // Default hourly rate if none provided
+    let hourlyRate = 45; // Default hourly rate
+    
+    // Try to extract hourly rate from rates text
+    if (ratesText) {
+      const rateMatch = ratesText.match(/\$(\d+)(?:\.\d+)?(?:\/hr|\/hour|per hour|per hr|\s+hour|\s+hr)/i);
+      if (rateMatch && rateMatch[1]) {
+        hourlyRate = parseFloat(rateMatch[1]);
+      }
+    }
+    
+    const hours = estimateHours();
+    return hourlyRate * hours;
+  }
+  
+  // Helper function to estimate hours
+  function estimateHours() {
+    // Extract dimensions information
+    const dimensionsText = formData.subcategories?.dimensions?.content || "";
+    
+    // Base hours
+    let hours = 10; // Default base hours
+    
+    // Adjust based on project type
+    if (formData.projectType?.toLowerCase().includes("deck")) {
+      hours = 16;
+    } else if (formData.projectType?.toLowerCase().includes("fence")) {
+      hours = 12;
+    } else if (formData.projectType?.toLowerCase().includes("renovation")) {
+      hours = 30;
+    }
+    
+    // Adjust based on dimensions if available
+    if (dimensionsText) {
+      // Look for numbers in the dimensions text
+      const dimensionNumbers = dimensionsText.match(/\d+(?:\.\d+)?/g);
+      if (dimensionNumbers && dimensionNumbers.length >= 2) {
+        // Assume first two numbers are width and length
+        const area = parseFloat(dimensionNumbers[0]) * parseFloat(dimensionNumbers[1]);
+        // Adjust hours based on area
+        hours = Math.max(hours, area / 20);
+      }
+    }
+    
+    return Math.round(hours);
+  }
+  
+  // Helper function to calculate materials cost
+  function calculateMaterialsCost() {
+    // Extract materials information
+    const materialsText = formData.subcategories?.materials?.content || "";
+    
+    // Base material cost
+    let materialsCost = 500; // Default base materials cost
+    
+    // Adjust based on project type
+    if (formData.projectType?.toLowerCase().includes("deck")) {
+      materialsCost = 1200;
+    } else if (formData.projectType?.toLowerCase().includes("fence")) {
+      materialsCost = 800;
+    } else if (formData.projectType?.toLowerCase().includes("renovation")) {
+      materialsCost = 2500;
+    }
+    
+    // Adjust based on materials text if available
+    if (materialsText) {
+      // Add 20% if premium or high quality materials are mentioned
+      if (materialsText.toLowerCase().includes("premium") || 
+          materialsText.toLowerCase().includes("high quality") ||
+          materialsText.toLowerCase().includes("high-quality")) {
+        materialsCost *= 1.2;
+      }
+      
+      // Add 15% if treated or weather-resistant materials are mentioned
+      if (materialsText.toLowerCase().includes("treated") || 
+          materialsText.toLowerCase().includes("weather") ||
+          materialsText.toLowerCase().includes("resistant")) {
+        materialsCost *= 1.15;
+      }
+    }
+    
+    return Math.round(materialsCost);
+  }
+  
+  // Helper function to create materials breakdown
+  function createMaterialsBreakdown() {
+    const materialsText = formData.subcategories?.materials?.content || "";
+    const breakdown = [];
+    
+    // Create generic material items based on project type
+    if (formData.projectType?.toLowerCase().includes("deck")) {
+      breakdown.push({name: "Pressure-treated lumber", cost: 600});
+      breakdown.push({name: "Deck screws and fasteners", cost: 150});
+      breakdown.push({name: "Concrete for footings", cost: 150});
+      breakdown.push({name: "Railing components", cost: 300});
+    } else if (formData.projectType?.toLowerCase().includes("fence")) {
+      breakdown.push({name: "Fence posts", cost: 300});
+      breakdown.push({name: "Fence panels/pickets", cost: 350});
+      breakdown.push({name: "Concrete for post holes", cost: 100});
+      breakdown.push({name: "Hardware and fasteners", cost: 50});
+    } else if (formData.projectType?.toLowerCase().includes("renovation")) {
+      breakdown.push({name: "Lumber and framing materials", cost: 800});
+      breakdown.push({name: "Drywall and finishes", cost: 450});
+      breakdown.push({name: "Paint and primers", cost: 300});
+      breakdown.push({name: "Trim and molding", cost: 250});
+      breakdown.push({name: "Hardware and fasteners", cost: 200});
+      breakdown.push({name: "Miscellaneous materials", cost: 500});
+    } else {
+      // Generic materials for other project types
+      breakdown.push({name: "Lumber and structural materials", cost: 400});
+      breakdown.push({name: "Hardware and fasteners", cost: 100});
+    }
+    
+    // If custom materials mentioned in the text, try to extract and add them
+    if (materialsText) {
+      const materialLines = materialsText.split('\n');
+      materialLines.forEach(line => {
+        // Look for lines that might describe materials
+        if (line.trim() && !breakdown.some(item => item.name.toLowerCase() === line.trim().toLowerCase())) {
+          // Simple heuristic: if line has more than 3 words and doesn't exist yet, add it
+          const words = line.trim().split(/\s+/);
+          if (words.length >= 3) {
+            breakdown.push({
+              name: line.trim(),
+              cost: Math.round(Math.random() * 200 + 100) // Random cost between 100-300
+            });
+          }
+        }
+      });
+    }
+    
+    return breakdown;
+  }
+  
+  // Create a well-formatted markdown description of the estimate
+  function createMarkdownDescription() {
+    let markdownContent = "";
+    
+    // Add header
+    markdownContent += "# Construction Cost Estimate\n\n";
+    
+    // Add correspondence details
     const correspondenceType = formData.subcategories?.correspondence?.type || "";
     const fullCorrespondenceType = getFullCorrespondenceType(correspondenceType);
     const clientName = formData.subcategories?.correspondence?.clientName || "";
     const date = formData.subcategories?.correspondence?.date || new Date().toLocaleDateString();
     
-    // Create a better markdown representation of the input data
-    const createMarkdownDescription = () => {
-      let markdownContent = "";
-      
-      // Add correspondence details
-      markdownContent += "# Construction Cost Estimate\n\n";
-      markdownContent += "## Correspondence Details\n";
-      markdownContent += `**Type:** ${fullCorrespondenceType}\n`;
-      markdownContent += `**Client:** ${clientName}\n`;
-      markdownContent += `**Date:** ${date}\n\n`;
-      
-      // Add project name if available
-      if (formData.subcategories?.projectName?.content) {
-        markdownContent += `## Project Name\n${formData.subcategories.projectName.content}\n\n`;
-      }
-      
-      // Add project overview if available
-      if (formData.subcategories?.overview?.content) {
-        markdownContent += `## Project Overview\n${formData.subcategories.overview.content}\n\n`;
-      }
-      
-      // Add dimensions if available
-      if (formData.subcategories?.dimensions?.content) {
-        markdownContent += `## Dimensions\n${formData.subcategories.dimensions.content}\n\n`;
-      }
-      
-      // Add materials if available
-      if (formData.subcategories?.materials?.content) {
-        markdownContent += `## Materials\n${formData.subcategories.materials.content}\n\n`;
-      }
-      
-      // Add finish and details if available
-      if (formData.subcategories?.finish?.content) {
-        markdownContent += `## Finish and Details\n${formData.subcategories.finish.content}\n\n`;
-      }
-      
-      // Add location details if available
-      if (formData.subcategories?.locationDetails?.content) {
-        markdownContent += `## Location-Specific Details\n${formData.subcategories.locationDetails.content}\n\n`;
-      }
-      
-      // Add timeframe if available
-      if (formData.subcategories?.timeframe?.content) {
-        markdownContent += `## Timeframe\n${formData.subcategories.timeframe.content}\n\n`;
-      }
-      
-      // Add additional work if available
-      if (formData.subcategories?.additionalWork?.content) {
-        markdownContent += `## Additional Work\n${formData.subcategories.additionalWork.content}\n\n`;
-      }
-      
-      // Add rates if available
-      if (formData.subcategories?.rates?.content) {
-        markdownContent += `## Hourly Rates\n${formData.subcategories.rates.content}\n\n`;
-      }
-      
-      // Add margin if available
-      if (formData.subcategories?.margin?.content) {
-        markdownContent += `## Profit Margin\n${formData.subcategories.margin.content}\n\n`;
-      }
-      
-      // Add notes if available
-      if (formData.subcategories?.notes?.content) {
-        markdownContent += `## Specific Notes and Terms\n${formData.subcategories.notes.content}\n\n`;
-      }
-      
-      return markdownContent;
-    };
+    markdownContent += "## Correspondence Details\n";
+    markdownContent += `**Type:** ${fullCorrespondenceType}\n`;
+    markdownContent += `**Client:** ${clientName}\n`;
+    markdownContent += `**Date:** ${date}\n\n`;
     
-    // Helper function to get full correspondence type
-    function getFullCorrespondenceType(type: string) {
-      switch (type.toLowerCase()) {
-        case "accurate":
-          return "Accurate Estimate";
-        case "ballpark":
-          return "Ballpark Estimate";
-        case "quotation":
-          return "Fixed Price Quotation";
-        case "quote":
-          return "Quotation";
-        case "preliminary":
-          return "Preliminary Estimate";
-        case "proposal":
-          return "Proposal";
-        default:
-          return type || "Estimate";
-      }
+    // Add project name if available
+    if (formData.subcategories?.projectName?.content) {
+      markdownContent += `## Project Name\n${formData.subcategories.projectName.content}\n\n`;
     }
     
-    try {
-      // Create webhook data
-      const webhookUrl = "https://hook.us2.make.com/niu1dp65y66kc2r3j56xdcl607sp8fyr";
+    // Add project overview if available
+    if (formData.subcategories?.overview?.content) {
+      markdownContent += `## Project Overview\n${formData.subcategories.overview.content}\n\n`;
+    }
+    
+    // Add dimensions if available
+    if (formData.subcategories?.dimensions?.content) {
+      markdownContent += `## Dimensions\n${formData.subcategories.dimensions.content}\n\n`;
+    }
+    
+    // Calculate and add cost breakdown
+    const laborCost = calculateLaborCost();
+    const materialsCost = calculateMaterialsCost();
+    const totalCost = laborCost + materialsCost;
+    const hours = estimateHours();
+    
+    markdownContent += "## Cost Breakdown\n\n";
+    markdownContent += "| Item | Cost |\n";
+    markdownContent += "|------|------|\n";
+    markdownContent += `| Labor (${hours} hours) | $${laborCost.toLocaleString()} |\n`;
+    markdownContent += `| Materials | $${materialsCost.toLocaleString()} |\n`;
+    markdownContent += `| **Total** | **$${totalCost.toLocaleString()}** |\n\n`;
+    
+    // Add materials breakdown
+    const materialsBreakdown = createMaterialsBreakdown();
+    if (materialsBreakdown.length > 0) {
+      markdownContent += "## Materials & Cost Breakdown\n\n";
+      markdownContent += "| Item | Cost |\n";
+      markdownContent += "|------|------|\n";
       
-      // Create the base markdown content that we'll use as fallback
-      const baseMarkdownContent = createMarkdownDescription();
-      
-      // Generate a unique request ID
-      const requestId = `req_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
-      
-      // Prepare file information for the webhook
-      const fileDetails = formData.files ? formData.files.map((file: File) => ({
-        name: file.name,
-        type: file.type,
-        size: Math.round(file.size / 1024) + " KB",
-        lastModified: new Date(file.lastModified).toISOString()
-      })) : [];
-      
-      // Prepare the webhook data
-      const webhookData = {
-        formData: {
-          projectType: formData.projectType || "",
-          location: formData.location || "",
-          files: fileDetails,
-          correspondence: {
-            type: fullCorrespondenceType,
-            clientName: clientName,
-            date: date
-          },
-          subcategories: formData.subcategories || {},
-          markdownInput: baseMarkdownContent // Send our nicely formatted input as well
-        },
-        timestamp: new Date().toISOString(),
-        requestId: requestId
-      };
-      
-      console.log("Sending webhook data:", JSON.stringify(webhookData));
-      
-      // This will hold our response - either from the webhook or our fallback
-      let responseData = null;
-      let webhookSuccess = false;
-      let rawResponse = null;
-      
-      try {
-        // First attempt with proper axios request
-        const response = await axios.post(webhookUrl, webhookData, {
-          timeout: 60000,
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json, text/plain, */*',
-            'Cache-Control': 'no-cache, no-store',
-            'Pragma': 'no-cache',
-            'X-Request-ID': requestId
-          }
-        });
-        
-        // Log the entire raw response for debugging
-        rawResponse = response.data;
-        console.log("RAW Make.com Response:", JSON.stringify(rawResponse));
-        
-        // Try to detect if this is valid JSON that was stringified
-        if (typeof response.data === 'string' && 
-            (response.data.startsWith('{') || response.data.startsWith('['))) {
-          try {
-            const parsedData = JSON.parse(response.data);
-            console.log("Successfully parsed response data as JSON:", parsedData);
-            rawResponse = parsedData;
-          } catch (e) {
-            console.log("Response is string but not valid JSON", e);
-          }
-        }
-        
-        // Log additional debug information about the response structure
-        console.log("Response debug info:", {
-          hasData: !!response.data,
-          dataType: typeof response.data,
-          isString: typeof response.data === 'string',
-          isObject: typeof response.data === 'object',
-          hasTextLong: typeof response.data === 'object' && 'textLong' in response.data,
-          hasMarkdownContent: typeof response.data === 'object' && 'markdownContent' in response.data,
-          keyNames: typeof response.data === 'object' ? Object.keys(response.data) : 'N/A',
-          contentPreview: typeof response.data === 'string' 
-            ? response.data.substring(0, 100) + '...' 
-            : (typeof response.data === 'object' ? JSON.stringify(response.data).substring(0, 100) + '...' : 'N/A'),
-          requestId: requestId
-        });
-        
-        if (response.data) {
-          responseData = response.data;
-          webhookSuccess = true;
-          
-          // Check if response actually contains an estimate or just input data
-          const containsEstimateIndicators = checkForEstimateIndicators(response.data);
-          
-          if (containsEstimateIndicators) {
-            toast.success("Estimate generated successfully");
-          } else {
-            toast.warning("Received response, but it may not contain a complete estimate.");
-            console.warn("Response does not appear to contain a complete estimate");
-          }
-        } else {
-          // Handle empty response
-          toast.warning("Received empty response from estimation service. Using input data instead.");
-          console.warn("Empty response from webhook");
-        }
-      } catch (error: any) {
-        console.error("Error sending webhook data with axios:", error);
-        
-        // Second attempt with fetch + no-cors as fallback
-        toast.info("Trying alternative connection method...");
-        
-        try {
-          console.log("Trying fallback webhook method with fetch...");
-          
-          // Using fetch with no-cors mode
-          const fetchResponse = await fetch(webhookUrl, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "Cache-Control": "no-cache, no-store",
-              "Pragma": "no-cache",
-              "X-Request-ID": requestId
-            },
-            body: JSON.stringify(webhookData),
-          });
-          
-          console.log("Webhook fallback method completed:", fetchResponse);
-          
-          // Try to read the response if available
-          try {
-            const responseText = await fetchResponse.text();
-            console.log("RAW Fetch Response:", responseText);
-            if (responseText) {
-              responseData = responseText;
-              rawResponse = responseText;
-              webhookSuccess = true;
-              
-              // Check if response actually contains an estimate
-              const containsEstimateIndicators = checkForEstimateIndicators(responseText);
-              if (containsEstimateIndicators) {
-                toast.success("Estimate generated successfully");
-              } else {
-                toast.warning("Received response, but it may not contain a complete estimate");
-              }
-            }
-          } catch (readError) {
-            console.log("Could not read fetch response:", readError);
-          }
-        } catch (fallbackError: any) {
-          console.error("Fallback webhook method failed:", fallbackError);
-          setWebhookError((fallbackError.message || "Connection to estimation service failed."));
-          toast.error("Unable to connect to estimation service. Using your input data instead.");
-        }
-      }
-      
-      // Helper function to check if response contains estimate indicators
-      function checkForEstimateIndicators(responseData: any): boolean {
-        if (!responseData) return false;
-        
-        // Convert to string if it's an object
-        const contentToCheck = typeof responseData === 'object' 
-          ? JSON.stringify(responseData) 
-          : String(responseData);
-        
-        const estimateIndicators = [
-          "Total Project Cost",
-          "Materials & Cost Breakdown",
-          "Materials Cost Breakdown",
-          "Labor Costs",
-          "Labour Costs",
-          "Cost Breakdown",
-          "| Item | Quantity | Unit Price",
-          "| Materials Subtotal |",
-          "| Labor Subtotal |",
-          "| Labour Subtotal |"
-        ];
-        
-        // Check each indicator and return true if at least one is found
-        return estimateIndicators.some(indicator => contentToCheck.includes(indicator));
-      }
-      
-      // --------- MARK: Make.com response handling section ----------
-      // If we have a stringified JSON as a response (Make.com might do this)
-      if (typeof responseData === "string") {
-        try {
-          console.log("Attempting to parse string response as JSON:", responseData.substring(0, 100) + "...");
-          let parsed = JSON.parse(responseData);
-          console.log("Successfully parsed string response to JSON with keys:", Object.keys(parsed));
-          
-          // Check if this is an array with just one element
-          if (Array.isArray(parsed) && parsed.length === 1) {
-            console.log("Parsed JSON is an array with one element, using first item");
-            parsed = parsed[0];
-          }
-          
-          responseData = parsed;
-        } catch (e) {
-          // fallback: treat as markdown
-          console.log("Failed to parse string as JSON, treating as markdown:", e);
-          responseData = { markdownContent: responseData };
-        }
-      }
-      
-      // Store the raw response for debugging
-      responseData = {
-        ...responseData,
-        rawResponse,
-        debugInfo: {
-          receivedAt: new Date().toISOString(),
-          responseType: typeof rawResponse,
-          isTextLongPresent: responseData?.textLong ? true : false,
-          isMarkdownContentPresent: responseData?.markdownContent ? true : false,
-          webhookMethod: webhookSuccess ? "success" : "failure",
-          containsEstimateIndicators: checkForEstimateIndicators(rawResponse),
-          rawResponsePreview: typeof rawResponse === 'string' 
-            ? rawResponse.substring(0, 100) 
-            : (typeof rawResponse === 'object' ? JSON.stringify(rawResponse).substring(0, 100) : 'N/A'),
-          requestId: requestId
-        }
-      };
-      
-      // Now try to extract estimate content from different possible response formats
-      let extractedMarkdownContent = null;
-      
-      // Check all possible paths where the actual content might be
-      if (responseData && typeof responseData === "object") {
-        // Option 1: textLong field (direct from Make.com)
-        if (responseData.textLong && typeof responseData.textLong === 'string' && responseData.textLong.trim().length > 100) {
-          console.log("Using textLong field for estimate rendering:", responseData.textLong.substring(0, 100) + "...");
-          extractedMarkdownContent = responseData.textLong;
-        }
-        // Option 2: markdownContent field
-        else if (responseData.markdownContent && typeof responseData.markdownContent === 'string' && responseData.markdownContent.trim().length > 100) {
-          console.log("Using markdownContent field:", responseData.markdownContent.substring(0, 100) + "...");
-          extractedMarkdownContent = responseData.markdownContent;
-        }
-        // Option 3: content or text field 
-        else if (responseData.content && typeof responseData.content === 'string' && responseData.content.trim().length > 100) {
-          console.log("Using content field:", responseData.content.substring(0, 100) + "...");
-          extractedMarkdownContent = responseData.content;
-        }
-        // Option 4: text field
-        else if (responseData.text && typeof responseData.text === 'string' && responseData.text.trim().length > 100) {
-          console.log("Using text field:", responseData.text.substring(0, 100) + "...");
-          extractedMarkdownContent = responseData.text;
-        }
-        // Option 5: Check if entire response is actually a string we can use
-        else if (rawResponse && typeof rawResponse === 'string' && rawResponse.trim().length > 100) {
-          console.log("Using raw response as markdown:", rawResponse.substring(0, 100) + "...");
-          extractedMarkdownContent = rawResponse;
-        }
-      }
-      
-      // If we found content that looks like it might be a good estimate
-      if (extractedMarkdownContent && checkForEstimateIndicators(extractedMarkdownContent)) {
-        console.log("Valid estimate content found!");
-        responseData.markdownContent = extractedMarkdownContent;
-        responseData.estimateGenerated = true;
-      } 
-      // Otherwise, if we have some content but it doesn't look like an estimate
-      else if (extractedMarkdownContent) {
-        console.log("Content found but it doesn't look like an estimate");
-        responseData.markdownContent = extractedMarkdownContent;
-        responseData.estimateGenerated = false;
-      }
-      // Fallback: Use original user input
-      else {
-        console.log("No valid markdown content found, using fallback to input data");
-        responseData.markdownContent = baseMarkdownContent;
-        responseData.webhookStatus = "no-valid-markdown-content";
-        responseData.estimateGenerated = false;
-      }
-      // ---- END ----
-
-      setEstimationResults(responseData);
-      setIsLoading(false);
-      nextStep();
-
-      if (webhookError) {
-        console.warn("Webhook error occurred but process continued:", webhookError);
-      }
-    } catch (error: any) {
-      console.error("Error in overall process:", error);
-      // Create fallback content from the user's input
-      const fallbackContent = createMarkdownDescription();
-      setEstimationResults({ 
-        markdownContent: fallbackContent,
-        webhookStatus: "process-error",
-        error: error.message || "Error processing estimate"
+      materialsBreakdown.forEach(item => {
+        markdownContent += `| ${item.name} | $${item.cost.toLocaleString()} |\n`;
       });
-      setIsLoading(false);
-      nextStep();
+      
+      markdownContent += `| **Materials Subtotal** | **$${materialsCost.toLocaleString()}** |\n\n`;
     }
-  };
+    
+    // Add materials details if available
+    if (formData.subcategories?.materials?.content) {
+      markdownContent += `## Material Details & Calculations\n${formData.subcategories.materials.content}\n\n`;
+    }
+    
+    // Add location details if available
+    if (formData.subcategories?.locationDetails?.content) {
+      markdownContent += `## Location-Specific Details\n${formData.subcategories.locationDetails.content}\n\n`;
+    }
+    
+    // Add timeframe if available
+    if (formData.subcategories?.timeframe?.content) {
+      markdownContent += `## Project Timeline\n${formData.subcategories.timeframe.content}\n\n`;
+    } else {
+      // Add default timeframe based on hours
+      markdownContent += "## Project Timeline\n";
+      const days = Math.ceil(hours / 8);
+      markdownContent += `Estimated completion time: ${days} working day${days > 1 ? 's' : ''}\n\n`;
+    }
+    
+    // Add additional work if available
+    if (formData.subcategories?.additionalWork?.content) {
+      markdownContent += `## Additional Work\n${formData.subcategories.additionalWork.content}\n\n`;
+    }
+    
+    // Add notes if available
+    if (formData.subcategories?.notes?.content) {
+      markdownContent += `## Notes & Terms\n${formData.subcategories.notes.content}\n\n`;
+    } else {
+      // Add default notes
+      markdownContent += "## Notes & Terms\n";
+      markdownContent += "- This estimate is valid for 30 days from the date issued\n";
+      markdownContent += "- Price may vary based on unforeseen circumstances or changes to project scope\n";
+      markdownContent += "- Payment terms: 50% deposit required to begin work, remaining balance due upon completion\n";
+      markdownContent += "- Warranty: All workmanship is guaranteed for 1 year from completion\n\n";
+    }
+    
+    return markdownContent;
+  }
 
   return (
     <button
