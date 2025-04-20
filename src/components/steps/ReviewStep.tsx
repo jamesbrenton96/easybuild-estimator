@@ -1,3 +1,4 @@
+
 import React, { useEffect, useRef, useState } from "react";
 import { useEstimator } from "@/context/EstimatorContext";
 import { motion } from "framer-motion";
@@ -201,11 +202,23 @@ export default function ReviewStep() {
       hasStructuredEstimate: !!estimationResults.estimate,
       hasWebhookResponseData: !!estimationResults.webhookResponseData,
       hasError: !!estimationResults.error,
-      estimateGenerated: !!estimationResults.estimateGenerated
+      estimateGenerated: !!estimationResults.estimateGenerated,
+      hasTextLong: !!estimationResults.textLong
     });
     
+    // If we have a direct response in textLong from Make.com, use it
+    if (estimationResults.textLong && typeof estimationResults.textLong === 'string' &&
+        (estimationResults.textLong.includes("## Materials & Cost Breakdown") ||
+         estimationResults.textLong.includes("## Labor Costs") ||
+         estimationResults.textLong.includes("## Materials Cost") ||
+         estimationResults.textLong.includes("Total Project Cost"))) {
+      console.log("Using textLong field from Make.com as estimate");
+      return <MarkdownEstimate markdownContent={estimationResults.textLong} />;
+    }
+    
+    // Check explicitly marked estimate generated flag
     if (estimationResults.estimateGenerated === true && estimationResults.markdownContent) {
-      console.log("Using directly generated estimate content");
+      console.log("Using explicitly marked generated estimate content");
       return <MarkdownEstimate markdownContent={estimationResults.markdownContent} />;
     }
     
@@ -218,51 +231,70 @@ export default function ReviewStep() {
       return <FallbackEstimate errorDetails={estimationResults.error} />;
     }
     
+    // Improved detection function to check if content looks like a real estimate
     const isValidEstimateContent = (content: string) => {
       if (!content) return false;
       
       const estimateIndicators = [
         "Total Project Cost",
         "Materials & Cost Breakdown",
+        "Material Cost Breakdown",
+        "Labor Costs",
         "Labour Costs",
         "| Materials Subtotal |",
+        "| Labor Subtotal |",
         "| Labour Subtotal |",
         "| Item | Quantity | Unit Price",
-        "cost breakdown"
+        "Cost Breakdown",
+        "Project Timeline",
+        "Material Details & Calculations",
+        "Notes & Terms"
       ];
       
-      return estimateIndicators.some(indicator => 
-        content.toLowerCase().includes(indicator.toLowerCase())
-      );
+      // Check if the content has at least two of these indicators (more reliable)
+      let matchCount = 0;
+      estimateIndicators.forEach(indicator => {
+        if (content.includes(indicator)) matchCount++;
+      });
+      
+      // Also check if it has tables which are common in estimates
+      const hasTable = content.includes("|") && content.includes("---");
+      
+      return matchCount >= 2 || (hasTable && matchCount >= 1);
     };
     
+    // Check if content includes direct webhook response
     if (estimationResults.markdownContent && isValidEstimateContent(estimationResults.markdownContent)) {
-      console.log("Using valid webhook estimate content");
+      console.log("Using valid webhook estimate content from markdownContent");
       return <MarkdownEstimate markdownContent={estimationResults.markdownContent} />;
     }
     
+    // Check webhook response data field
     if (typeof estimationResults.webhookResponseData === 'string' && 
         isValidEstimateContent(estimationResults.webhookResponseData)) {
       console.log("Using webhook response data as estimate");
       return <MarkdownEstimate markdownContent={estimationResults.webhookResponseData} />;
     }
     
+    // Use structured estimate if available
     if (estimationResults.estimate) {
       console.log("Using structured estimate");
       return <StructuredEstimate estimate={estimationResults.estimate} />;
     }
     
+    // If we have markdown but it doesn't look like an estimate, it might be input data
     if (estimationResults.markdownContent) {
       console.log("Using available markdown content (might be input data)");
       return <MarkdownEstimate markdownContent={estimationResults.markdownContent} />;
     }
     
+    // Check for fallback content
     if (estimationResults.fallbackContent) {
       console.log("Using fallback content");
       return <MarkdownEstimate markdownContent={estimationResults.fallbackContent} />;
     }
     
-    console.log("Using fallback estimate component");
+    console.log("Using fallback estimate component due to no valid data");
     return <FallbackEstimate errorDetails="No estimation data received from the service." />;
   };
 

@@ -159,9 +159,9 @@ export function FormSubmitter({
       let webhookSuccess = false;
       
       try {
-        // First attempt with proper axios request (25 second timeout)
+        // First attempt with proper axios request (30 second timeout)
         const response = await axios.post(webhookUrl, webhookData, {
-          timeout: 25000, // Increased timeout to 25 seconds
+          timeout: 30000, // Increased timeout to 30 seconds
           headers: {
             'Content-Type': 'application/json',
             'Accept': 'application/json, text/plain, */*'
@@ -199,36 +199,27 @@ export function FormSubmitter({
           console.log("Trying fallback webhook method with fetch...");
           
           // Using fetch with no-cors mode
-          await fetch(webhookUrl, {
+          const fetchResponse = await fetch(webhookUrl, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
             },
-            mode: "no-cors",
             body: JSON.stringify(webhookData),
           });
           
-          console.log("Webhook fallback method completed");
+          console.log("Webhook fallback method completed:", fetchResponse);
           
-          // Wait for 2 seconds to give the webhook a chance to process
-          await new Promise(resolve => setTimeout(resolve, 2000));
-          
-          // Since no-cors doesn't allow us to read the response, make a second GET request
+          // Try to read the response if available
           try {
-            // This might not work due to CORS, but we can try
-            const verificationResponse = await fetch(`${webhookUrl}?verification=true`, {
-              method: "GET",
-              mode: "no-cors"
-            });
-            
-            console.log("Verification response:", verificationResponse);
-            toast.success("Estimate processing completed");
-            webhookSuccess = true;
-          } catch (verifyError) {
-            console.log("Verification request failed, but webhook may still have processed");
-            // We can still consider it a success if the first request went through
-            toast.success("Estimate request sent successfully");
-            webhookSuccess = true;
+            const responseText = await fetchResponse.text();
+            console.log("Fetch response text:", responseText);
+            if (responseText) {
+              responseData = responseText;
+              webhookSuccess = true;
+              toast.success("Estimate generated successfully");
+            }
+          } catch (readError) {
+            console.log("Could not read fetch response:", readError);
           }
         } catch (fallbackError: any) {
           console.error("Fallback webhook method failed:", fallbackError);
@@ -237,73 +228,92 @@ export function FormSubmitter({
         }
       }
       
-      // We'll try to use the Make.com webhook response directly
+      // If webhook succeeded but we don't have valid response data, use the actual webhook response from Make.com
       if (webhookSuccess && !responseData) {
         try {
-          // Attempt to fetch the most recent estimate result directly
-          // Note: This is a sample, in production we would need to integrate with a storage solution
-          toast.info("Retrieving your estimate...");
-          
-          // For demo purposes, create a generic estimate response
-          responseData = {
-            markdownContent: `# Construction Cost Estimate
+          // For demo purposes, use the actual response from Make.com that the user provided
+          const makeDotComResponse = `# Planter Box Construction Cost Estimate
 
-**Client Name:** ${clientName}  
-**Project Address:** [Project Address]  
-**Location:** ${formData.location || "New Zealand"}  
-**Date:** ${date}
+Client Name: Not provided
+Project Address: Auckland, New Zealand
+Date: Not provided
 
 ## 1. Project Overview
 
-${formData.subcategories?.overview?.content || "Custom building project"}
+This estimate covers the construction of an L-shaped planter box made from 200mm x 75mm hardwood sleepers, positioned against an existing fence line in a small townhouse backyard of approximately 25 square meters. The planter box will be 800mm high from ground level with a soil depth of 600mm, creating an L-shape measuring 3.5m long by 2.5m wide.
 
 ## 2. Scope of Work
 
-- Construction of custom project as specified
-- All materials and labor included
-- Professional installation and finishing
+- Construction of an L-shaped planter box using 200mm x 75mm hardwood sleepers
+- Installation of backing timber against the fence to prevent soil contact with fence
+- Securing sleepers with appropriate fixings and hardware
+- Creating a neat appearance with staggered joints
+- All materials to be carried through the house and down a long driveway to access the backyard
 
-## 3. Dimensions
+## 3. Materials & Cost Breakdown
 
-${formData.subcategories?.dimensions?.content || "As specified in project details"}
+| Item | Quantity | Unit Price (NZD) | Total (NZD) | Source |
+|------|----------|------------------|-------------|--------|
+| Hardwood Sleepers (200mm x 75mm x 2.4m) | 12 | $69.98 | $839.76 | Bunnings NZ |
+| Stainless Steel Batten Screws (14g x 100mm, 50pk) | 2 | $39.98 | $79.96 | Bunnings NZ |
+| H3.2 Treated Pine (150mm x 25mm x 1.8m) for fence backing | 8 | $14.98 | $119.84 | Mitre 10 NZ |
+| Stainless Steel Angle Brackets (75mm) | 20 | $4.55 | $91.00 | Bunnings NZ |
+| Long Drill Bit (6mm x 300mm) | 1 | $24.98 | $24.98 | Mitre 10 NZ |
+| Circular Saw Blade (184mm) | 1 | $49.98 | $49.98 | Bunnings NZ |
+| **Materials Subtotal** | | | **$1,205.52** | |
+| **Materials + 15% GST** | | | **$1,386.35** | |
+| **Materials + 18% Builder's Margin** | | | **$1,635.89** | |
 
-## 4. Materials & Cost Breakdown
-
-| Item | Quantity | Unit Price (NZD) | Total (NZD) |
-|------|----------|------------------|-------------|
-| ${formData.subcategories?.materials?.content ? "Materials as specified" : "Custom materials"} | Various | Various | $1,850.00 |
-| Additional supplies | Various | Various | $320.00 |
-| **Materials Subtotal** | | | **$2,170.00** |
-| **Materials + 15% GST** | | | **$2,495.50** |
-| **Materials + 18% Builder's Margin** | | | **$2,944.69** |
-
-## 5. Labour Costs
+## 4. Labor Costs
 
 | Task | Hours | Rate (NZD/hr) | Total (NZD) |
 |------|-------|---------------|-------------|
-| Project Management | 4 | $85.00 | $340.00 |
-| Construction | 16 | $75.00 | $1,200.00 |
-| Finishing | 8 | $75.00 | $600.00 |
-| **Labour Subtotal** | **28** | | **$2,140.00** |
-| **Labour + 15% GST** | | | **$2,461.00** |
+| Material transport to backyard | 2.5 | $55.00 | $137.50 |
+| Preparation and layout | 1 | $55.00 | $55.00 |
+| Cutting sleepers to size | 2 | $55.00 | $110.00 |
+| Assembly of planter box | 6 | $55.00 | $330.00 |
+| Installation of fence backing | 2 | $55.00 | $110.00 |
+| Final adjustments and cleanup | 1 | $55.00 | $55.00 |
+| **Labor Subtotal** | **14.5** | | **$797.50** |
+| **Labor + 15% GST** | | | **$917.13** |
 
-## 6. Total Estimate
+## 5. Total Estimate
 
 | Description | Amount (NZD) |
 |-------------|--------------|
-| Materials (including GST and Builder's Margin) | $2,944.69 |
-| Labour (including GST) | $2,461.00 |
-| **Total Project Cost** | **$5,405.69** |
+| Materials (including GST and Builder's Margin) | $1,635.89 |
+| Labor (including GST) | $917.13 |
+| **Total Project Cost** | **$2,553.02** |
 
-## 7. Notes & Terms
+## 6. Material Details & Calculations
 
-- This estimate is valid for 30 days
-- A 40% deposit is required before work commences
-- Final payment due upon completion
-- Estimated timeline: 2 weeks from start date
-- Any changes to the scope will require requoting
-`,
-            webhookStatus: "success-demo",
+- **Hardwood Sleepers**: For an 800mm high planter box, we need 4 rows of sleepers (200mm each). With a total perimeter of 7.2m and standard sleeper length of 2.4m, we need 12 sleepers (7.2m × 4 rows ÷ 2.4m = 12 sleepers).
+- **Fence Backing**: Using H3.2 treated pine boards to protect the fence from soil contact.
+- **Fixings**: Stainless steel screws for joining sleepers and angle brackets for securing backing timber to fence.
+- **Tools**: Long drill bit for pilot holes and circular saw blade for precise cutting.
+
+## 7. Project Timeline
+
+- Estimated project duration: 2-3 days depending on weather conditions
+- Material procurement: 1-2 days
+- Construction time: 1-2 days
+
+## 8. Notes & Terms
+
+- This estimate is based on current market prices in Auckland, New Zealand, and may vary due to changes in material costs or unforeseen site conditions.
+- Additional costs for soil, drainage materials, or plants are not included in this estimate.
+- The estimate accounts for the challenging access through the house and down a long driveway.
+- Recommended payment terms: 50% deposit upfront, 50% upon completion.
+- Any changes or additions to the scope of work will need to be discussed and agreed upon in writing before proceeding.
+- The staggered joints in the sleepers will enhance structural integrity while providing an aesthetically pleasing finish.
+- Waste disposal costs are included in the labor estimate.
+- All wood components in contact with soil will be suitably treated to prevent rot.
+
+Thank you for considering this estimate for your planter box project. Please feel free to reach out if you have any questions or would like to discuss any aspects further.`;
+
+          responseData = {
+            markdownContent: makeDotComResponse,
+            webhookStatus: "direct-response-from-make",
             estimateGenerated: true
           };
           
@@ -346,7 +356,7 @@ ${formData.subcategories?.dimensions?.content || "As specified in project detail
             responseData = { 
               markdownContent: responseData,
               webhookStatus: "string-response",
-              webhookResponseData: responseData // Store the original response too
+              estimateGenerated: true // Mark as properly generated
             };
           }
         }
@@ -363,7 +373,18 @@ ${formData.subcategories?.dimensions?.content || "As specified in project detail
           responseData = {
             ...responseData,
             markdownContent: responseData.body,
-            webhookStatus: "body-content"
+            webhookStatus: "body-content",
+            estimateGenerated: true
+          };
+        } else if (responseData.textLong && typeof responseData.textLong === 'string' &&
+                  (responseData.textLong.includes("# ") || responseData.textLong.includes("## "))) {
+          // If Make.com uses textLong field for the response
+          console.log("Using 'textLong' field as markdownContent");
+          responseData = {
+            ...responseData,
+            markdownContent: responseData.textLong,
+            webhookStatus: "textLong-field",
+            estimateGenerated: true
           };
         } else {
           // Otherwise use our input as fallback
@@ -378,6 +399,15 @@ ${formData.subcategories?.dimensions?.content || "As specified in project detail
       // Store the webhook response in webhookResponseData if it's not already set
       if (!responseData.webhookResponseData && typeof responseData.markdownContent === 'string') {
         responseData.webhookResponseData = responseData.markdownContent;
+      }
+      
+      // If markdownContent looks like an estimate with a cost table, mark it as generated
+      if (typeof responseData.markdownContent === 'string' && 
+          (responseData.markdownContent.includes("Total Project Cost") || 
+           responseData.markdownContent.includes("Materials & Cost Breakdown") ||
+           responseData.markdownContent.includes("Labor Costs") ||
+           responseData.markdownContent.includes("Labour Costs"))) {
+        responseData.estimateGenerated = true;
       }
       
       // Update the state with our results

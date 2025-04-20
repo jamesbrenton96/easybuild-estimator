@@ -48,16 +48,24 @@ export default function MarkdownEstimate({ markdownContent }: MarkdownEstimatePr
   
   // Function to detect if content is likely a real estimate (improved detection)
   const isActualEstimate = (content: string) => {
+    if (!content) return false;
+    
     const estimateIndicators = [
       "Total Estimate", 
       "Total Project Cost",
       "Materials & Cost Breakdown",
+      "Materials Cost Breakdown",
+      "Labor Costs",
       "Labour Costs",
       "Cost Breakdown",
       "Material Details & Calculations",
-      "| Item | Quantity | Unit Price",  // Table header formats
-      "| Materials Subtotal |",          // Common table formats
-      "| Labour Subtotal |"             // Common table formats
+      "| Item | Quantity | Unit Price",     // Table header formats
+      "| Materials Subtotal |",             // Common table formats
+      "| Labor Subtotal |",                 // Common table formats (US spelling)
+      "| Labour Subtotal |",                // Common table formats (UK/NZ spelling)
+      "Materials (including GST",           // Common total line
+      "Labor (including GST",               // Common total line
+      "Labour (including GST"               // Common total line
     ];
     
     return estimateIndicators.some(indicator => content.includes(indicator));
@@ -132,6 +140,38 @@ export default function MarkdownEstimate({ markdownContent }: MarkdownEstimatePr
      processedContent.includes("Hourly Rates") ||
      processedContent.includes("Additional Work"));
   
+  // If it looks like a real estimate or has tables
+  if (estimateReceived || processedContent.includes("|")) {
+    return (
+      <Card className="bg-white rounded-lg overflow-hidden shadow-lg mb-8">
+        <div className="p-5 border-b border-gray-200 bg-gray-50">
+          <h2 className="text-gray-800 font-semibold text-xl">Construction Cost Estimate</h2>
+        </div>
+        <div className="p-6 markdown-content text-gray-800">
+          <ReactMarkdown 
+            className="prose max-w-none 
+              prose-headings:text-construction-orange prose-headings:font-semibold 
+              prose-h1:text-2xl prose-h1:mb-6 prose-h1:border-b prose-h1:border-gray-200 prose-h1:pb-3
+              prose-h2:text-xl prose-h2:mt-6 prose-h2:mb-4 
+              prose-h3:text-lg prose-h3:mt-5 prose-h3:mb-3
+              prose-h4:text-base prose-h4:mt-4 prose-h4:mb-2
+              prose-p:my-3 prose-p:leading-relaxed
+              prose-a:text-blue-600 
+              prose-strong:text-gray-900 prose-strong:font-medium
+              prose-li:my-1 prose-li:ml-2
+              prose-table:border-collapse prose-table:w-full prose-table:my-4 prose-table:table-fixed
+              prose-th:bg-gray-100 prose-th:p-2 prose-th:border prose-th:border-gray-300 prose-th:text-left
+              prose-td:border prose-td:border-gray-300 prose-td:p-2 prose-td:break-words
+              prose-hr:my-6"
+            remarkPlugins={[remarkGfm]}
+          >
+            {processedContent}
+          </ReactMarkdown>
+        </div>
+      </Card>
+    );
+  }
+  
   // If it's just input data, show a better fallback
   if (isJustInputData) {
     return (
@@ -145,10 +185,10 @@ export default function MarkdownEstimate({ markdownContent }: MarkdownEstimatePr
               <AlertTriangle className="h-5 w-5 text-yellow-500 mr-2 mt-0.5" />
               <div>
                 <p className="text-yellow-700">
-                  <strong>Note:</strong> We were unable to generate a complete estimate at this time.
+                  <strong>Note:</strong> The estimate service returned your input data only. This may be due to a connection issue with our estimation service.
                 </p>
                 <p className="text-yellow-700 text-sm mt-1">
-                  Our estimation service is experiencing a temporary connection issue. Please try again in a few minutes.
+                  Please try again or check back later. For immediate assistance, contact our support team.
                 </p>
               </div>
             </div>
@@ -177,12 +217,23 @@ export default function MarkdownEstimate({ markdownContent }: MarkdownEstimatePr
     );
   }
 
+  // Default case - just show the content with a warning
   return (
     <Card className="bg-white rounded-lg overflow-hidden shadow-lg mb-8">
       <div className="p-5 border-b border-gray-200 bg-gray-50">
         <h2 className="text-gray-800 font-semibold text-xl">Construction Cost Estimate</h2>
       </div>
       <div className="p-6 markdown-content text-gray-800">
+        <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6">
+          <div className="flex items-start">
+            <AlertTriangle className="h-5 w-5 text-yellow-500 mr-2 mt-0.5" />
+            <div>
+              <p className="text-yellow-700">
+                <strong>Note:</strong> The content below may not be a complete estimate.
+              </p>
+            </div>
+          </div>
+        </div>
         <ReactMarkdown 
           className="prose max-w-none 
             prose-headings:text-construction-orange prose-headings:font-semibold 
