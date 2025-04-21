@@ -82,7 +82,7 @@ export default function MarkdownContentRenderer({ content }: { content: string }
               const cells = React.Children.toArray(children);
               
               // Check if we already have a proper HTML table structure
-              if (cells.length > 0 && typeof cells[0] === 'object' && cells[0].type === 'table') {
+              if (cells.length > 0 && React.isValidElement(cells[0]) && cells[0].type === 'table') {
                 return <>{children}</>;
               }
               
