@@ -17,7 +17,7 @@ export default function MarkdownSectionBulletList({
   const processedPoints = bulletPoints.map((item, i) => {
     const hasNumberedSection = item.includes('<span class="section-number">');
     return (
-      <li key={i} className={`my-2 ${hasNumberedSection ? 'list-none -ml-6' : ''}`}>
+      <li key={i} className={`my-2 ${hasNumberedSection ? 'list-none -ml-6 flex items-start' : ''}`}>
         {item}
       </li>
     );
@@ -26,7 +26,7 @@ export default function MarkdownSectionBulletList({
   return (
     <>
       {header}
-      <ul className="ml-6 list-disc">
+      <ul className="ml-6 list-disc space-y-2">
         {processedPoints}
       </ul>
     </>

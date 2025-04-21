@@ -15,5 +15,5 @@ export function CustomSpan({ className, children, ...props }: React.HTMLAttribut
       </span>
     );
   }
-  return <span {...props}>{children}</span>;
+  return <span className={className} {...props}>{children}</span>;
 }

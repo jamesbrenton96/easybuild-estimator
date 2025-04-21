@@ -87,10 +87,12 @@ export default function MarkdownContentRenderer({ content }: { content: string }
               child => React.isValidElement(child) && child.props?.className === "subtotal-cell"
             );
 
+            // Numbered sections need special styling with left margin and flex
             if (hasNumberedSection) {
               return <p className="flex items-start mb-4" {...props}>{children}</p>;
             }
 
+            // Handle subtotal cells
             if (hasSubtotalCells) {
               // Extract the content of the subtotal cells
               let description = '';
@@ -115,6 +117,7 @@ export default function MarkdownContentRenderer({ content }: { content: string }
               }
             }
 
+            // Regular paragraphs
             return <p {...props}>{children}</p>;
           }
         }}

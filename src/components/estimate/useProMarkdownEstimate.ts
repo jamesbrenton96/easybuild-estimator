@@ -1,3 +1,4 @@
+
 import { useMemo } from "react";
 
 /**
@@ -36,7 +37,7 @@ export function useProMarkdownEstimate(rawMarkdown: string) {
 
     // 4. Recognized section (bolded) headers (for non-numbered section titles)
     content = content.replace(
-      /^(Project Overview|Scope of Work|Dimensions|Materials & Cost Breakdown|Material Cost Breakdown|Labor Costs|Labour Costs|Labor Cost Breakdown|Total Estimate|Total Project Cost|Project Timeline|Material Details & Calculations|Notes & Terms|Client Name|Project Address|Payment Terms|Warranty Information)$/gim,
+      /^(Project Overview|Scope of Work|Dimensions|Materials & Cost Breakdown|Material Cost Breakdown|Labor Costs|Labour Costs|Labor Cost Breakdown|Total Estimate|Total Project Cost|Project Timeline|Material Details & Calculations|Notes & Terms|NOTES & TERMS|Client Name|Project Address|Payment Terms|Warranty Information)$/gim,
       (_, cap) => `\n\n### ${cap}\n`
     );
 
@@ -78,8 +79,10 @@ export function useProMarkdownEstimate(rawMarkdown: string) {
     bulletSection("Scope of Work");
     bulletSection("Material Details & Calculations");
     // Don't auto-bulletify Notes & Terms section if it has section-number spans
-    if (!content.match(/### Notes & Terms[\s\S]*?<span class="section-number">/i)) {
+    if (!content.match(/### Notes & Terms[\s\S]*?<span class="section-number">/i) && 
+        !content.match(/### NOTES & TERMS[\s\S]*?<span class="section-number">/i)) {
       bulletSection("Notes & Terms");
+      bulletSection("NOTES & TERMS");
     }
     bulletSection("Dimensions");
     bulletSection("Project Timeline");
@@ -270,8 +273,8 @@ export function useProMarkdownEstimate(rawMarkdown: string) {
 
     // 12. Handle numbered bullet points in Notes & Terms section
     content = content.replace(
-      /(### Notes & Terms\n)([^#\n][^]*?)(?=\n### |\n## |$)/gi,
-      (_, heading, body) => {
+      /(### (Notes & Terms|NOTES & TERMS)\n)([^#\n][^]*?)(?=\n### |\n## |$)/gi,
+      (_, heading, sectionName, body) => {
         // Process each line to check for numbered items
         const lines = body.trim().split("\n");
         const formattedLines = lines.map((line, index) => {
@@ -293,8 +296,16 @@ export function useProMarkdownEstimate(rawMarkdown: string) {
         return heading + formattedLines.join('\n\n') + '\n';
       }
     );
+    
+    // 13. Handle "Thank you" note after Notes & Terms section
+    content = content.replace(
+      /(?:Thank you for considering us for your|Thank you for choosing|Thank you)([^#]*)(?=\n### |\n## |$)/gi,
+      (_, rest) => {
+        return `\n### Thank You\n\nThank you${rest}`;
+      }
+    );
 
-    // 13. Clean up extra whitespace, excess blank lines, ensure nice section spacing.
+    // 14. Clean up extra whitespace, excess blank lines, ensure nice section spacing.
     content = content.replace(/\n{3,}/g, "\n\n");
     content = content.trim();
 
