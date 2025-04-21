@@ -38,7 +38,8 @@ export default function MarkdownContentRenderer({ content }: { content: string }
           const firstChild = childrenProps[0];
           // Safely access the text value
           if (React.isValidElement(firstChild) && firstChild.props) {
-            const textValue = firstChild.props.value;
+            // Fix: Properly access and check the value property with type safety
+            const textValue = firstChild.props?.value;
             if (typeof textValue === 'string' && headerTest(textValue)) {
               insideSection = true;
               headerIndex = idx;
@@ -53,7 +54,10 @@ export default function MarkdownContentRenderer({ content }: { content: string }
         if (nodeProps?.type === "paragraph") {
           // Safe extraction of text content
           const childContent = React.Children.toArray(props.children)
-            .map(str => (typeof str === "string" ? str.trim() : ""))
+            .map(str => {
+              // Fix: Properly type check before using trim
+              return typeof str === "string" ? str.trim() : "";
+            })
             .filter(Boolean)
             .join(" ");
           
