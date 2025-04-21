@@ -153,6 +153,21 @@ export default function MarkdownTableStyle() {
         background: #f97316;
         margin: 2.5rem 0 2rem;
       }
+      /* Total Estimate specific styling */
+      .markdown-content table tr td:last-child {
+        text-align: right;
+        font-weight: 500;
+      }
+      .markdown-content table tr td strong,
+      .markdown-content table tr td.subtotal-cell,
+      .markdown-content table tr td span.subtotal-cell {
+        color: #f97316;
+        font-weight: 700;
+      }
+      .markdown-content table tr:last-child td {
+        font-weight: 700;
+        border-top: 2px solid #f97316;
+      }
       @media print {
         .markdown-content {
           font-size: 12pt !important;

@@ -27,6 +27,20 @@ export default function MarkdownContentRenderer({ content }: { content: string }
           prose-th:bg-construction-orange prose-th:text-white prose-th:p-2 prose-th:text-left
           prose-td:p-2"
         remarkPlugins={[remarkGfm]}
+        components={{
+          span: ({ node, className, children, ...props }) => {
+            if (className === "total-project-cost-block") {
+              return <div className="total-project-cost-block">{children}</div>;
+            }
+            if (className === "subtotal-cell") {
+              return <strong className="font-bold text-construction-orange">{children}</strong>;
+            }
+            if (className === "section-number") {
+              return <span className="section-number">{children}</span>;
+            }
+            return <span {...props}>{children}</span>;
+          }
+        }}
       >
         {content}
       </ReactMarkdown>

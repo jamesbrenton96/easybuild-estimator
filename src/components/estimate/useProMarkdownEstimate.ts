@@ -65,34 +65,82 @@ export function useProMarkdownEstimate(rawMarkdown: string) {
     bulletSection("Material Details & Calculations");
     bulletSection("Notes & Terms");
 
-    // 6. Enhance tables: right align numbers, strong header, styled subtotal/total lines
-    // This is mostly handled by the CSS, but clarify subtotal/total rows in markdown:
+    // 6. Create a better formatted total estimate section
     content = content.replace(
-      /^(\|\s*(?:Materials|Labor|Labour|Total Project Cost|Total Estimate|Materials \+ 15% GST|Labor \+ 15% GST|Materials \+ 18% Builders Margin|Labor Subtotal|Materials Subtotal).*?\|)$/gim,
-      match =>
-        match
-          .replace(/(\*\*[^(|]+?\*\*)/, m => `<strong>${m.replace(/\*\*/g, "")}</strong>`)
-          .replace(/(\|.*\$[\d,.]+\s*\|)$/g, cell => `<span class="subtotal-cell">${cell}</span>`)
+      /(### Total Estimate\n)([^#]*?)(?=\n### |\n## |$)/g,
+      (_, heading, body) => {
+        // If the total estimate section already contains a properly formatted table, leave it as is
+        if (body.includes("| Description | Amount |") || body.includes("total-project-cost-block")) {
+          return heading + body;
+        }
+
+        // Extract total project cost from the content if it exists
+        const totalMatch = body.match(/Total Project Cost:?\s*\$([0-9,]+\.\d{2}|\d+)/i);
+        const totalAmount = totalMatch ? totalMatch[1] : "";
+
+        // Extract other costs from the content
+        const lines = body
+          .split("\n")
+          .map(line => line.trim())
+          .filter(line => line.length > 0);
+
+        // Build a proper table for the total estimate section
+        let tableRows = [];
+        
+        // Add table headers
+        tableRows.push("| Description | Amount (NZD) |");
+        tableRows.push("|-------------|-------------|");
+        
+        // Process each line to extract description and amount
+        lines.forEach(line => {
+          const match = line.match(/(.*?)(?:\:|\s+)?\$?([0-9,]+\.\d{2}|\d+)$/);
+          if (match) {
+            const description = match[1].trim();
+            const amount = match[2].trim();
+            
+            if (description.toLowerCase().includes("total project cost")) {
+              // Skip this line as we'll add it separately at the end
+            } else {
+              tableRows.push(`| ${description} | $${amount} |`);
+            }
+          }
+        });
+        
+        // Add the total project cost at the end if found
+        if (totalAmount) {
+          tableRows.push("\n<span class=\"total-project-cost-block\">Total Project Cost: $" + totalAmount + "</span>\n");
+        }
+        
+        return heading + "\n" + tableRows.join("\n") + "\n";
+      }
     );
 
-    // 7. Insert orange divider above Total Estimate section
+    // 7. Enhance tables: right align numbers, strong header, styled subtotal/total lines
     content = content.replace(
-      /(<span class="section-number">[0-9]+<\/span>Total Estimate)/,
+      /^\|(.*?)\|(.*?)\|$/gm,
+      (match, desc, amount) => {
+        // Skip if this is a header or separator row
+        if (match.includes("---") || match.toLowerCase().includes("description") || match.toLowerCase().includes("amount")) {
+          return match;
+        }
+        
+        // Check if this is a totals or subtotals row
+        if (desc.toLowerCase().includes("subtotal") || 
+            desc.toLowerCase().includes("total") || 
+            desc.toLowerCase().includes("gst") || 
+            desc.toLowerCase().includes("margin")) {
+          return `|<span class="subtotal-cell">${desc}</span>|<span class="subtotal-cell">${amount}</span>|`;
+        }
+        
+        return match;
+      }
+    );
+
+    // 8. Insert orange divider above Total Estimate section
+    content = content.replace(
+      /(### Total Estimate|<span class="section-number">[0-9]+<\/span>Total Estimate)/,
       '<hr class="orange-divider"/>\n$1'
     );
-
-    // 8. Make total project cost stand out! Look for "Total Project Cost" or "Total Estimate" row, and extract value:
-    const totalMatch = content.match(/Total Project Cost.*?\$([0-9,]+\.\d{2}|\d+)/);
-    if (totalMatch) {
-      const rawAmount = totalMatch[1];
-      content = content.replace(
-        /(Total Project Cost.*?\$[0-9,]+\.\d{2}|\$[0-9,]+)/g,
-        m =>
-          m.includes("Total Project Cost")
-            ? `<span class="total-project-cost-block">Total Project Cost: $${rawAmount}</span>`
-            : m
-      );
-    }
 
     // 9. Clean up extra whitespace, excess blank lines, ensure nice section spacing.
     content = content.replace(/\n{3,}/g, "\n\n");
