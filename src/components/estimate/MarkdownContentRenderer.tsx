@@ -9,6 +9,60 @@ import MarkdownTableStyle from "./MarkdownTableStyle";
  * Used inside MarkdownEstimate.
  */
 export default function MarkdownContentRenderer({ content }: { content: string }) {
+
+  // Custom renderer for sections
+  const renderSectionAsList = (
+    children: React.ReactNode[],
+    headerTest: (content: string) => boolean
+  ): React.ReactNode => {
+    const bulletPoints: string[] = [];
+
+    let insideSection = false;
+    let headerIndex = -1;
+
+    // Find header line & collect list
+    React.Children.forEach(children, (child, idx) => {
+      if (React.isValidElement(child) && child.props?.node?.type === "heading") {
+        const text = child.props?.children?.[0]?.props?.value || "";
+        if (headerTest(text)) {
+          insideSection = true;
+          headerIndex = idx;
+        } else {
+          insideSection = false;
+        }
+      } else if (insideSection) {
+        // Only pick paragraphs (be strict, skip tables/lists etc)
+        if (React.isValidElement(child) && child.props?.node?.type === "paragraph") {
+          bulletPoints.push(
+            React.Children.toArray(child.props?.children)
+              .map(str => (typeof str === "string" ? str.trim() : ""))
+              .filter(Boolean)
+              .join(" ")
+          );
+        }
+        // If child is string (loose paragraphs)
+        else if (typeof child === "string") {
+          bulletPoints.push(child.trim());
+        }
+      }
+    });
+
+    if (headerIndex !== -1 && bulletPoints.length > 0) {
+      return (
+        <>
+          {children[headerIndex]}
+          <ul className="ml-6 list-disc">
+            {bulletPoints.map((item, i) => (
+              <li key={i} className="my-1">{item}</li>
+            ))}
+          </ul>
+        </>
+      );
+    }
+
+    return children;
+  };
+
   return (
     <div className="p-8 markdown-content text-gray-800">
       <MarkdownTableStyle />
@@ -61,7 +115,6 @@ export default function MarkdownContentRenderer({ content }: { content: string }
           td: ({ node, ...props }) => {
             return <td className="estimate-table-cell p-3 border border-gray-200" {...props} />;
           },
-          // Handle regular paragraph elements that might contain section numbers
           p: ({ node, children, ...props }) => {
             // Check if this paragraph contains a section-number span
             const hasNumberedSection = React.Children.toArray(children).some(
@@ -81,8 +134,14 @@ export default function MarkdownContentRenderer({ content }: { content: string }
               // Create a proper table row from subtotal cells
               const cells = React.Children.toArray(children);
               
-              // Check if we already have a proper HTML table structure
-              if (cells.length > 0 && React.isValidElement(cells[0]) && cells[0].type === 'table') {
+              // SAFE way to check if the first cell is a <table>
+              if (
+                cells.length > 0 &&
+                React.isValidElement(cells[0]) &&
+                (cells[0].type === 'table' ||
+                  // Some Markdown parsers may use lowercase/uppercase string
+                  (typeof cells[0].type === 'string' && cells[0].type.toLowerCase() === 'table'))
+              ) {
                 return <>{children}</>;
               }
               
@@ -117,8 +176,75 @@ export default function MarkdownContentRenderer({ content }: { content: string }
                 );
               }
             }
-            
+
             return <p {...props}>{children}</p>;
+          },
+          // Render bullets for defined sections:
+          // Use a custom wrapper at the document element level
+          root: ({ node, children }) => {
+            let nodesArr = React.Children.toArray(children);
+
+            // 1. Correspondence section
+            if (nodesArr.some(el =>
+              React.isValidElement(el) &&
+              el.props?.node?.type === "heading" &&
+              typeof el.props?.children?.[0]?.props?.value === "string" &&
+              [
+                "Correspondence Details",
+                "Correspondence",
+                "Client Details"
+              ].includes(el.props?.children?.[0]?.props?.value)
+            )) {
+              nodesArr = renderSectionAsList(
+                nodesArr,
+                (text) =>
+                  text === "Correspondence Details" ||
+                  text === "Correspondence" ||
+                  text === "Client Details"
+              );
+            }
+
+            // 2. Scope of Work section
+            if (nodesArr.some(el =>
+              React.isValidElement(el) &&
+              el.props?.node?.type === "heading" &&
+              typeof el.props?.children?.[0]?.props?.value === "string" &&
+              [
+                "Scope of Work",
+                "Scope",
+              ].includes(el.props?.children?.[0]?.props?.value)
+            )) {
+              nodesArr = renderSectionAsList(
+                nodesArr,
+                (text) =>
+                  text === "Scope of Work" ||
+                  text === "Scope"
+              );
+            }
+
+            // 3. Notes & Terms section
+            if (nodesArr.some(el =>
+              React.isValidElement(el) &&
+              el.props?.node?.type === "heading" &&
+              typeof el.props?.children?.[0]?.props?.value === "string" &&
+              [
+                "Notes & Terms",
+                "NOTES & TERMS",
+                "Notes",
+                "Terms",
+              ].includes(el.props?.children?.[0]?.props?.value)
+            )) {
+              nodesArr = renderSectionAsList(
+                nodesArr,
+                (text) =>
+                  text === "Notes & Terms" ||
+                  text === "NOTES & TERMS" ||
+                  text === "Notes" ||
+                  text === "Terms"
+              );
+            }
+
+            return <>{nodesArr}</>;
           }
         }}
       >
@@ -127,3 +253,4 @@ export default function MarkdownContentRenderer({ content }: { content: string }
     </div>
   );
 }
+
