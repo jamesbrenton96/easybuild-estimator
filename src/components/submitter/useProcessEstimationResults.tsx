@@ -21,26 +21,14 @@ export function useProcessEstimationResults(estimationResults: any) {
     );
     
     if (textEntry) {
-      console.log("Found text entry in array with content:", textEntry.text.substring(0, 100));
       const textContent = textEntry.text;
-      
-      // Ensure proper line breaks between sections
-      const formattedContent = textContent
-        // Ensure proper line breaks before section headers
-        .replace(/##(\s*)(\d+)\.(\s*)/g, "\n\n## $2.$3")
-        // Ensure each table row has a proper line break
-        .replace(/\|\s*\n/g, "|\n");
-      
-      // Check if textContent is valid estimate markdown
-      if (formattedContent && formattedContent.trim().length > 0) {
-        console.log("Using text content from array item");
-        return (
-          <MarkdownEstimate
-            markdownContent={formattedContent}
-            rawResponse={estimationResults}
-          />
-        );
-      }
+      // DON'T reformat here, just pass as-is.
+      return (
+        <MarkdownEstimate
+          markdownContent={textContent}
+          rawResponse={estimationResults}
+        />
+      );
     }
     
     // If we couldn't find a text entry, try to stringify the whole array

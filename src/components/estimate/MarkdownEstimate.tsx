@@ -1,20 +1,17 @@
+
 import React, { useEffect } from "react";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
 import { Card } from "@/components/ui/card";
 import { AlertTriangle } from "lucide-react";
-import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
-import MarkdownTableStyle from "./MarkdownTableStyle";
-import { useFormattedMarkdown } from "./useFormattedMarkdown";
+import { Alert } from "@/components/ui/alert";
 import MarkdownEstimateHeader from "./MarkdownEstimateHeader";
 import MarkdownContentRenderer from "./MarkdownContentRenderer";
+import { useSectionedEstimateMarkdown } from "./useSectionedEstimateMarkdown";
 
-interface MarkdownEstimateProps {
-  markdownContent: string;
-  rawResponse?: any;
-}
-
-export default function MarkdownEstimate({ markdownContent, rawResponse }: MarkdownEstimateProps) {
+/**
+ * Main container for displaying a markdown-formatted estimate.
+ * Handles empty state, header, and passes cleaned markdown to renderer.
+ */
+export default function MarkdownEstimate({ markdownContent, rawResponse }: { markdownContent: string, rawResponse?: any }) {
   useEffect(() => {
     console.log("MarkdownEstimate received content:", {
       contentLength: markdownContent?.length,
@@ -22,9 +19,10 @@ export default function MarkdownEstimate({ markdownContent, rawResponse }: Markd
     });
   }, [markdownContent]);
 
-  const cleanedContent = useFormattedMarkdown(markdownContent);
+  // Refactored: Use the new enhanced hook for more readable/sectioned markdown (tables/headings)
+  const enhancedContent = useSectionedEstimateMarkdown(markdownContent);
 
-  if (!cleanedContent) {
+  if (!enhancedContent) {
     return (
       <Card className="bg-white rounded-lg overflow-hidden shadow-lg mb-8">
         <MarkdownEstimateHeader />
@@ -42,7 +40,7 @@ export default function MarkdownEstimate({ markdownContent, rawResponse }: Markd
   return (
     <Card className="bg-white rounded-lg overflow-hidden shadow-lg mb-8">
       <MarkdownEstimateHeader />
-      <MarkdownContentRenderer content={cleanedContent} />
+      <MarkdownContentRenderer content={enhancedContent} />
     </Card>
   );
 }

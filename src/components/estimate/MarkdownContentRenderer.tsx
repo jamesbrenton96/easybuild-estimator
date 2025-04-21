@@ -14,9 +14,9 @@ export default function MarkdownContentRenderer({ content }: { content: string }
       <MarkdownTableStyle />
       <ReactMarkdown
         className="prose max-w-none 
-          prose-headings:text-construction-orange prose-headings:font-semibold
-          prose-h1:text-2xl prose-h1:mb-6 prose-h1:border-b prose-h1:border-gray-200 prose-h1:pb-3
-          prose-h2:text-xl prose-h2:mt-6 prose-h2:mb-4
+          prose-headings:text-construction-orange prose-headings:font-extrabold
+          prose-h1:text-3xl prose-h1:mb-6 prose-h1:border-b prose-h1:border-gray-200 prose-h1:pb-4
+          prose-h2:text-xl prose-h2:mt-7 prose-h2:mb-4 prose-h2:border-l-4 prose-h2:border-construction-orange prose-h2:pl-4 prose-h2:bg-orange-50 prose-h2:rounded
           prose-h3:text-lg prose-h3:mt-5 prose-h3:mb-3
           prose-h4:text-base prose-h4:mt-4 prose-h4:mb-2
           prose-p:my-3 prose-p:leading-relaxed
