@@ -53,3 +53,10 @@ export function extractParagraphTexts(children: React.ReactNode) {
   return { headerIdx, bullets };
 }
 
+export function isNumberedSectionItem(content: string): boolean {
+  return content.includes('<span class="section-number">') || /^\d+[\.\)]/.test(content);
+}
+
+export function hasNumberedSectionItems(paragraphs: string[]): boolean {
+  return paragraphs.some(p => isNumberedSectionItem(p));
+}

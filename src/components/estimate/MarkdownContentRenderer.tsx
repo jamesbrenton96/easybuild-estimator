@@ -10,7 +10,9 @@ import {
   isHeadingElement,
   isMatchingHeader,
   extractParagraphTexts,
-  SectionHeaderTest
+  SectionHeaderTest,
+  isNumberedSectionItem,
+  hasNumberedSectionItems
 } from "./markdown/utils/markdownSectionUtils";
 
 /**
@@ -29,6 +31,12 @@ export default function MarkdownContentRenderer({ content }: { content: string }
     const { headerIdx, bullets } = extractParagraphTexts(children);
     if (headerIdx !== -1 && bullets.length > 0) {
       const header = React.Children.toArray(children)[headerIdx];
+      
+      // Don't transform numbered section items into bullet points
+      if (hasNumberedSectionItems(bullets)) {
+        return children;
+      }
+      
       return <MarkdownSectionBulletList header={header} bulletPoints={bullets} />;
     }
     return children;
@@ -80,7 +88,7 @@ export default function MarkdownContentRenderer({ content }: { content: string }
             );
 
             if (hasNumberedSection) {
-              return <p className="flex items-start mb-2" {...props}>{children}</p>;
+              return <p className="flex items-start mb-4" {...props}>{children}</p>;
             }
 
             if (hasSubtotalCells) {

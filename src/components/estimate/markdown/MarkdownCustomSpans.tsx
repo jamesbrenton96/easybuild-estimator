@@ -10,7 +10,7 @@ export function CustomSpan({ className, children, ...props }: React.HTMLAttribut
   }
   if (className === "section-number") {
     return (
-      <span className="inline-flex items-center justify-center w-7 h-7 bg-construction-orange text-white rounded-full mr-2 font-bold text-sm">
+      <span className="inline-flex items-center justify-center w-7 h-7 bg-construction-orange text-white rounded-full mr-2 font-bold text-sm flex-shrink-0">
         {children}
       </span>
     );
