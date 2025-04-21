@@ -39,6 +39,21 @@ export default function MarkdownContentRenderer({ content }: { content: string }
               return <span className="section-number">{children}</span>;
             }
             return <span {...props}>{children}</span>;
+          },
+          table: ({ node, ...props }) => {
+            return <table className="estimate-table" {...props} />;
+          },
+          thead: ({ node, ...props }) => {
+            return <thead className="estimate-table-head" {...props} />;
+          },
+          tbody: ({ node, ...props }) => {
+            return <tbody className="estimate-table-body" {...props} />;
+          },
+          th: ({ node, ...props }) => {
+            return <th className="estimate-table-header" {...props} />;
+          },
+          td: ({ node, ...props }) => {
+            return <td className="estimate-table-cell" {...props} />;
           }
         }}
       >

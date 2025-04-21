@@ -11,7 +11,7 @@ export default function MarkdownTableStyle() {
       .markdown-content {
         font-family: Arial, Helvetica, "Segoe UI", sans-serif !important;
       }
-      .markdown-content table {
+      .markdown-content table, .estimate-table {
         border-collapse: collapse;
         margin: 2rem auto 2.5rem auto;
         width: 100%;
@@ -20,16 +20,23 @@ export default function MarkdownTableStyle() {
         box-shadow: 0 2px 8px rgba(0,0,0,0.06);
         border-radius: 8px;
         overflow: hidden;
+        table-layout: fixed;
       }
-      .markdown-content th, .markdown-content td {
+      .markdown-content th, .markdown-content td,
+      .estimate-table-header, .estimate-table-cell {
         border: 1px solid #f1f5f9;
         padding: 1em 1.1em;
         text-align: right;
+        vertical-align: top;
+        word-break: normal;
       }
-      .markdown-content th:first-child, .markdown-content td:first-child {
+      .markdown-content th:first-child, .markdown-content td:first-child,
+      .estimate-table-header:first-child, .estimate-table-cell:first-child {
         text-align: left;
+        width: 40%;
       }
-      .markdown-content th {
+      .markdown-content th,
+      .estimate-table-header {
         background: #f97316;
         font-weight: 700;
         color: white;
@@ -37,18 +44,23 @@ export default function MarkdownTableStyle() {
         text-transform: uppercase;
         letter-spacing: 0.03em;
       }
-      .markdown-content tr {
+      .markdown-content tr,
+      .estimate-table tr {
         background: #fff;
         transition: background 0.15s;
       }
-      .markdown-content tr:nth-child(even) {
+      .markdown-content tr:nth-child(even),
+      .estimate-table tr:nth-child(even) {
         background: #f9fafb;
       }
-      .markdown-content tr:last-child td {
+      .markdown-content tr:last-child td,
+      .estimate-table tr:last-child td {
         font-weight: 700;
       }
       .markdown-content tr.subtotal-row td, 
-      .markdown-content tr.total-row td {
+      .markdown-content tr.total-row td,
+      .estimate-table tr.subtotal-row td,
+      .estimate-table tr.total-row td {
         border-top: 2.5px solid #f97316 !important;
         font-weight: 700;
       }
@@ -154,7 +166,8 @@ export default function MarkdownTableStyle() {
         margin: 2.5rem 0 2rem;
       }
       /* Total Estimate specific styling */
-      .markdown-content table tr td:last-child {
+      .markdown-content table tr td:last-child,
+      .estimate-table tr td:last-child {
         text-align: right;
         font-weight: 500;
       }
