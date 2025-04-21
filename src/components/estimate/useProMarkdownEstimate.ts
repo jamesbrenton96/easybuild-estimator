@@ -220,23 +220,25 @@ export function useProMarkdownEstimate(rawMarkdown: string) {
     content = content.replace(
       /(### Notes & Terms\n)([^#\n][^]*?)(?=\n### |\n## |$)/gi,
       (_, heading, body) => {
-        // Look for numbered items with section-number spans
-        if (body.includes('<span class="section-number">')) {
-          // Convert to proper numbered list
-          const lines = body.split('\n');
-          const formattedLines = lines.map(line => {
-            if (line.includes('<span class="section-number">')) {
-              // Extract the number and text
-              const match = line.match(/<span class="section-number">(\d+)<\/span>(.*)/);
-              if (match) {
-                return `${match[1]}. ${match[2].trim()}`;
-              }
-            }
-            return line;
-          });
-          return heading + formattedLines.join('\n') + '\n';
-        }
-        return heading + body;
+        // Process each line to check for numbered items
+        const lines = body.trim().split("\n");
+        const formattedLines = lines.map((line, index) => {
+          // Check if this line starts with a number (like "1. Text" or "1) Text")
+          const numberMatch = line.match(/^(\d+)[\.\)]\s*(.*)/);
+          if (numberMatch) {
+            // Replace with section-number span
+            return `<span class="section-number">${numberMatch[1]}</span>${numberMatch[2]}`;
+          }
+          
+          // Check if it has a <span class="section-number"> already
+          if (line.includes('<span class="section-number">')) {
+            return line; // Already formatted
+          }
+          
+          return line;
+        });
+        
+        return heading + formattedLines.join('\n') + '\n';
       }
     );
 

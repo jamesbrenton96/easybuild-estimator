@@ -1,4 +1,3 @@
-
 import React from "react";
 
 /**
@@ -100,7 +99,42 @@ export default function MarkdownTableStyle() {
         margin-top: 1.1rem !important;
         margin-bottom: 0.5rem !important;
       }
-      /* Custom bullet points */
+      
+      /* Section numbers styling - properly centered orange circles */
+      .markdown-content .section-number {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: #f97316;
+        color: white;
+        width: 28px;
+        height: 28px;
+        text-align: center;
+        border-radius: 50%;
+        margin-right: 0.6rem;
+        font-weight: 700;
+        font-size: 0.95rem;
+        box-shadow: 0 1px 3px rgba(229, 140, 51, 0.4);
+        flex-shrink: 0;
+      }
+      
+      /* Paragraphs with section numbers should be flex */
+      .markdown-content p {
+        color: #344051;
+        margin-top: 0.6rem;
+        margin-bottom: 1.1rem;
+        line-height: 1.7;
+        font-size: 1rem;
+      }
+      
+      /* Paragraphs that contain section numbers */
+      .markdown-content p:has(.section-number) {
+        display: flex;
+        align-items: flex-start;
+        padding-left: 0.5rem;
+      }
+      
+      /* Bullet points styling */
       .markdown-content ul, .markdown-content ol {
         margin-top: 0.5rem;
         margin-bottom: 1.2rem;
@@ -117,17 +151,15 @@ export default function MarkdownTableStyle() {
         color: #f97316;
         font-size: 1.45em;
       }
-      .markdown-content p {
-        color: #344051;
-        margin-top: 0.6rem;
-        margin-bottom: 1.1rem;
-        line-height: 1.7;
-        font-size: 1rem;
-      }
-      .markdown-content strong, .markdown-content b {
+      
+      /* Subtotal cells */
+      .markdown-content strong, .markdown-content b,
+      .subtotal-cell {
         color: #f97316;
         font-weight: 700;
       }
+      
+      /* Total project cost block */
       .markdown-content .total-project-cost-block {
         font-size: 1.5rem;
         font-weight: 900;
@@ -138,25 +170,11 @@ export default function MarkdownTableStyle() {
         margin: 2.5rem 0 1.75rem 0;
         display: inline-block;
         border-left: 7px solid #fff;
-        box-shadow: 0 4px 18px -4px #e58c3333;
-        text-shadow: 0 1px 4px #e58c3330;
+        box-shadow: 0 4px 18px -4px rgba(229, 140, 51, 0.2);
+        text-shadow: 0 1px 4px rgba(229, 140, 51, 0.18);
         letter-spacing: 0.01em;
       }
-      .markdown-content .section-number {
-        display: inline-block;
-        background: #f97316;
-        color: white;
-        width: 28px;
-        height: 28px;
-        line-height: 28px;
-        text-align: center;
-        border-radius: 50%;
-        margin-right: 0.6rem;
-        font-weight: 900;
-        font-size: 1.1em;
-        letter-spacing: 0.01em;
-        box-shadow: 0 1px 2px #e58c3366;
-      }
+      
       /* Orange divider */
       .markdown-content .orange-divider {
         border: none;
@@ -165,22 +183,19 @@ export default function MarkdownTableStyle() {
         background: #f97316;
         margin: 2.5rem 0 2rem;
       }
-      /* Total Estimate specific styling */
+      
+      /* Table styling improvements */
       .markdown-content table tr td:last-child,
       .estimate-table tr td:last-child {
         text-align: right;
         font-weight: 500;
       }
-      .markdown-content table tr td strong,
-      .markdown-content table tr td.subtotal-cell,
-      .markdown-content table tr td span.subtotal-cell {
-        color: #f97316;
-        font-weight: 700;
-      }
+      
       .markdown-content table tr:last-child td {
         font-weight: 700;
         border-top: 2px solid #f97316;
       }
+      
       @media print {
         .markdown-content {
           font-size: 12pt !important;

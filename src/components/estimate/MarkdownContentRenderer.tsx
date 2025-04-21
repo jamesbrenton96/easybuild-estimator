@@ -28,6 +28,7 @@ export default function MarkdownContentRenderer({ content }: { content: string }
           prose-td:p-2"
         remarkPlugins={[remarkGfm]}
         components={{
+          // Handle custom spans for section numbers, subtotals, etc.
           span: ({ node, className, children, ...props }) => {
             if (className === "total-project-cost-block") {
               return <div className="total-project-cost-block">{children}</div>;
@@ -36,24 +37,42 @@ export default function MarkdownContentRenderer({ content }: { content: string }
               return <strong className="font-bold text-construction-orange">{children}</strong>;
             }
             if (className === "section-number") {
-              return <span className="section-number">{children}</span>;
+              return (
+                <span className="inline-flex items-center justify-center w-7 h-7 bg-construction-orange text-white rounded-full mr-2 font-bold text-sm">
+                  {children}
+                </span>
+              );
             }
             return <span {...props}>{children}</span>;
           },
+          // Improve table styling
           table: ({ node, ...props }) => {
-            return <table className="estimate-table" {...props} />;
+            return <table className="estimate-table w-full my-6 border-collapse" {...props} />;
           },
           thead: ({ node, ...props }) => {
-            return <thead className="estimate-table-head" {...props} />;
+            return <thead className="estimate-table-head bg-construction-orange text-white" {...props} />;
           },
           tbody: ({ node, ...props }) => {
             return <tbody className="estimate-table-body" {...props} />;
           },
           th: ({ node, ...props }) => {
-            return <th className="estimate-table-header" {...props} />;
+            return <th className="estimate-table-header p-3 text-left font-bold" {...props} />;
           },
           td: ({ node, ...props }) => {
-            return <td className="estimate-table-cell" {...props} />;
+            return <td className="estimate-table-cell p-3 border border-gray-200" {...props} />;
+          },
+          // Handle regular paragraph elements that might contain section numbers
+          p: ({ node, children, ...props }) => {
+            // Check if this paragraph contains a section-number span
+            const hasNumberedSection = React.Children.toArray(children).some(
+              child => React.isValidElement(child) && child.props.className === "section-number"
+            );
+            
+            if (hasNumberedSection) {
+              return <p className="flex items-start mb-2" {...props}>{children}</p>;
+            }
+            
+            return <p {...props}>{children}</p>;
           }
         }}
       >
