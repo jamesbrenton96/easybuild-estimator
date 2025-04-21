@@ -2,13 +2,9 @@ import { useMemo } from "react";
 
 /**
  * useProMarkdownEstimate - Enhanced markdown formatter for construction estimates.
- *
- * Features:
- *  - Prominent headings and numbered orange markers for each section.
- *  - Always formats materials, labor costs, and totals as tables.
- *  - Bullet points force-applied for Scope of Work, Material Details & Calculations, and Notes/Terms.
- *  - Distinct separation and styling for the total, plus an orange horizontal divider.
- *  - Cleans up whitespace and ensures section separation.
+ * Edits for refactor:
+ * - Does NOT add heading for "Notes & Terms" or convert its lines to bullets/bold.
+ * - Leaves "Notes & Terms" section as plain text for MarkdownContentRenderer to render as normal paragraphs.
  */
 export function useProMarkdownEstimate(rawMarkdown: string) {
   return useMemo(() => {
@@ -23,10 +19,8 @@ export function useProMarkdownEstimate(rawMarkdown: string) {
       .replace(/\\"/g, '"')
       .replace(/\\\\/g, "\\");
 
-    // 2. Add estimate header if not present
-    if (!content.match(/^# (Project Cost Estimate|Construction Cost Estimate)/m)) {
-      content = "# Project Cost Estimate\n\n" + content;
-    }
+    // 2. Remove estimate header if present
+    content = content.replace(/^# (Project Cost Estimate|Construction Cost Estimate).*\n*/i, "");
 
     // 3. Major sections: Numbered headings with orange "circle"
     content = content.replace(
@@ -34,32 +28,32 @@ export function useProMarkdownEstimate(rawMarkdown: string) {
       (_, num, title) => `\n\n## ${num}. ${title}\n`
     );
 
-    // 4. Recognized section (bolded) headers (for non-numbered section titles)
+    // 4. Recognized section (bolded) headers (for non-numbered section titles), SKIP Notes & Terms
     content = content.replace(
-      /^(Project Overview|Scope of Work|Dimensions|Materials & Cost Breakdown|Material Cost Breakdown|Labor Costs|Labour Costs|Labor Cost Breakdown|Total Estimate|Total Project Cost|Project Timeline|Material Details & Calculations|Notes & Terms|NOTES & TERMS|Client Name|Project Address|Payment Terms|Warranty Information)$/gim,
+      /^(Project Overview|Scope of Work|Dimensions|Materials & Cost Breakdown|Material Cost Breakdown|Labor Costs|Labour Costs|Labor Cost Breakdown|Total Estimate|Total Project Cost|Project Timeline|Material Details & Calculations|Client Name|Project Address|Payment Terms|Warranty Information)$/gim,
       (_, cap) => `\n\n### ${cap}\n`
     );
 
-    // 5. FORCE bullet points for specific sections (BUT PRESERVE section-number spans)
+    // 5. FORCE bullet points for specific sections (BUT DO NOT process Notes & Terms at all here!)
     function bulletSection(sectionTitle: string) {
       const regex = new RegExp(`(### ${sectionTitle}\\n)([^#\\n\\|][\\s\\S]*?)(?=\\n### |\\n## |$)`, "gi");
       content = content.replace(regex, (_, heading, body) => {
         // If body already contains a list or table, leave as is
         if (body.match(/^[\*\-\d]+\s+/m) || body.match(/^\|/m)) return heading + body;
-        
+
         // Skip bulletifying lines that contain section-number spans
         if (body.includes('section-number')) {
           return heading + body;
         }
-        
+
         // Otherwise, split lines into clean bullets (filter out empty)
         const lines = body
           .split("\n")
           .map(l => l.trim())
           .filter(l => l.length > 0 && !l.includes("Total Project Cost") && !l.includes("TOTAL PROJECT COST"));
-          
+
         if (lines.length === 0) return heading + body;
-        
+
         return (
           heading +
           "\n" +
@@ -74,51 +68,37 @@ export function useProMarkdownEstimate(rawMarkdown: string) {
         );
       });
     }
-    
+
     bulletSection("Scope of Work");
     bulletSection("Material Details & Calculations");
-    // Don't auto-bulletify Notes & Terms section if it has section-number spans
-    if (!content.match(/### Notes & Terms[\s\S]*?section-number/i) && 
-        !content.match(/### NOTES & TERMS[\s\S]*?section-number/i)) {
-      bulletSection("Notes & Terms");
-      bulletSection("NOTES & TERMS");
-    }
     bulletSection("Dimensions");
     bulletSection("Project Timeline");
+    // DO NOT bullet Notes & Terms
 
-    // 6. Fix table formatting - first ensure proper markdown table structure for all tables
+    // 6. Table formatting for tabbed sections (unchanged)
     function formatTableSection(sectionHeader) {
       const regex = new RegExp(`(### ${sectionHeader}[\\s\\S]*?)((?:^\\s*[\\w\\s]+\\t.*$\\n?)+)`, "gmi");
       content = content.replace(regex, (match, header, tableContent) => {
-        if (tableContent.includes("|")) return match; // Already in table format
-        
-        // Split into rows
+        if (tableContent.includes("|")) return match;
+
         const rows = tableContent.trim().split("\n");
         if (rows.length === 0) return match;
-        
-        // Get headers from first row
+
         const headers = rows[0].split("\t").filter(Boolean).map(h => h.trim());
         if (headers.length <= 1) return match;
-        
-        // Build proper table
+
         let markdownTable = "\n";
         markdownTable += `| ${headers.join(" | ")} |\n`;
         markdownTable += `| ${headers.map(() => "---").join(" | ")} |\n`;
-        
-        // Add data rows
         for (let i = 1; i < rows.length; i++) {
           const cells = rows[i].split("\t").filter(Boolean).map(c => c.trim());
-          if (cells.length > 0) {
-            // Make sure we have enough cells to match headers
-            while (cells.length < headers.length) cells.push("");
-            markdownTable += `| ${cells.join(" | ")} |\n`;
-          }
+          while (cells.length < headers.length) cells.push("");
+          markdownTable += `| ${cells.join(" | ")} |\n`;
         }
-        
         return header + markdownTable;
       });
     }
-    
+
     formatTableSection("Labor Costs");
     formatTableSection("Labour Costs");
     formatTableSection("Labor Cost Breakdown");
@@ -209,18 +189,14 @@ export function useProMarkdownEstimate(rawMarkdown: string) {
     content = content.replace(
       /(<span class="subtotal-cell">[^<]*<\/span>[\s\t]*<span class="subtotal-cell">[^<]*<\/span>)/gm,
       (match) => {
-        // Extract description and amount from the span tags
         const descMatch = match.match(/<span class="subtotal-cell">([^<]*)<\/span>/);
         const amountMatch = match.match(/<span class="subtotal-cell">([^<]*)<\/span>(?!.*<span class="subtotal-cell">)/);
-        
+
         if (descMatch && amountMatch) {
           const desc = descMatch[1].trim();
           const amount = amountMatch[1].trim();
-          
-          // Create a proper markdown table row
           return `| <span class="subtotal-cell">${desc}</span> | <span class="subtotal-cell">${amount}</span> |`;
         }
-        
         return match;
       }
     );
@@ -235,15 +211,10 @@ export function useProMarkdownEstimate(rawMarkdown: string) {
     content = content.replace(
       /(<span class="subtotal-cell">.*<\/span>.*<span class="subtotal-cell">.*<\/span>)/gm,
       (match) => {
-        if (match.includes("|")) return match; // Already in table format
-        
-        // Split into parts
+        if (match.includes("|")) return match;
         const parts = match.split(/\s+/).filter(Boolean);
-        
-        // Try to identify description and amount parts
         let description = "";
         let amount = "";
-        
         for (const part of parts) {
           if (part.includes("$") || part.match(/\d+\.\d+/)) {
             amount = part;
@@ -255,11 +226,9 @@ export function useProMarkdownEstimate(rawMarkdown: string) {
             }
           }
         }
-        
         if (description && amount) {
           return `| ${description} | ${amount} |`;
         }
-        
         return match;
       }
     );
@@ -270,28 +239,10 @@ export function useProMarkdownEstimate(rawMarkdown: string) {
       '<hr class="orange-divider"/>\n$1'
     );
 
-    // 12. Handle numbered bullet points in Notes & Terms section
-    content = content.replace(
-      /(### (Notes & Terms|NOTES & TERMS)\n)([^#\n][^]*?)(?=\n### |\n## |$)/gi,
-      (_, heading, sectionName, body) => {
-        // Process each line to check for numbered items
-        const lines = body.trim().split("\n");
-        const formattedLines = lines.map((line, index) => {
-          // Check if this line starts with a number (like "1. Text" or "1) Text")
-          const numberMatch = line.match(/^(\d+)[\.\)]\s*(.*)/);
-          if (numberMatch) {
-            // Convert to markdown list format with number
-            return `${numberMatch[1]}. ${numberMatch[2]}`;
-          }
-          
-          return line;
-        });
-        
-        return heading + formattedLines.join('\n\n') + '\n';
-      }
-    );
-    
-    // 13. Handle "Thank you" note after Notes & Terms section
+    // Remove any "### Notes & Terms" heading if present
+    content = content.replace(/^### (Notes & Terms|NOTES & TERMS)[^\n]*\n?/gim, "");
+
+    // 14. "Thank you" section
     content = content.replace(
       /(?:Thank you for considering us for your|Thank you for choosing|Thank you)([^#]*)(?=\n### |\n## |$)/gi,
       (_, rest) => {
@@ -299,7 +250,7 @@ export function useProMarkdownEstimate(rawMarkdown: string) {
       }
     );
 
-    // 14. Clean up extra whitespace, excess blank lines, ensure nice section spacing.
+    // Clean up excess blank lines and spacing.
     content = content.replace(/\n{3,}/g, "\n\n");
     content = content.trim();
 

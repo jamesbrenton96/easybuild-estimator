@@ -1,11 +1,10 @@
 
 import React, { useEffect } from "react";
-import MarkdownEstimateLayout from "./MarkdownEstimateLayout";
+import MarkdownEstimateSimpleLayout from "./MarkdownEstimateSimpleLayout";
 import { useProMarkdownEstimate } from "./useProMarkdownEstimate";
 
 /**
- * Main estimate renderer: displays a highly structured, pro-formatted estimate markdown.
- * Handles empty state, header, applies advanced number-to-table formatting and prominent headings.
+ * Main estimate renderer: displays a highly structured, pro-formatted estimate markdown (no header).
  */
 export default function MarkdownEstimate({ 
   markdownContent, 
@@ -27,7 +26,7 @@ export default function MarkdownEstimate({
     });
   }, [markdownContent]);
 
-  // This custom hook reformats the markdown for pro-level readability (tables, color, spacing)
+  // This custom hook reformats the markdown
   const formatted = useProMarkdownEstimate(markdownContent);
 
   if (!formatted) {
@@ -36,10 +35,8 @@ export default function MarkdownEstimate({
   }
 
   return (
-    <MarkdownEstimateLayout 
-      formattedMarkdown={formatted} 
-      rawResponse={rawResponse}
-      projectDetails={projectDetails} 
+    <MarkdownEstimateSimpleLayout
+      formattedMarkdown={formatted}
     />
   );
 }

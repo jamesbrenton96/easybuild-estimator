@@ -1,3 +1,4 @@
+
 import React from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -16,7 +17,7 @@ import {
 
 /**
  * Render markdown content with professional table and content styling.
- * Used inside MarkdownEstimate.
+ * This version ensures "Notes and Terms" is rendered as standard body text, never as bullet/heading/bold/orange.
  */
 export default function MarkdownContentRenderer({ content }: { content: string }) {
 
@@ -50,6 +51,14 @@ export default function MarkdownContentRenderer({ content }: { content: string }
 
   // Track if we are inside "Notes & Terms" section
   let currentSection = null;
+
+  // Utility: Determine if a heading is for Notes & Terms
+  function isNotesTermsHeading(props: any) {
+    if (typeof props?.children?.[0] === "string") {
+      return /Notes & Terms|NOTES & TERMS/i.test(props?.children?.[0]);
+    }
+    return false;
+  }
 
   return (
     <div className="p-8 markdown-content text-gray-800">
@@ -88,33 +97,29 @@ export default function MarkdownContentRenderer({ content }: { content: string }
           ),
           h3: ({ node, ...props }) => {
             // Track if we are in Notes & Terms
-            const isNotes = /Notes & Terms|NOTES & TERMS/i.test(
-              (typeof props.children?.[0] === "string" && props.children?.[0]) || ""
-            );
-            currentSection = isNotes ? "notes-terms" : null;
+            if (isNotesTermsHeading(props)) {
+              currentSection = "notes-terms";
+              // Don't render heading at all (strip from layout)
+              return null;
+            }
+            currentSection = null;
             return <h3 {...props}>{props.children}</h3>;
           },
           p: ({ children, ...props }) => {
-            // Determine if this is within "Notes & Terms" section
+            // Only standard body text if in Notes & Terms
             const isInNotesTerms = currentSection === "notes-terms";
             const childrenArray = React.Children.toArray(children);
             const textContent = childrenArray.map(child =>
               typeof child === 'string' ? child : ''
             ).join('');
-            
-            // Check if this is a numbered item (e.g., "1. This is a note")
+
+            // If this is a numbered item, render as plain body text inside Notes & Terms
             const numberMatch = textContent.match(/^(\d+)[\.\)]\s*(.*)/);
             if (numberMatch) {
               const number = numberMatch[1];
               const text = numberMatch[2];
               return isInNotesTerms ? (
-                // In Notes & Terms: number marker but NORMAL body text (not colored/bold)
-                <p className="flex items-start mb-4 text-gray-800 font-normal" {...props}>
-                  <span className="inline-flex items-center justify-center w-7 h-7 bg-[#e58c33] text-white rounded-full mr-2 font-bold text-sm flex-shrink-0">
-                    {number}
-                  </span>
-                  {text}
-                </p>
+                <p className="mb-2 text-gray-800 font-normal" {...props}>{number}. {text}</p>
               ) : (
                 <p className="flex items-start mb-4" {...props}>
                   <span className="inline-flex items-center justify-center w-7 h-7 bg-construction-orange text-white rounded-full mr-2 font-bold text-sm flex-shrink-0">
@@ -125,11 +130,10 @@ export default function MarkdownContentRenderer({ content }: { content: string }
               );
             }
 
-            // Handle subtotal cells
+            // Subtotal table cells, bold, etc. (no change)
             const hasSubtotalCells = childrenArray.some(
               child => React.isValidElement(child) && child.props?.className === "subtotal-cell"
             );
-            
             if (hasSubtotalCells) {
               let description = '';
               let amount = '';
@@ -152,27 +156,33 @@ export default function MarkdownContentRenderer({ content }: { content: string }
             }
 
             // Regular paragraphs (within Notes & Terms shouldn't be bold/orange, just normal text)
-            return <p className={isInNotesTerms ? "text-gray-800 font-normal" : ""} {...props}>{children}</p>;
+            return <p className={isInNotesTerms ? "mb-2 text-gray-800 font-normal" : ""} {...props}>{children}</p>;
           },
           li: ({ children, ...props }) => {
             const isInNotesTerms = currentSection === "notes-terms";
+            // ALWAYS render bullet/number items as normal paragraphs in Notes & Terms
+            if (isInNotesTerms) {
+              const childrenArray = React.Children.toArray(children);
+              const textContent = childrenArray.map(child =>
+                typeof child === 'string' ? child : ''
+              ).join('');
+              const numberMatch = textContent.match(/^(\d+)[\.\)]\s*(.*)/);
+              return (
+                <li className="pl-2 mb-2 text-gray-800 font-normal list-none" {...props}>
+                  {numberMatch ? `${numberMatch[1]}. ${numberMatch[2]}` : textContent}
+                </li>
+              );
+            }
+            // For other sections: as before
             const childrenArray = React.Children.toArray(children);
             const textContent = childrenArray.map(child =>
               typeof child === 'string' ? child : ''
             ).join('');
-            
             const numberMatch = textContent.match(/^(\d+)[\.\)]\s*(.*)/);
             if (numberMatch) {
               const number = numberMatch[1];
               const text = numberMatch[2];
-              return isInNotesTerms ? (
-                <li className="flex items-start mb-4 text-gray-800 font-normal" {...props}>
-                  <span className="inline-flex items-center justify-center w-7 h-7 bg-[#e58c33] text-white rounded-full mr-2 font-bold text-sm flex-shrink-0">
-                    {number}
-                  </span>
-                  {text}
-                </li>
-              ) : (
+              return (
                 <li className="flex items-start mb-4" {...props}>
                   <span className="inline-flex items-center justify-center w-7 h-7 bg-construction-orange text-white rounded-full mr-2 font-bold text-sm flex-shrink-0">
                     {number}
@@ -181,9 +191,7 @@ export default function MarkdownContentRenderer({ content }: { content: string }
                 </li>
               );
             }
-
-            // Bullet items in Notes & Terms: body text, not bold/orange
-            return <li className={isInNotesTerms ? "text-gray-800 font-normal" : ""} {...props}>{children}</li>;
+            return <li {...props}>{children}</li>;
           }
         }}
       >
