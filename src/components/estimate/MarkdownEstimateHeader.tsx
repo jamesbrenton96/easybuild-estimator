@@ -1,4 +1,3 @@
-
 import React from "react";
 
 interface MarkdownEstimateHeaderProps {
@@ -30,12 +29,12 @@ export default function MarkdownEstimateHeader({
         {title}
       </h2>
       
-      {/* Correspondence Details Bulleted List */}
+      {/* Correspondence Details Vertical List */}
       <div className="max-w-md mx-auto mt-5 mb-0 text-left">
         <h3 className="text-construction-orange font-bold text-lg mb-2 uppercase tracking-wide">
           Correspondence Details
         </h3>
-        <ul className="list-disc list-inside space-y-1 text-base font-normal text-gray-700">
+        <ul className="space-y-1 text-base font-normal text-gray-700 list-disc list-inside pl-2">
           {detailItems.map((item: any, idx) => (
             <li key={idx}>
               <span className="font-semibold">{item.label}:</span>{" "}
