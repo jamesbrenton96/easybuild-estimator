@@ -1,10 +1,15 @@
 import { useMemo } from "react";
+import { formatEscapes } from "./helpers/formatEscapes";
+import { removeHeader } from "./helpers/removeHeader";
+import { formatSectionHeadings } from "./helpers/formatSectionHeadings";
+import { bulletSection } from "./helpers/bulletSection";
+import { formatTableSection } from "./helpers/formatTableSection";
+import { formatTotals } from "./helpers/formatTotals";
+import { formatThankYou } from "./helpers/formatThankYou";
 
 /**
- * useProMarkdownEstimate - Enhanced markdown formatter for construction estimates.
- * Edits for refactor:
- * - Does NOT add heading for "Notes & Terms" or convert its lines to bullets/bold.
- * - Leaves "Notes & Terms" section as plain text for MarkdownContentRenderer to render as normal paragraphs.
+ * useProMarkdownEstimate - Enhanced markdown formatter for construction estimates (refactored).
+ * "Notes & Terms" remains as plain text; no bullets/headings/styling for that section.
  */
 export function useProMarkdownEstimate(rawMarkdown: string) {
   return useMemo(() => {
@@ -12,186 +17,40 @@ export function useProMarkdownEstimate(rawMarkdown: string) {
 
     let content = rawMarkdown;
 
-    // 1. Fix basic escaped newlines/tabs/quotes
-    content = content
-      .replace(/\\n/g, "\n")
-      .replace(/\\t/g, "    ")
-      .replace(/\\"/g, '"')
-      .replace(/\\\\/g, "\\");
+    // 1. Clean up escapes
+    content = formatEscapes(content);
 
-    // 2. Remove estimate header if present
-    content = content.replace(/^# (Project Cost Estimate|Construction Cost Estimate).*\n*/i, "");
+    // 2. Remove estimate header
+    content = removeHeader(content);
 
-    // 3. Major sections: Numbered headings with orange "circle"
-    content = content.replace(
-      /^([0-9]+)\.\s+([^\n]+)$/gm,
-      (_, num, title) => `\n\n## ${num}. ${title}\n`
-    );
+    // 3/4. Format major/known section headings
+    content = formatSectionHeadings(content);
 
-    // 4. Recognized section (bolded) headers (for non-numbered section titles), SKIP Notes & Terms
-    content = content.replace(
-      /^(Project Overview|Scope of Work|Dimensions|Materials & Cost Breakdown|Material Cost Breakdown|Labor Costs|Labour Costs|Labor Cost Breakdown|Total Estimate|Total Project Cost|Project Timeline|Material Details & Calculations|Client Name|Project Address|Payment Terms|Warranty Information)$/gim,
-      (_, cap) => `\n\n### ${cap}\n`
-    );
+    // 5. Bullet points for select sections (skip Notes & Terms)
+    ["Scope of Work", "Material Details & Calculations", "Dimensions", "Project Timeline"].forEach(section => {
+      content = bulletSection(section, content);
+    });
 
-    // 5. FORCE bullet points for specific sections (BUT DO NOT process Notes & Terms at all here!)
-    function bulletSection(sectionTitle: string) {
-      const regex = new RegExp(`(### ${sectionTitle}\\n)([^#\\n\\|][\\s\\S]*?)(?=\\n### |\\n## |$)`, "gi");
-      content = content.replace(regex, (_, heading, body) => {
-        // If body already contains a list or table, leave as is
-        if (body.match(/^[\*\-\d]+\s+/m) || body.match(/^\|/m)) return heading + body;
+    // 6. Table formatting for tabbed sections
+    [
+      "Labor Costs", "Labour Costs", "Labor Cost Breakdown",
+      "Materials & Cost Breakdown", "Material Cost Breakdown",
+      "Total Estimate", "Total Project Cost",
+    ].forEach(section => {
+      content = formatTableSection(section, content);
+    });
 
-        // Skip bulletifying lines that contain section-number spans
-        if (body.includes('section-number')) {
-          return heading + body;
-        }
+    // 7. Format total estimate section
+    content = formatTotals(content);
 
-        // Otherwise, split lines into clean bullets (filter out empty)
-        const lines = body
-          .split("\n")
-          .map(l => l.trim())
-          .filter(l => l.length > 0 && !l.includes("Total Project Cost") && !l.includes("TOTAL PROJECT COST"));
-
-        if (lines.length === 0) return heading + body;
-
-        return (
-          heading +
-          "\n" +
-          lines.map(l => {
-            // Don't add bullet if line already has section-number span
-            if (l.includes('section-number')) {
-              return l;
-            }
-            return `- ${l.replace(/^\-?\s*/, "")}`;
-          }).join("\n") +
-          "\n"
-        );
-      });
-    }
-
-    bulletSection("Scope of Work");
-    bulletSection("Material Details & Calculations");
-    bulletSection("Dimensions");
-    bulletSection("Project Timeline");
-    // DO NOT bullet Notes & Terms
-
-    // 6. Table formatting for tabbed sections (unchanged)
-    function formatTableSection(sectionHeader) {
-      const regex = new RegExp(`(### ${sectionHeader}[\\s\\S]*?)((?:^\\s*[\\w\\s]+\\t.*$\\n?)+)`, "gmi");
-      content = content.replace(regex, (match, header, tableContent) => {
-        if (tableContent.includes("|")) return match;
-
-        const rows = tableContent.trim().split("\n");
-        if (rows.length === 0) return match;
-
-        const headers = rows[0].split("\t").filter(Boolean).map(h => h.trim());
-        if (headers.length <= 1) return match;
-
-        let markdownTable = "\n";
-        markdownTable += `| ${headers.join(" | ")} |\n`;
-        markdownTable += `| ${headers.map(() => "---").join(" | ")} |\n`;
-        for (let i = 1; i < rows.length; i++) {
-          const cells = rows[i].split("\t").filter(Boolean).map(c => c.trim());
-          while (cells.length < headers.length) cells.push("");
-          markdownTable += `| ${cells.join(" | ")} |\n`;
-        }
-        return header + markdownTable;
-      });
-    }
-
-    formatTableSection("Labor Costs");
-    formatTableSection("Labour Costs");
-    formatTableSection("Labor Cost Breakdown");
-    formatTableSection("Materials & Cost Breakdown");
-    formatTableSection("Material Cost Breakdown");
-    formatTableSection("Total Estimate");
-    formatTableSection("Total Project Cost");
-
-    // 7. Create a better formatted total estimate section
-    content = content.replace(
-      /(### Total (Estimate|Project Cost)\n)([^#]*?)(?=\n### |\n## |$)/gi,
-      (_, heading, type, body) => {
-        // If the total estimate section already contains a properly formatted table, leave it as is
-        if (body.includes("| Description | Amount |") || body.includes("total-project-cost-block")) {
-          return heading + body;
-        }
-
-        // Extract total project cost from the content if it exists
-        const totalMatch = body.match(/Total Project Cost:?\s*\$([0-9,]+\.\d{2}|\d+)/i);
-        const totalAmount = totalMatch ? totalMatch[1] : "";
-
-        // Process the body to extract table rows
-        let tableRows = [];
-        const lines = body
-          .split("\n")
-          .map(line => line.trim())
-          .filter(Boolean);
-          
-        if (lines.length > 0) {
-          // Add table headers
-          tableRows.push("| Description | Amount (NZD) |");
-          tableRows.push("|-------------|-------------|");
-          
-          // Process each line to extract description and amount
-          lines.forEach(line => {
-            // Look for patterns like "Materials: $XXX" or lines with tabs
-            const match = line.match(/(.*?)(?:\:|\s+)?\$?([0-9,]+\.\d{2}|\d+)$/);
-            if (match) {
-              const description = match[1].trim();
-              const amount = match[2].trim();
-              
-              if (description.toLowerCase().includes("total project cost")) {
-                // Skip this for now as we'll add it at the end
-              } else {
-                tableRows.push(`| ${description} | $${amount} |`);
-              }
-            } else if (line.includes("\t")) {
-              // Handle tab-separated lines
-              const parts = line.split("\t").filter(Boolean);
-              if (parts.length >= 2) {
-                const description = parts[0].trim();
-                const lastPart = parts[parts.length - 1].trim();
-                // Extract amount with $ sign if present
-                const amountMatch = lastPart.match(/\$?([0-9,]+\.\d{2}|\d+)/);
-                if (amountMatch) {
-                  tableRows.push(`| ${description} | $${amountMatch[1]} |`);
-                }
-              }
-            }
-          });
-          
-          // Add the total project cost at the end if found
-          if (totalAmount) {
-            tableRows.push(`| **TOTAL PROJECT COST** | **$${totalAmount}** |`);
-          }
-          
-          // If we found no rows but have a total, at least show that
-          if (tableRows.length <= 2 && totalAmount) {
-            tableRows.push(`| **TOTAL PROJECT COST** | **$${totalAmount}** |`);
-          }
-        }
-
-        // If we have a good table, return it
-        if (tableRows.length > 2) {
-          return heading + "\n" + tableRows.join("\n") + "\n\n";
-        }
-        
-        // Otherwise return original content with a better total block
-        if (totalAmount) {
-          return heading + "\n<span class=\"total-project-cost-block\">Total Project Cost: $" + totalAmount + "</span>\n\n";
-        }
-        
-        return heading + body;
-      }
-    );
-
-    // 8. Process subtotal-cell spans to make proper tables
+    // 8-11: Subtotal cells, subtotal groups, table formats, orange divider
+    // These cases are rare and isolated; keep here for now.
+    // (Lines from original below for in-place clarity)
     content = content.replace(
       /(<span class="subtotal-cell">[^<]*<\/span>[\s\t]*<span class="subtotal-cell">[^<]*<\/span>)/gm,
       (match) => {
         const descMatch = match.match(/<span class="subtotal-cell">([^<]*)<\/span>/);
         const amountMatch = match.match(/<span class="subtotal-cell">([^<]*)<\/span>(?!.*<span class="subtotal-cell">)/);
-
         if (descMatch && amountMatch) {
           const desc = descMatch[1].trim();
           const amount = amountMatch[1].trim();
@@ -200,14 +59,10 @@ export function useProMarkdownEstimate(rawMarkdown: string) {
         return match;
       }
     );
-
-    // 9. Convert numbered subtotal groups into proper sections
     content = content.replace(
       /^(\d+)\.\s+(<span class="subtotal-cell">.*$)/gm,
       (_, num, line) => `\n## <span class="section-number">${num}</span>Cost Breakdown\n\n${line}`
     );
-
-    // 10. Ensure consistent table format for subtotal cells
     content = content.replace(
       /(<span class="subtotal-cell">.*<\/span>.*<span class="subtotal-cell">.*<\/span>)/gm,
       (match) => {
@@ -232,27 +87,19 @@ export function useProMarkdownEstimate(rawMarkdown: string) {
         return match;
       }
     );
-
-    // 11. Insert orange divider above Total Estimate section
     content = content.replace(
       /(### Total (Estimate|Project Cost)|<span class="section-number">[0-9]+<\/span>Total (Estimate|Project Cost))/i,
       '<hr class="orange-divider"/>\n$1'
     );
 
-    // Remove any "### Notes & Terms" heading if present
+    // 12. Remove any "### Notes & Terms" heading if present.
     content = content.replace(/^### (Notes & Terms|NOTES & TERMS)[^\n]*\n?/gim, "");
 
-    // 14. "Thank you" section
-    content = content.replace(
-      /(?:Thank you for considering us for your|Thank you for choosing|Thank you)([^#]*)(?=\n### |\n## |$)/gi,
-      (_, rest) => {
-        return `\n### Thank You\n\nThank you${rest}`;
-      }
-    );
+    // 13. Thank You section
+    content = formatThankYou(content);
 
     // Clean up excess blank lines and spacing.
-    content = content.replace(/\n{3,}/g, "\n\n");
-    content = content.trim();
+    content = content.replace(/\n{3,}/g, "\n\n").trim();
 
     return content;
   }, [rawMarkdown]);
