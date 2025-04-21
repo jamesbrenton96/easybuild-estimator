@@ -8,116 +8,128 @@ import React from "react";
 export default function MarkdownTableStyle() {
   return (
     <style>{`
+      .markdown-content {
+        font-family: Arial, Helvetica, "Segoe UI", sans-serif !important;
+      }
       .markdown-content table {
         border-collapse: collapse;
-        margin: 1.5rem auto 1.75rem auto;
+        margin: 2rem auto 2.5rem auto;
         width: 100%;
-        background: #ffffff;
-        font-size: 0.95rem;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        border-radius: 6px;
+        background: #fff;
+        font-size: 1rem;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        border-radius: 8px;
         overflow: hidden;
       }
       .markdown-content th, .markdown-content td {
-        border: 1px solid #e2e8f0;
-        padding: 0.75em 1em;
+        border: 1px solid #f1f5f9;
+        padding: 1em 1.1em;
+        text-align: right;
+      }
+      .markdown-content th:first-child, .markdown-content td:first-child {
         text-align: left;
       }
       .markdown-content th {
         background: #f97316;
-        font-weight: 600;
+        font-weight: 700;
         color: white;
-        letter-spacing: 0.01em;
+        font-size: 1rem;
         text-transform: uppercase;
-        font-size: 0.85rem;
+        letter-spacing: 0.03em;
       }
-      .markdown-content tr:nth-child(even) td {
-        background: #f8fafc;
+      .markdown-content tr {
+        background: #fff;
+        transition: background 0.15s;
+      }
+      .markdown-content tr:nth-child(even) {
+        background: #f9fafb;
       }
       .markdown-content tr:last-child td {
-        font-weight: 600;
+        font-weight: 700;
       }
-      /* Subtotal and Total rows styling */
-      .markdown-content tr:nth-last-child(-n+3) td {
-        border-top: 2px solid #f97316;
-        font-weight: 600;
-      }
-      .markdown-content tr td strong, .markdown-content tr td b {
-        color: #f97316;
-        font-size: 1.05em;
+      .markdown-content tr.subtotal-row td, 
+      .markdown-content tr.total-row td {
+        border-top: 2.5px solid #f97316 !important;
+        font-weight: 700;
       }
       .markdown-content .summary-block {
         background: #fff8f3;
         border-left: 4px solid #f97316;
-        border-radius: 4px;
-        padding: 1.25rem;
-        margin: 1.5rem 0;
+        border-radius: 5px;
+        padding: 1.25rem 1.5rem;
+        margin: 1.75rem 0;
       }
-      /* Section headings */
-      .markdown-content h1 {
-        color: #1e293b !important;
-        font-size: 1.75rem !important;
-        font-weight: 700;
-        margin-top: 2rem !important;
-        margin-bottom: 1rem !important;
-        padding-bottom: 0.5rem;
-        border-bottom: 2px solid #f97316;
+      .markdown-content h1, .markdown-content .estimate-title {
+        color: #f97316 !important;
+        font-size: 2.1rem !important;
+        font-weight: 900;
+        margin-bottom: 0.5rem !important;
+        margin-top: 0.5rem !important;
       }
       .markdown-content h2 {
         color: #f97316 !important;
-        font-size: 1.5rem !important;
-        font-weight: 600;
+        font-size: 1.45rem !important;
+        font-weight: 700;
         margin-top: 1.75rem !important;
         margin-bottom: 1rem !important;
+        letter-spacing: -0.02em;
       }
       .markdown-content h3 { 
-        color: #f97316 !important;
-        font-size: 1.25rem !important;
+        color: #e58c33 !important;
+        font-size: 1.1rem !important;
         font-weight: 600;
-        margin-top: 1.5rem !important;
+        margin-top: 1.15rem !important;
         margin-bottom: 0.75rem !important;
       }
       .markdown-content h4 { 
         color: #475569 !important;
-        font-size: 1.1rem !important;
+        font-size: 1.05rem !important;
         font-weight: 600;
-        margin-top: 1.25rem !important;
+        margin-top: 1.1rem !important;
         margin-bottom: 0.5rem !important;
       }
-      /* List styles */
+      /* Custom bullet points */
       .markdown-content ul, .markdown-content ol {
         margin-top: 0.5rem;
-        margin-bottom: 1rem;
-        padding-left: 1.5rem;
+        margin-bottom: 1.2rem;
+        padding-left: 2.2rem;
       }
       .markdown-content li {
-        margin-bottom: 0.35rem;
-        line-height: 1.6;
+        margin-bottom: 0.5rem;
+        line-height: 1.8;
+        position: relative;
+        font-size: 1rem;
+        color: #283042;
       }
-      /* Text and paragraphs */
+      .markdown-content ul li::marker {
+        color: #f97316;
+        font-size: 1.45em;
+      }
       .markdown-content p {
-        color: #334155;
-        margin-top: 0.5rem;
-        margin-bottom: 1rem;
-        line-height: 1.6;
+        color: #344051;
+        margin-top: 0.6rem;
+        margin-bottom: 1.1rem;
+        line-height: 1.7;
+        font-size: 1rem;
       }
       .markdown-content strong, .markdown-content b {
         color: #f97316;
-        font-weight: 600;
-      }
-      /* Project total emphasis */
-      .markdown-content .total-project-cost {
-        font-size: 1.25rem;
         font-weight: 700;
-        color: #f97316;
-        background: #fff8f3;
-        padding: 0.75rem 1.5rem;
-        border-radius: 4px;
-        margin: 1rem 0;
-        display: inline-block;
-        border-left: 4px solid #f97316;
       }
-      /* Section numbering */
+      .markdown-content .total-project-cost-block {
+        font-size: 1.5rem;
+        font-weight: 900;
+        color: #fff;
+        background: linear-gradient(90deg, #f97316 0%, #e58c33 100%);
+        padding: 1.25rem 2.25rem;
+        border-radius: 6px;
+        margin: 2.5rem 0 1.75rem 0;
+        display: inline-block;
+        border-left: 7px solid #fff;
+        box-shadow: 0 4px 18px -4px #e58c3333;
+        text-shadow: 0 1px 4px #e58c3330;
+        letter-spacing: 0.01em;
+      }
       .markdown-content .section-number {
         display: inline-block;
         background: #f97316;
@@ -127,44 +139,29 @@ export default function MarkdownTableStyle() {
         line-height: 28px;
         text-align: center;
         border-radius: 50%;
-        margin-right: 0.5rem;
-        font-weight: bold;
+        margin-right: 0.6rem;
+        font-weight: 900;
+        font-size: 1.1em;
+        letter-spacing: 0.01em;
+        box-shadow: 0 1px 2px #e58c3366;
       }
-      /* Estimate header */
-      .markdown-content .estimate-header {
-        text-align: center;
-        margin-bottom: 2rem;
-        padding-bottom: 1.5rem;
-        border-bottom: 2px solid #f1f5f9;
+      /* Orange divider */
+      .markdown-content .orange-divider {
+        border: none;
+        height: 3px;
+        width: 100%;
+        background: #f97316;
+        margin: 2.5rem 0 2rem;
       }
-      .markdown-content .estimate-title {
-        color: #f97316;
-        font-size: 2rem;
-        font-weight: 700;
-        margin-bottom: 0.5rem;
-      }
-      .markdown-content .estimate-subtitle {
-        color: #64748b;
-        font-size: 1rem;
-      }
-      /* Print-specific styling */
       @media print {
         .markdown-content {
-          font-size: 11pt;
+          font-size: 12pt !important;
+          background: #fff;
         }
-        .markdown-content h1 {
-          font-size: 18pt !important;
-        }
-        .markdown-content h2 {
-          font-size: 16pt !important;
-        }
-        .markdown-content h3 {
-          font-size: 14pt !important;
+        .markdown-content .total-project-cost-block {
+          font-size: 1.28rem !important;
         }
         .markdown-content table {
-          page-break-inside: avoid;
-        }
-        .markdown-content tr {
           page-break-inside: avoid;
         }
       }
