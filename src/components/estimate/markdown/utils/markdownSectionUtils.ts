@@ -1,4 +1,6 @@
 
+import React from "react";
+
 /**
  * Utilities for recognizing and processing markdown sections for renderer.
  */
@@ -50,3 +52,4 @@ export function extractParagraphTexts(children: React.ReactNode) {
   });
   return { headerIdx, bullets };
 }
+
