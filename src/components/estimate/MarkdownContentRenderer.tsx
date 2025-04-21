@@ -42,20 +42,13 @@ export default function MarkdownContentRenderer({ content }: { content: string }
     return children;
   }
 
-  // Utility to detect if we are in the Notes & Terms section
-  function isNotesTermsSection(nodeProps) {
-    // nodeProps is the props passed to the heading element
-    const val = nodeProps?.children?.[0]?.props?.value || "";
-    return /Notes & Terms|NOTES & TERMS/i.test(val);
-  }
-
   // Track if we are inside "Notes & Terms" section
   let currentSection = null;
 
   // Utility: Determine if a heading is for Notes & Terms
   function isNotesTermsHeading(props: any) {
     if (typeof props?.children?.[0] === "string") {
-      return /Notes & Terms|NOTES & TERMS/i.test(props?.children?.[0]);
+      return /Notes & Terms|NOTES & TERMS|Notes and Terms|NOTES AND TERMS/i.test(props?.children?.[0]);
     }
     return false;
   }
@@ -95,12 +88,20 @@ export default function MarkdownContentRenderer({ content }: { content: string }
           td: ({ ...props }) => (
             <td className="estimate-table-cell p-3 border border-gray-200" {...props} />
           ),
+          h2: ({ node, ...props }) => {
+            // Track if we are in Notes & Terms section
+            if (isNotesTermsHeading(props)) {
+              currentSection = "notes-terms";
+              return <h2 className="text-xl font-semibold mt-6 text-gray-800">Notes & Terms</h2>;
+            }
+            currentSection = null;
+            return <h2 {...props}>{props.children}</h2>;
+          },
           h3: ({ node, ...props }) => {
             // Track if we are in Notes & Terms
             if (isNotesTermsHeading(props)) {
               currentSection = "notes-terms";
-              // Don't render heading at all (strip from layout)
-              return null;
+              return <h3 className="text-lg font-semibold mt-5 text-gray-800">Notes & Terms</h3>;
             }
             currentSection = null;
             return <h3 {...props}>{props.children}</h3>;
@@ -192,6 +193,14 @@ export default function MarkdownContentRenderer({ content }: { content: string }
               );
             }
             return <li {...props}>{children}</li>;
+          },
+          strong: ({ children, ...props }) => {
+            const isInNotesTerms = currentSection === "notes-terms";
+            // In Notes & Terms, use regular non-colored text for strong elements
+            if (isInNotesTerms) {
+              return <span className="font-semibold text-gray-800" {...props}>{children}</span>;
+            }
+            return <strong {...props}>{children}</strong>;
           }
         }}
       >
