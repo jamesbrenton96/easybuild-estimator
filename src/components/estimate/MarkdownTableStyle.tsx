@@ -1,3 +1,4 @@
+
 import React from "react";
 
 /**
@@ -159,6 +160,39 @@ export default function MarkdownTableStyle() {
         font-weight: 700;
       }
       
+      /* Subtotal table styling */
+      .markdown-content .subtotal-table {
+        width: 100%;
+        margin: 1rem 0;
+        border-collapse: collapse;
+      }
+      
+      .markdown-content .subtotal-row td {
+        border: 1px solid #f1f5f9;
+        padding: 0.75rem 1rem;
+      }
+      
+      .markdown-content .subtotal-row td:first-child {
+        text-align: left;
+        width: 70%;
+        color: #f97316;
+        font-weight: 700;
+      }
+      
+      .markdown-content .subtotal-row td:last-child {
+        text-align: right;
+        width: 30%;
+        color: #f97316;
+        font-weight: 700;
+      }
+      
+      /* Add special styling for numbered cost breakdown items */
+      .markdown-content p:has(span.section-number) + .subtotal-table {
+        margin-top: 0.5rem;
+        margin-bottom: 1.5rem;
+        margin-left: 2rem;
+      }
+      
       /* Total project cost block */
       .markdown-content .total-project-cost-block {
         font-size: 1.5rem;
@@ -204,7 +238,7 @@ export default function MarkdownTableStyle() {
         .markdown-content .total-project-cost-block {
           font-size: 1.28rem !important;
         }
-        .markdown-content table {
+        .markdown-content table, .markdown-content .subtotal-table {
           page-break-inside: avoid;
         }
       }

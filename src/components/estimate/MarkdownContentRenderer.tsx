@@ -34,7 +34,7 @@ export default function MarkdownContentRenderer({ content }: { content: string }
               return <div className="total-project-cost-block">{children}</div>;
             }
             if (className === "subtotal-cell") {
-              return <strong className="font-bold text-construction-orange">{children}</strong>;
+              return <strong className="subtotal-cell">{children}</strong>;
             }
             if (className === "section-number") {
               return (
@@ -68,8 +68,54 @@ export default function MarkdownContentRenderer({ content }: { content: string }
               child => React.isValidElement(child) && child.props.className === "section-number"
             );
             
+            // Special handling for paragraphs with subtotal cells
+            const hasSubtotalCells = React.Children.toArray(children).some(
+              child => React.isValidElement(child) && child.props.className === "subtotal-cell"
+            );
+            
             if (hasNumberedSection) {
               return <p className="flex items-start mb-2" {...props}>{children}</p>;
+            }
+            
+            if (hasSubtotalCells) {
+              // Create a proper table row from subtotal cells
+              const cells = React.Children.toArray(children);
+              
+              // Check if we already have a proper HTML table structure
+              if (cells.length > 0 && typeof cells[0] === 'object' && cells[0].type === 'table') {
+                return <>{children}</>;
+              }
+              
+              let description = '';
+              let amount = '';
+              
+              // Extract the content of the subtotal cells
+              cells.forEach(cell => {
+                if (React.isValidElement(cell) && cell.props.className === "subtotal-cell") {
+                  const content = React.Children.toArray(cell.props.children).join('').trim();
+                  
+                  // Check if this cell contains a dollar sign (likely the amount)
+                  if (content.includes('$')) {
+                    amount = content;
+                  } else {
+                    description = content;
+                  }
+                }
+              });
+              
+              // If we have both description and amount, create a table row
+              if (description && amount) {
+                return (
+                  <table className="subtotal-table border-collapse w-full my-3">
+                    <tbody>
+                      <tr className="subtotal-row">
+                        <td className="estimate-table-cell p-3 border border-gray-200 text-left">{description}</td>
+                        <td className="estimate-table-cell p-3 border border-gray-200 text-right">{amount}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                );
+              }
             }
             
             return <p {...props}>{children}</p>;

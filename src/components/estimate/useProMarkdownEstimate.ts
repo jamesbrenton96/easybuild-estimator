@@ -1,3 +1,4 @@
+
 import { useMemo } from "react";
 
 /**
@@ -189,34 +190,72 @@ export function useProMarkdownEstimate(rawMarkdown: string) {
       }
     );
 
-    // 8. Enhance tables: right align numbers, strong header, styled subtotal/total lines
+    // 8. Process subtotal-cell spans to make proper tables
     content = content.replace(
-      /^\|(.*?)\|(.*?)\|$/gm,
-      (match, desc, amount) => {
-        // Skip if this is a header or separator row
-        if (match.includes("---") || match.toLowerCase().includes("description") || match.toLowerCase().includes("amount")) {
-          return match;
-        }
+      /(<span class="subtotal-cell">[^<]*<\/span>[\s\t]*<span class="subtotal-cell">[^<]*<\/span>)/gm,
+      (match) => {
+        // Extract description and amount from the span tags
+        const descMatch = match.match(/<span class="subtotal-cell">([^<]*)<\/span>/);
+        const amountMatch = match.match(/<span class="subtotal-cell">([^<]*)<\/span>(?!.*<span class="subtotal-cell">)/);
         
-        // Check if this is a totals or subtotals row
-        if (desc.toLowerCase().includes("subtotal") || 
-            desc.toLowerCase().includes("total") || 
-            desc.toLowerCase().includes("gst") || 
-            desc.toLowerCase().includes("margin")) {
-          return `|<span class="subtotal-cell">${desc}</span>|<span class="subtotal-cell">${amount}</span>|`;
+        if (descMatch && amountMatch) {
+          const desc = descMatch[1].trim();
+          const amount = amountMatch[1].trim();
+          
+          // Create a proper markdown table row
+          return `| <span class="subtotal-cell">${desc}</span> | <span class="subtotal-cell">${amount}</span> |`;
         }
         
         return match;
       }
     );
 
-    // 9. Insert orange divider above Total Estimate section
+    // 9. Convert numbered subtotal groups into proper sections
+    content = content.replace(
+      /^(\d+)\.\s+(<span class="subtotal-cell">.*$)/gm,
+      (_, num, line) => `\n## <span class="section-number">${num}</span>Cost Breakdown\n\n${line}`
+    );
+
+    // 10. Ensure consistent table format for subtotal cells
+    content = content.replace(
+      /(<span class="subtotal-cell">.*<\/span>.*<span class="subtotal-cell">.*<\/span>)/gm,
+      (match) => {
+        if (match.includes("|")) return match; // Already in table format
+        
+        // Split into parts
+        const parts = match.split(/\s+/).filter(Boolean);
+        
+        // Try to identify description and amount parts
+        let description = "";
+        let amount = "";
+        
+        for (const part of parts) {
+          if (part.includes("$") || part.match(/\d+\.\d+/)) {
+            amount = part;
+          } else if (part.includes("subtotal-cell")) {
+            if (!description) {
+              description = part;
+            } else if (!amount) {
+              amount = part;
+            }
+          }
+        }
+        
+        if (description && amount) {
+          return `| ${description} | ${amount} |`;
+        }
+        
+        return match;
+      }
+    );
+
+    // 11. Insert orange divider above Total Estimate section
     content = content.replace(
       /(### Total (Estimate|Project Cost)|<span class="section-number">[0-9]+<\/span>Total (Estimate|Project Cost))/i,
       '<hr class="orange-divider"/>\n$1'
     );
 
-    // 10. Handle numbered bullet points in Notes & Terms section
+    // 12. Handle numbered bullet points in Notes & Terms section
     content = content.replace(
       /(### Notes & Terms\n)([^#\n][^]*?)(?=\n### |\n## |$)/gi,
       (_, heading, body) => {
@@ -242,7 +281,7 @@ export function useProMarkdownEstimate(rawMarkdown: string) {
       }
     );
 
-    // 11. Clean up extra whitespace, excess blank lines, ensure nice section spacing.
+    // 13. Clean up extra whitespace, excess blank lines, ensure nice section spacing.
     content = content.replace(/\n{3,}/g, "\n\n");
     content = content.trim();
 
