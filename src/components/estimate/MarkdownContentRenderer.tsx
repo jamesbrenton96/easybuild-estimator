@@ -1,4 +1,3 @@
-
 import React from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -78,21 +77,32 @@ export default function MarkdownContentRenderer({ content }: { content: string }
             <td className="estimate-table-cell p-3 border border-gray-200" {...props} />
           ),
           p: ({ children, ...props }) => {
-            // Custom subtotal table block rendering
+            // Numbered sections styling for Notes & Terms
             const childrenArray = React.Children.toArray(children);
-            const hasNumberedSection = childrenArray.some(
-              child => React.isValidElement(child) && child.props?.className === "section-number"
-            );
+            const textContent = childrenArray.map(child => 
+              typeof child === 'string' ? child : ''
+            ).join('');
+            
+            // Check if this is a numbered item (e.g., "1. This is a note")
+            const numberMatch = textContent.match(/^(\d+)[\.\)]\s*(.*)/);
+            if (numberMatch) {
+              const number = numberMatch[1];
+              const text = numberMatch[2];
+              return (
+                <p className="flex items-start mb-4" {...props}>
+                  <span className="inline-flex items-center justify-center w-7 h-7 bg-construction-orange text-white rounded-full mr-2 font-bold text-sm flex-shrink-0">
+                    {number}
+                  </span>
+                  {text}
+                </p>
+              );
+            }
+            
+            // Handle subtotal cells
             const hasSubtotalCells = childrenArray.some(
               child => React.isValidElement(child) && child.props?.className === "subtotal-cell"
             );
-
-            // Numbered sections need special styling with left margin and flex
-            if (hasNumberedSection) {
-              return <p className="flex items-start mb-4" {...props}>{children}</p>;
-            }
-
-            // Handle subtotal cells
+            
             if (hasSubtotalCells) {
               // Extract the content of the subtotal cells
               let description = '';
@@ -116,9 +126,32 @@ export default function MarkdownContentRenderer({ content }: { content: string }
                 return <MarkdownTableBlock rows={[[description, amount]]} />;
               }
             }
-
+            
             // Regular paragraphs
             return <p {...props}>{children}</p>;
+          },
+          li: ({ children, ...props }) => {
+            // Check if this is a numbered item (for Notes & Terms section)
+            const childrenArray = React.Children.toArray(children);
+            const textContent = childrenArray.map(child => 
+              typeof child === 'string' ? child : ''
+            ).join('');
+            
+            const numberMatch = textContent.match(/^(\d+)[\.\)]\s*(.*)/);
+            if (numberMatch) {
+              const number = numberMatch[1];
+              const text = numberMatch[2];
+              return (
+                <li className="flex items-start mb-4" {...props}>
+                  <span className="inline-flex items-center justify-center w-7 h-7 bg-construction-orange text-white rounded-full mr-2 font-bold text-sm flex-shrink-0">
+                    {number}
+                  </span>
+                  {text}
+                </li>
+              );
+            }
+            
+            return <li {...props}>{children}</li>;
           }
         }}
       >

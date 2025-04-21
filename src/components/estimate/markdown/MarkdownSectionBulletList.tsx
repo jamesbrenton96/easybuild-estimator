@@ -13,11 +13,26 @@ export default function MarkdownSectionBulletList({
 }) {
   if (!header || !bulletPoints?.length) return null;
   
-  // Process bullet points - if already has section-number spans, don't add bullets
+  // Process bullet points - if already has numbered items, don't add bullets
   const processedPoints = bulletPoints.map((item, i) => {
-    const hasNumberedSection = item.includes('<span class="section-number">');
+    // Check for numbered list items like "1. Text"
+    const numberMatch = item.match(/^(\d+)[\.\)]\s*(.*)/);
+    if (numberMatch) {
+      const number = numberMatch[1];
+      const text = numberMatch[2];
+      return (
+        <li key={i} className="flex items-start mb-3 list-none -ml-6">
+          <span className="inline-flex items-center justify-center w-7 h-7 bg-construction-orange text-white rounded-full mr-2 font-bold text-sm flex-shrink-0">
+            {number}
+          </span>
+          {text}
+        </li>
+      );
+    }
+    
+    // Regular bullet point
     return (
-      <li key={i} className={`my-2 ${hasNumberedSection ? 'list-none -ml-6 flex items-start' : ''}`}>
+      <li key={i} className="my-2">
         {item}
       </li>
     );

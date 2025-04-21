@@ -1,4 +1,3 @@
-
 import { useMemo } from "react";
 
 /**
@@ -32,7 +31,7 @@ export function useProMarkdownEstimate(rawMarkdown: string) {
     // 3. Major sections: Numbered headings with orange "circle"
     content = content.replace(
       /^([0-9]+)\.\s+([^\n]+)$/gm,
-      (_, num, title) => `\n\n## <span class="section-number">${num}</span>${title}\n`
+      (_, num, title) => `\n\n## ${num}. ${title}\n`
     );
 
     // 4. Recognized section (bolded) headers (for non-numbered section titles)
@@ -49,7 +48,7 @@ export function useProMarkdownEstimate(rawMarkdown: string) {
         if (body.match(/^[\*\-\d]+\s+/m) || body.match(/^\|/m)) return heading + body;
         
         // Skip bulletifying lines that contain section-number spans
-        if (body.includes('<span class="section-number">')) {
+        if (body.includes('section-number')) {
           return heading + body;
         }
         
@@ -66,7 +65,7 @@ export function useProMarkdownEstimate(rawMarkdown: string) {
           "\n" +
           lines.map(l => {
             // Don't add bullet if line already has section-number span
-            if (l.includes('<span class="section-number">')) {
+            if (l.includes('section-number')) {
               return l;
             }
             return `- ${l.replace(/^\-?\s*/, "")}`;
@@ -79,8 +78,8 @@ export function useProMarkdownEstimate(rawMarkdown: string) {
     bulletSection("Scope of Work");
     bulletSection("Material Details & Calculations");
     // Don't auto-bulletify Notes & Terms section if it has section-number spans
-    if (!content.match(/### Notes & Terms[\s\S]*?<span class="section-number">/i) && 
-        !content.match(/### NOTES & TERMS[\s\S]*?<span class="section-number">/i)) {
+    if (!content.match(/### Notes & Terms[\s\S]*?section-number/i) && 
+        !content.match(/### NOTES & TERMS[\s\S]*?section-number/i)) {
       bulletSection("Notes & Terms");
       bulletSection("NOTES & TERMS");
     }
@@ -280,14 +279,9 @@ export function useProMarkdownEstimate(rawMarkdown: string) {
         const formattedLines = lines.map((line, index) => {
           // Check if this line starts with a number (like "1. Text" or "1) Text")
           const numberMatch = line.match(/^(\d+)[\.\)]\s*(.*)/);
-          if (numberMatch && !line.includes('<span class="section-number">')) {
-            // Replace with section-number span if not already formatted
-            return `<span class="section-number">${numberMatch[1]}</span>${numberMatch[2]}`;
-          }
-          
-          // Check if it has a <span class="section-number"> already
-          if (line.includes('<span class="section-number">')) {
-            return line; // Already formatted
+          if (numberMatch) {
+            // Convert to markdown list format with number
+            return `${numberMatch[1]}. ${numberMatch[2]}`;
           }
           
           return line;
