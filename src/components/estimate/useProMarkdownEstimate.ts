@@ -2,7 +2,7 @@ import { useMemo } from "react";
 
 /**
  * useProMarkdownEstimate - Enhanced markdown formatter for construction estimates.
- *
+ * 
  * Features:
  *  - Prominent headings and numbered orange markers for each section.
  *  - Always formats materials, labor costs, and totals as tables.
@@ -46,20 +46,20 @@ export function useProMarkdownEstimate(rawMarkdown: string) {
       content = content.replace(regex, (_, heading, body) => {
         // If body already contains a list or table, leave as is
         if (body.match(/^[\*\-\d]+\s+/m) || body.match(/^\|/m)) return heading + body;
-        
+
         // Skip bulletifying lines that contain section-number spans
         if (body.includes('section-number')) {
           return heading + body;
         }
-        
+
         // Otherwise, split lines into clean bullets (filter out empty)
         const lines = body
           .split("\n")
           .map(l => l.trim())
           .filter(l => l.length > 0 && !l.includes("Total Project Cost") && !l.includes("TOTAL PROJECT COST"));
-          
+
         if (lines.length === 0) return heading + body;
-        
+
         return (
           heading +
           "\n" +
@@ -74,11 +74,11 @@ export function useProMarkdownEstimate(rawMarkdown: string) {
         );
       });
     }
-    
+
     bulletSection("Scope of Work");
     bulletSection("Material Details & Calculations");
-    // Don't auto-bulletify Notes & Terms section if it has section-number spans
-    if (!content.match(/### Notes & Terms[\s\S]*?section-number/i) && 
+    // For Notes & Terms: don't bold, don't color, just bulletify (regular body text only)
+    if (!content.match(/### Notes & Terms[\s\S]*?section-number/i) &&
         !content.match(/### NOTES & TERMS[\s\S]*?section-number/i)) {
       bulletSection("Notes & Terms");
       bulletSection("NOTES & TERMS");
@@ -91,20 +91,20 @@ export function useProMarkdownEstimate(rawMarkdown: string) {
       const regex = new RegExp(`(### ${sectionHeader}[\\s\\S]*?)((?:^\\s*[\\w\\s]+\\t.*$\\n?)+)`, "gmi");
       content = content.replace(regex, (match, header, tableContent) => {
         if (tableContent.includes("|")) return match; // Already in table format
-        
+
         // Split into rows
         const rows = tableContent.trim().split("\n");
         if (rows.length === 0) return match;
-        
+
         // Get headers from first row
         const headers = rows[0].split("\t").filter(Boolean).map(h => h.trim());
         if (headers.length <= 1) return match;
-        
+
         // Build proper table
         let markdownTable = "\n";
         markdownTable += `| ${headers.join(" | ")} |\n`;
         markdownTable += `| ${headers.map(() => "---").join(" | ")} |\n`;
-        
+
         // Add data rows
         for (let i = 1; i < rows.length; i++) {
           const cells = rows[i].split("\t").filter(Boolean).map(c => c.trim());
@@ -114,11 +114,11 @@ export function useProMarkdownEstimate(rawMarkdown: string) {
             markdownTable += `| ${cells.join(" | ")} |\n`;
           }
         }
-        
+
         return header + markdownTable;
       });
     }
-    
+
     formatTableSection("Labor Costs");
     formatTableSection("Labour Costs");
     formatTableSection("Labor Cost Breakdown");
@@ -146,12 +146,12 @@ export function useProMarkdownEstimate(rawMarkdown: string) {
           .split("\n")
           .map(line => line.trim())
           .filter(Boolean);
-          
+
         if (lines.length > 0) {
           // Add table headers
           tableRows.push("| Description | Amount (NZD) |");
           tableRows.push("|-------------|-------------|");
-          
+
           // Process each line to extract description and amount
           lines.forEach(line => {
             // Look for patterns like "Materials: $XXX" or lines with tabs
@@ -159,7 +159,7 @@ export function useProMarkdownEstimate(rawMarkdown: string) {
             if (match) {
               const description = match[1].trim();
               const amount = match[2].trim();
-              
+
               if (description.toLowerCase().includes("total project cost")) {
                 // Skip this for now as we'll add it at the end
               } else {
@@ -179,12 +179,12 @@ export function useProMarkdownEstimate(rawMarkdown: string) {
               }
             }
           });
-          
+
           // Add the total project cost at the end if found
           if (totalAmount) {
             tableRows.push(`| **TOTAL PROJECT COST** | **$${totalAmount}** |`);
           }
-          
+
           // If we found no rows but have a total, at least show that
           if (tableRows.length <= 2 && totalAmount) {
             tableRows.push(`| **TOTAL PROJECT COST** | **$${totalAmount}** |`);
@@ -195,12 +195,12 @@ export function useProMarkdownEstimate(rawMarkdown: string) {
         if (tableRows.length > 2) {
           return heading + "\n" + tableRows.join("\n") + "\n\n";
         }
-        
+
         // Otherwise return original content with a better total block
         if (totalAmount) {
           return heading + "\n<span class=\"total-project-cost-block\">Total Project Cost: $" + totalAmount + "</span>\n\n";
         }
-        
+
         return heading + body;
       }
     );
@@ -212,15 +212,15 @@ export function useProMarkdownEstimate(rawMarkdown: string) {
         // Extract description and amount from the span tags
         const descMatch = match.match(/<span class="subtotal-cell">([^<]*)<\/span>/);
         const amountMatch = match.match(/<span class="subtotal-cell">([^<]*)<\/span>(?!.*<span class="subtotal-cell">)/);
-        
+
         if (descMatch && amountMatch) {
           const desc = descMatch[1].trim();
           const amount = amountMatch[1].trim();
-          
+
           // Create a proper markdown table row
           return `| <span class="subtotal-cell">${desc}</span> | <span class="subtotal-cell">${amount}</span> |`;
         }
-        
+
         return match;
       }
     );
@@ -236,14 +236,14 @@ export function useProMarkdownEstimate(rawMarkdown: string) {
       /(<span class="subtotal-cell">.*<\/span>.*<span class="subtotal-cell">.*<\/span>)/gm,
       (match) => {
         if (match.includes("|")) return match; // Already in table format
-        
+
         // Split into parts
         const parts = match.split(/\s+/).filter(Boolean);
-        
+
         // Try to identify description and amount parts
         let description = "";
         let amount = "";
-        
+
         for (const part of parts) {
           if (part.includes("$") || part.match(/\d+\.\d+/)) {
             amount = part;
@@ -255,11 +255,11 @@ export function useProMarkdownEstimate(rawMarkdown: string) {
             }
           }
         }
-        
+
         if (description && amount) {
           return `| ${description} | ${amount} |`;
         }
-        
+
         return match;
       }
     );
@@ -274,7 +274,7 @@ export function useProMarkdownEstimate(rawMarkdown: string) {
     content = content.replace(
       /(### (Notes & Terms|NOTES & TERMS)\n)([^#\n][^]*?)(?=\n### |\n## |$)/gi,
       (_, heading, sectionName, body) => {
-        // Process each line to check for numbered items
+        // Process each line to check for numbered items, but DO NOT bold or colorize!
         const lines = body.trim().split("\n");
         const formattedLines = lines.map((line, index) => {
           // Check if this line starts with a number (like "1. Text" or "1) Text")
@@ -283,14 +283,15 @@ export function useProMarkdownEstimate(rawMarkdown: string) {
             // Convert to markdown list format with number
             return `${numberMatch[1]}. ${numberMatch[2]}`;
           }
-          
+
           return line;
         });
-        
+
+        // DO NOT wrap with any extra styling; just return as simple neutral body text
         return heading + formattedLines.join('\n\n') + '\n';
       }
     );
-    
+
     // 13. Handle "Thank you" note after Notes & Terms section
     content = content.replace(
       /(?:Thank you for considering us for your|Thank you for choosing|Thank you)([^#]*)(?=\n### |\n## |$)/gi,
