@@ -1,3 +1,4 @@
+
 import { useMemo } from "react";
 import { formatEscapes } from "./helpers/formatEscapes";
 import { removeHeader } from "./helpers/removeHeader";
@@ -6,6 +7,7 @@ import { bulletSection } from "./helpers/bulletSection";
 import { formatTableSection } from "./helpers/formatTableSection";
 import { formatTotals } from "./helpers/formatTotals";
 import { formatThankYou } from "./helpers/formatThankYou";
+import { formatNotesAndTerms } from "./helpers/formatNotesAndTerms";
 
 /**
  * useProMarkdownEstimate - Enhanced markdown formatter for construction estimates (refactored).
@@ -20,7 +22,7 @@ export function useProMarkdownEstimate(rawMarkdown: string) {
     // 1. Clean up escapes
     content = formatEscapes(content);
 
-    // 2. Remove estimate header
+    // 2. Remove estimate header (& correspondence/project header)
     content = removeHeader(content);
 
     // 3/4. Format major/known section headings
@@ -43,9 +45,10 @@ export function useProMarkdownEstimate(rawMarkdown: string) {
     // 7. Format total estimate section
     content = formatTotals(content);
 
-    // 8-11: Subtotal cells, subtotal groups, table formats, orange divider
-    // These cases are rare and isolated; keep here for now.
-    // (Lines from original below for in-place clarity)
+    // 8. Process the Notes & Terms section (bodyify all under heading)
+    content = formatNotesAndTerms(content);
+
+    // 9-12: Subtotal cells, subtotal groups, table formats, orange divider, etc.
     content = content.replace(
       /(<span class="subtotal-cell">[^<]*<\/span>[\s\t]*<span class="subtotal-cell">[^<]*<\/span>)/gm,
       (match) => {
@@ -92,10 +95,10 @@ export function useProMarkdownEstimate(rawMarkdown: string) {
       '<hr class="orange-divider"/>\n$1'
     );
 
-    // 12. Remove any "### Notes & Terms" heading if present.
+    // 13. Remove any duplicated "### Notes & Terms" heading if present.
     content = content.replace(/^### (Notes & Terms|NOTES & TERMS)[^\n]*\n?/gim, "");
 
-    // 13. Thank You section
+    // 14. Thank You section
     content = formatThankYou(content);
 
     // Clean up excess blank lines and spacing.
