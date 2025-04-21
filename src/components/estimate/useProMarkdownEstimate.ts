@@ -4,11 +4,11 @@ import { useMemo } from "react";
 /**
  * useProMarkdownEstimate - Enhanced markdown formatter for construction estimates.
  * Features:
- *  - Formats all main sections with bold, orange, prominent headings (h2/h3).
- *  - Converts all cost, subtotal, total, and summary blocks to tables with Orange/bold total rows.
- *  - Keeps markdown tables intact, but improves subtotal/total emphasis.
- *  - Cleans up inconsistent whitespace and ensures section separation.
- *  - Returns a single, highly readable markdown string.
+ *  - Formats all main sections with bold, orange, prominent headings (h2/h3)
+ *  - Converts simple line items and costs into structured tables
+ *  - Enhances existing tables with better styling
+ *  - Adds special formatting for totals and summaries
+ *  - Cleans up inconsistent whitespace and ensures section separation
  */
 export function useProMarkdownEstimate(rawMarkdown: string) {
   return useMemo(() => {
@@ -23,57 +23,99 @@ export function useProMarkdownEstimate(rawMarkdown: string) {
       .replace(/\\"/g, '"')
       .replace(/\\\\/g, "\\");
 
-    // 2. Convert all sections (numbered or named) into BIG orange headings
-    content = content.replace(
-      /^([0-9]+\.\s[^\n]+)$/gm,
-      (_match, cap) =>
-        `\n<span style="font-size:1.6em;font-weight:800;color:#ff8600;display:block;margin:2em 0 0.6em 0;">${cap}</span>`
-    );
-    content = content.replace(
-      /^(Project Overview|Scope of Work|Dimensions|Materials & Cost Breakdown|Material Cost Breakdown|Labor Costs|Labour Costs|Total Estimate|Project Timeline|Material Details & Calculations|Notes & Terms|Client Name|Project Address)$/gim,
-      (_m, cap) =>
-        `\n<span style="font-size:1.3em;font-weight:700;color:#ff8600;display:block;margin:1.5em 0 0.3em;">${cap}</span>`
-    );
-    // Remove accidental hash headers if present
-    content = content.replace(/^(#+)\s*([0-9]+\.)/gm, (_m, _h, cap) => cap);
+    // 2. Add estimate header if not present
+    if (!content.includes("# Project Cost Estimate") && !content.includes("# Construction Cost Estimate")) {
+      content = "# Project Cost Estimate\n\n" + content;
+    }
 
-    // 3. Find cost summary lines (Subtotals, GST, Margin, Totals) not already in tables and make them colored bold in their own row
-    // Handle: "| Materials Subtotal | ... |" etc. Already in table: apply orange
+    // 3. Convert numeric section headings to styled headings with orange circles
     content = content.replace(
-      /^(\| ?)([^|\n]*(Subtotal|GST|Margin|Total).*?)(\|[^\n]+)\|?$/gim,
-      (_m, p1, label, _k, trailing) =>
-        `| <span style="color:#ff8600;font-weight:700;">${label.trim()}</span> ${trailing}|`
-    );
-    // For rows like "| ... | ... | 82.50 |" at end of labor/materials section - make last row orange if 'total' in label
-    content = content.replace(
-      /^(\| ?)([^|\n]*Total Project Cost[^|\n]*)(\|[^\n]+)\|?$/gim,
-      (_m, p1, label, trailing) =>
-        `| <span style="color:#e36414;font-weight:700;font-size:1.1em;">${label.trim()}</span> ${trailing}|`
+      /^([0-9]+)\.\s+([^\n]+)$/gm,
+      (_, num, title) => `## <span class="section-number">${num}</span>${title}`
     );
 
-    // 4. Convert cost summary lines (not inside tables) into their own markdown table if not already
-    // For: "Materials Subtotal: $1,197.62"
+    // 4. Convert subsections (using regex to match patterns like "Materials & Cost Breakdown")
     content = content.replace(
-      /^([\w ().'%/+&-]+(?:Subtotal|GST|Margin|Total)[^:]*):?\s*\$([0-9,]+(\.\d{2})?)$/gim,
-      (_m, label, value) =>
-        `| <span style="color:#ff8600;font-weight:700;">${label.trim()}</span> | <span style="color:#ff8600;font-weight:700;">$${value}</span> |\n|---|---|`
+      /^(Project Overview|Scope of Work|Dimensions|Materials & Cost Breakdown|Material Cost Breakdown|Labor Costs|Labour Costs|Total Estimate|Project Timeline|Material Details & Calculations|Notes & Terms|Client Name|Project Address|Payment Terms|Warranty Information)$/gim,
+      (_, cap) => `### ${cap}`
     );
 
-    // 5. Add extra blank lines before/after tables and prominent headings for spacing
-    content = content.replace(/([^\n])(\n\|)/g, "$1\n$2");
-    content = content.replace(/(\n\|.*\|\n)/g, "\n$1");
+    // 5. Format tables - enhance existing ones
+    // Make table headers bold and colored
+    content = content.replace(
+      /(^\|\s*([^|\n]+)\s*\|\s*([^|\n]+)\s*\|\s*([^|\n]*)\s*\|)/gm,
+      (match, full, col1, col2, col3) => {
+        if (full.toLowerCase().includes("item") || 
+            full.toLowerCase().includes("description") || 
+            full.toLowerCase().includes("task")) {
+          return full; // It's already a header, leave it alone
+        }
+        return full;
+      }
+    );
+
+    // 6. Convert cost lines WITHOUT table format into tables
+    // Match patterns like "Material Cost: $1000" and convert to table rows
+    const costLineRegex = /^([^:|\n]+):\s*\$([0-9,]+(?:\.\d{2})?)$/gm;
+    if (content.match(costLineRegex)) {
+      // First find all cost lines and group them
+      const costLines = Array.from(content.matchAll(costLineRegex)).map(match => ({
+        label: match[1].trim(),
+        amount: match[2].trim()
+      }));
+
+      if (costLines.length > 0) {
+        // Create a table header
+        let tableReplacement = "\n| Description | Amount (NZD) |\n|-------------|------------|\n";
+        
+        // Add all the cost lines as table rows
+        costLines.forEach(line => {
+          tableReplacement += `| ${line.label} | $${line.amount} |\n`;
+        });
+        
+        // Replace all the matched cost lines with our new table
+        costLines.forEach(line => {
+          content = content.replace(
+            `${line.label}: $${line.amount}`, 
+            "" // Remove the old line
+          );
+        });
+        
+        // Add our table where the last cost line was
+        content = content.replace(/\n\n+/g, "\n\n"); // Clean up blank lines
+        
+        // Find a good spot to insert the table - after "Total Estimate" or similar
+        const insertPos = content.indexOf("### Total Estimate");
+        if (insertPos !== -1) {
+          content = content.slice(0, insertPos + 16) + "\n" + tableReplacement + content.slice(insertPos + 16);
+        } else {
+          // If no good spot, just append to the end
+          content += "\n" + tableReplacement;
+        }
+      }
+    }
+
+    // 7. Highlight subtotal, total and summary rows in tables
+    content = content.replace(
+      /^\|(.*?)(Subtotal|Total Project Cost|Total Estimate|GST|Margin)(.*?)\|(.*)$/gim,
+      (match, prefix, key, suffix, values) => {
+        // For total rows, add strong emphasis
+        if (key.includes("Total Project Cost") || key.includes("Total Estimate")) {
+          return `|${prefix}**${key}**${suffix}|**${values.trim()}**|`;
+        }
+        // For subtotal rows, add moderate emphasis
+        return `|${prefix}**${key}**${suffix}|${values}|`;
+      }
+    );
+
+    // 8. Clean up extra whitespace and ensure consistent spacing
     content = content.replace(/\n{3,}/g, "\n\n");
-
-    // 6. Make sure "Total Project Cost" and similar lines (not in tables) become tables too
+    
+    // 9. Add a special class to the Total Project Cost for extra emphasis
     content = content.replace(
-      /^\*\*([^*]+Total Project Cost[^*]+)\*\*\s+\$([0-9,.]+)/gim,
-      (_m, label, value) =>
-        `| <span style="color:#e36414;font-weight:700;">${label.trim()}</span> | <span style="color:#e36414;font-weight:700;">$${value}</span> |\n|---|---|`
+      /\*\*Total Project Cost\*\*.*?\$([0-9,]+(?:\.\d{2})?)/g, 
+      (match, amount) => `<div class="total-project-cost">Total Project Cost: $${amount}</div>`
     );
-
-    // 7. Remove weird leftover extra pipe lines or trailing whitespace
-    content = content.replace(/(\|[^\n]+\|)\|+/g, "$1");
-    content = content.replace(/^\s+|\s+$/g, "");
 
     return content;
   }, [rawMarkdown]);

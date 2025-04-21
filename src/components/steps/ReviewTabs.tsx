@@ -10,6 +10,7 @@ import { useProcessEstimationResults } from "../submitter/useProcessEstimationRe
 import FallbackEstimate from "../estimate/FallbackEstimate";
 import html2pdf from "html2pdf.js";
 import { toast } from "sonner";
+import { useEstimator } from "@/context/EstimatorContext";
 
 export function ReviewTabs({ estimationResults, setEstimationResults }: {
   estimationResults: any,
@@ -17,10 +18,22 @@ export function ReviewTabs({ estimationResults, setEstimationResults }: {
 }) {
   const [activeTab, setActiveTab] = useState("view");
   const estimateRef = useRef<HTMLDivElement>(null);
-
+  const { formData } = useEstimator();
+  
   if (!estimationResults) return null;
 
-  const processEstimationResults = useProcessEstimationResults(estimationResults);
+  // Extract project details from form data
+  const projectDetails = {
+    clientName: formData?.clientName || "",
+    projectAddress: formData?.projectAddress || "",
+    date: new Date().toLocaleDateString('en-NZ', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    })
+  };
+
+  const processEstimationResults = useProcessEstimationResults(estimationResults, projectDetails);
 
   const handleSaveEdits = (editedContent: string) => {
     setEstimationResults({
@@ -32,7 +45,7 @@ export function ReviewTabs({ estimationResults, setEstimationResults }: {
   };
 
   return (
-    <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full max-w-3xl mx-auto mb-4">
+    <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full max-w-4xl mx-auto mb-4">
       <TabsList className="grid w-full grid-cols-2 bg-white/10">
         <TabsTrigger value="view" className="flex items-center gap-2 text-white data-[state=active]:bg-construction-orange data-[state=active]:text-white">
           <FileText className="h-4 w-4" />
@@ -45,14 +58,14 @@ export function ReviewTabs({ estimationResults, setEstimationResults }: {
       </TabsList>
       
       <TabsContent value="view">
-        <div ref={estimateRef} className="max-w-3xl mx-auto pdf-content bg-white p-8 rounded-lg shadow-lg">
+        <div ref={estimateRef} className="max-w-4xl mx-auto pdf-content bg-white p-0 rounded-lg shadow-lg">
           <style dangerouslySetInnerHTML={{ __html: `
             .pdf-content {
               font-family: Arial, sans-serif;
               font-size: 12px;
               line-height: 1.6;
             }
-            /* ... keep view estimate CSS inline as before ... */
+            /* ... keep existing code */
           `}} />
           {processEstimationResults}
         </div>

@@ -1,9 +1,17 @@
+
 import React from "react";
 import MarkdownEstimate from "../estimate/MarkdownEstimate";
 import StructuredEstimate from "../estimate/StructuredEstimate";
 import FallbackEstimate from "../estimate/FallbackEstimate";
 
-export function useProcessEstimationResults(estimationResults: any) {
+export function useProcessEstimationResults(
+  estimationResults: any, 
+  projectDetails?: {
+    clientName?: string;
+    projectAddress?: string;
+    date?: string;
+  }
+) {
   console.log("Processing estimation results:", estimationResults);
   
   if (!estimationResults) {
@@ -22,11 +30,11 @@ export function useProcessEstimationResults(estimationResults: any) {
     
     if (textEntry) {
       const textContent = textEntry.text;
-      // DON'T reformat here, just pass as-is.
       return (
         <MarkdownEstimate
           markdownContent={textContent}
           rawResponse={estimationResults}
+          projectDetails={projectDetails}
         />
       );
     }
@@ -38,6 +46,7 @@ export function useProcessEstimationResults(estimationResults: any) {
       <MarkdownEstimate
         markdownContent={stringifiedArray}
         rawResponse={estimationResults}
+        projectDetails={projectDetails}
       />
     );
   }
@@ -92,6 +101,7 @@ export function useProcessEstimationResults(estimationResults: any) {
         <MarkdownEstimate
           markdownContent={content}
           rawResponse={estimationResults.rawResponse}
+          projectDetails={projectDetails}
         />
       );
     }
@@ -105,6 +115,7 @@ export function useProcessEstimationResults(estimationResults: any) {
         <MarkdownEstimate
           markdownContent={estimationResults.textLong}
           rawResponse={estimationResults.rawResponse}
+          projectDetails={projectDetails}
         />
       );
     }
@@ -118,6 +129,7 @@ export function useProcessEstimationResults(estimationResults: any) {
         <MarkdownEstimate
           markdownContent={estimationResults.textContent}
           rawResponse={estimationResults.rawResponse}
+          projectDetails={projectDetails}
         />
       );
     }
@@ -133,7 +145,12 @@ export function useProcessEstimationResults(estimationResults: any) {
   if (typeof estimationResults === "string" && estimationResults.trim().length > 0) {
     console.log("Using raw string response");
     if (isValidEstimateContent(estimationResults)) {
-      return <MarkdownEstimate markdownContent={estimationResults} />;
+      return (
+        <MarkdownEstimate 
+          markdownContent={estimationResults}
+          projectDetails={projectDetails}
+        />
+      );
     }
   }
 
@@ -146,7 +163,12 @@ export function useProcessEstimationResults(estimationResults: any) {
       const value = estimationResults[key];
       if (typeof value === 'string' && value.trim().length > 0 && isValidEstimateContent(value)) {
         console.log(`Found potential markdown content in field: ${key}`);
-        return <MarkdownEstimate markdownContent={value} />;
+        return (
+          <MarkdownEstimate 
+            markdownContent={value}
+            projectDetails={projectDetails}
+          />
+        );
       }
     }
     
@@ -154,10 +176,15 @@ export function useProcessEstimationResults(estimationResults: any) {
     if (estimationResults.data) {
       console.log("Checking data property for markdown");
       if (typeof estimationResults.data === 'string' && isValidEstimateContent(estimationResults.data)) {
-        return <MarkdownEstimate markdownContent={estimationResults.data} />;
+        return (
+          <MarkdownEstimate 
+            markdownContent={estimationResults.data}
+            projectDetails={projectDetails}
+          />
+        );
       } else if (typeof estimationResults.data === 'object') {
         // Recursively try to process the data property
-        const result = useProcessEstimationResults(estimationResults.data);
+        const result = useProcessEstimationResults(estimationResults.data, projectDetails);
         if (result) return result;
       }
     }
@@ -170,6 +197,7 @@ export function useProcessEstimationResults(estimationResults: any) {
       <MarkdownEstimate
         markdownContent={estimationResults.fallbackContent}
         rawResponse={estimationResults.rawResponse}
+        projectDetails={projectDetails}
       />
     );
   }
@@ -182,7 +210,12 @@ export function useProcessEstimationResults(estimationResults: any) {
       
     if (stringified && stringified.length > 0) {
       console.log("Displaying raw stringified response as last resort");
-      return <MarkdownEstimate markdownContent={`\`\`\`json\n${stringified}\n\`\`\``} />;
+      return (
+        <MarkdownEstimate 
+          markdownContent={`\`\`\`json\n${stringified}\n\`\`\``}
+          projectDetails={projectDetails}
+        />
+      );
     }
   }
 

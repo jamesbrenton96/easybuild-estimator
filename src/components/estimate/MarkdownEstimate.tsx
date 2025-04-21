@@ -7,7 +7,19 @@ import { useProMarkdownEstimate } from "./useProMarkdownEstimate";
  * Main estimate renderer: displays a highly structured, pro-formatted estimate markdown.
  * Handles empty state, header, applies advanced number-to-table formatting and prominent headings.
  */
-export default function MarkdownEstimate({ markdownContent, rawResponse }: { markdownContent: string, rawResponse?: any }) {
+export default function MarkdownEstimate({ 
+  markdownContent, 
+  rawResponse,
+  projectDetails
+}: { 
+  markdownContent: string, 
+  rawResponse?: any,
+  projectDetails?: {
+    clientName?: string;
+    projectAddress?: string;
+    date?: string;
+  }
+}) {
   useEffect(() => {
     console.log("MarkdownEstimate received content:", {
       contentLength: markdownContent?.length,
@@ -24,6 +36,10 @@ export default function MarkdownEstimate({ markdownContent, rawResponse }: { mar
   }
 
   return (
-    <MarkdownEstimateLayout formattedMarkdown={formatted} rawResponse={rawResponse} />
+    <MarkdownEstimateLayout 
+      formattedMarkdown={formatted} 
+      rawResponse={rawResponse}
+      projectDetails={projectDetails} 
+    />
   );
 }

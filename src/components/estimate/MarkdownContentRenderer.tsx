@@ -10,23 +10,22 @@ import MarkdownTableStyle from "./MarkdownTableStyle";
  */
 export default function MarkdownContentRenderer({ content }: { content: string }) {
   return (
-    <div className="p-6 markdown-content text-gray-800">
+    <div className="p-8 markdown-content text-gray-800">
       <MarkdownTableStyle />
       <ReactMarkdown
         className="prose max-w-none 
-          prose-headings:text-construction-orange prose-headings:font-extrabold
-          prose-h1:text-3xl prose-h1:mb-6 prose-h1:border-b prose-h1:border-gray-200 prose-h1:pb-4
-          prose-h2:text-xl prose-h2:mt-7 prose-h2:mb-4 prose-h2:border-l-4 prose-h2:border-construction-orange prose-h2:pl-4 prose-h2:bg-orange-50 prose-h2:rounded
-          prose-h3:text-lg prose-h3:mt-5 prose-h3:mb-3
-          prose-h4:text-base prose-h4:mt-4 prose-h4:mb-2
-          prose-p:my-3 prose-p:leading-relaxed
+          prose-headings:font-semibold prose-headings:mb-4
+          prose-h1:text-2xl prose-h1:font-bold prose-h1:border-b prose-h1:pb-2 prose-h1:border-gray-200
+          prose-h2:text-xl prose-h2:text-construction-orange prose-h2:mt-6 
+          prose-h3:text-lg prose-h3:text-construction-orange prose-h3:mt-5
+          prose-h4:text-base prose-h4:mt-4  
+          prose-p:my-2 prose-p:leading-relaxed
           prose-a:text-blue-600 
-          prose-strong:text-gray-900 prose-strong:font-medium
-          prose-li:my-1 prose-li:ml-2
-          prose-table:border-collapse prose-table:w-full prose-table:my-4 
-          prose-th:bg-gray-100 prose-th:p-2 prose-th:border prose-th:border-gray-300 prose-th:text-left
-          prose-td:border prose-td:border-gray-300 prose-td:p-2 prose-td:break-words
-          prose-hr:my-6"
+          prose-strong:text-construction-orange prose-strong:font-semibold
+          prose-li:my-1
+          prose-table:w-full prose-table:my-4 
+          prose-th:bg-construction-orange prose-th:text-white prose-th:p-2 prose-th:text-left
+          prose-td:p-2"
         remarkPlugins={[remarkGfm]}
       >
         {content}
