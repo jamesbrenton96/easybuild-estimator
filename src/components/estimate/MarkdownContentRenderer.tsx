@@ -22,7 +22,10 @@ export default function MarkdownContentRenderer({ content }: { content: string }
 
     // Find header line & collect list
     React.Children.forEach(children, (child, idx) => {
-      if (React.isValidElement(child) && child.props?.node?.type === "heading") {
+      if (React.isValidElement(child) && 
+          child.props && 
+          child.props.node && 
+          child.props.node.type === "heading") {
         const text = child.props?.children?.[0]?.props?.value || "";
         if (headerTest(text)) {
           insideSection = true;
@@ -179,78 +182,142 @@ export default function MarkdownContentRenderer({ content }: { content: string }
 
             return <p {...props}>{children}</p>;
           },
-          // Render bullets for defined sections:
-          // Use a custom wrapper at the document element level
-          root: ({ node, children }) => {
-            let nodesArr = React.Children.toArray(children);
-
-            // 1. Correspondence section
-            if (nodesArr.some(el =>
-              React.isValidElement(el) &&
-              el.props?.node?.type === "heading" &&
-              typeof el.props?.children?.[0]?.props?.value === "string" &&
-              [
-                "Correspondence Details",
-                "Correspondence",
-                "Client Details"
-              ].includes(el.props?.children?.[0]?.props?.value)
-            )) {
-              nodesArr = renderSectionAsList(
-                nodesArr,
-                (text) =>
-                  text === "Correspondence Details" ||
-                  text === "Correspondence" ||
-                  text === "Client Details"
-              );
-            }
-
-            // 2. Scope of Work section
-            if (nodesArr.some(el =>
-              React.isValidElement(el) &&
-              el.props?.node?.type === "heading" &&
-              typeof el.props?.children?.[0]?.props?.value === "string" &&
-              [
-                "Scope of Work",
-                "Scope",
-              ].includes(el.props?.children?.[0]?.props?.value)
-            )) {
-              nodesArr = renderSectionAsList(
-                nodesArr,
-                (text) =>
-                  text === "Scope of Work" ||
-                  text === "Scope"
-              );
-            }
-
-            // 3. Notes & Terms section
-            if (nodesArr.some(el =>
-              React.isValidElement(el) &&
-              el.props?.node?.type === "heading" &&
-              typeof el.props?.children?.[0]?.props?.value === "string" &&
-              [
-                "Notes & Terms",
-                "NOTES & TERMS",
-                "Notes",
-                "Terms",
-              ].includes(el.props?.children?.[0]?.props?.value)
-            )) {
-              nodesArr = renderSectionAsList(
-                nodesArr,
-                (text) =>
-                  text === "Notes & Terms" ||
-                  text === "NOTES & TERMS" ||
-                  text === "Notes" ||
-                  text === "Terms"
-              );
-            }
-
-            return <>{nodesArr}</>;
+          // Special handling for sections we want to render as bullet lists
+          code: ({ node, inline, className, children, ...props }) => {
+            // Pass through standard code rendering
+            return (
+              <code className={className} {...props}>
+                {children}
+              </code>
+            );
           }
         }}
       >
         {content}
       </ReactMarkdown>
+
+      {/* Custom bullet point rendering logic for specific sections */}
+      <script dangerouslySetInnerHTML={{ __html: `
+        // Correspondence section
+        (function() {
+          const correspondenceHeadings = document.querySelectorAll('h2, h3');
+          correspondenceHeadings.forEach(heading => {
+            if(['Correspondence Details', 'Correspondence', 'Client Details'].includes(heading.textContent)) {
+              let paragraphs = [];
+              let current = heading.nextElementSibling;
+              while(current && !['H1','H2','H3'].includes(current.tagName)) {
+                if(current.tagName === 'P') {
+                  paragraphs.push(current.textContent);
+                }
+                current = current.nextElementSibling;
+              }
+              
+              if(paragraphs.length > 0) {
+                const ul = document.createElement('ul');
+                ul.className = 'ml-6 list-disc';
+                paragraphs.forEach(p => {
+                  const li = document.createElement('li');
+                  li.className = 'my-1';
+                  li.textContent = p;
+                  ul.appendChild(li);
+                });
+                
+                // Replace paragraphs with the bullet list
+                current = heading.nextElementSibling;
+                while(current && !['H1','H2','H3'].includes(current.tagName)) {
+                  const next = current.nextElementSibling;
+                  if(current.tagName === 'P') {
+                    current.remove();
+                  }
+                  current = next;
+                }
+                
+                heading.after(ul);
+              }
+            }
+          });
+        })();
+
+        // Scope of Work section
+        (function() {
+          const scopeHeadings = document.querySelectorAll('h2, h3');
+          scopeHeadings.forEach(heading => {
+            if(['Scope of Work', 'Scope'].includes(heading.textContent)) {
+              let paragraphs = [];
+              let current = heading.nextElementSibling;
+              while(current && !['H1','H2','H3'].includes(current.tagName)) {
+                if(current.tagName === 'P') {
+                  paragraphs.push(current.textContent);
+                }
+                current = current.nextElementSibling;
+              }
+              
+              if(paragraphs.length > 0) {
+                const ul = document.createElement('ul');
+                ul.className = 'ml-6 list-disc';
+                paragraphs.forEach(p => {
+                  const li = document.createElement('li');
+                  li.className = 'my-1';
+                  li.textContent = p;
+                  ul.appendChild(li);
+                });
+                
+                // Replace paragraphs with the bullet list
+                current = heading.nextElementSibling;
+                while(current && !['H1','H2','H3'].includes(current.tagName)) {
+                  const next = current.nextElementSibling;
+                  if(current.tagName === 'P') {
+                    current.remove();
+                  }
+                  current = next;
+                }
+                
+                heading.after(ul);
+              }
+            }
+          });
+        })();
+
+        // Notes & Terms section
+        (function() {
+          const notesHeadings = document.querySelectorAll('h2, h3');
+          notesHeadings.forEach(heading => {
+            if(['Notes & Terms', 'NOTES & TERMS', 'Notes', 'Terms'].includes(heading.textContent)) {
+              let paragraphs = [];
+              let current = heading.nextElementSibling;
+              while(current && !['H1','H2','H3'].includes(current.tagName)) {
+                if(current.tagName === 'P') {
+                  paragraphs.push(current.textContent);
+                }
+                current = current.nextElementSibling;
+              }
+              
+              if(paragraphs.length > 0) {
+                const ul = document.createElement('ul');
+                ul.className = 'ml-6 list-disc';
+                paragraphs.forEach(p => {
+                  const li = document.createElement('li');
+                  li.className = 'my-1';
+                  li.textContent = p;
+                  ul.appendChild(li);
+                });
+                
+                // Replace paragraphs with the bullet list
+                current = heading.nextElementSibling;
+                while(current && !['H1','H2','H3'].includes(current.tagName)) {
+                  const next = current.nextElementSibling;
+                  if(current.tagName === 'P') {
+                    current.remove();
+                  }
+                  current = next;
+                }
+                
+                heading.after(ul);
+              }
+            }
+          });
+        })();
+      `}} />
     </div>
   );
 }
-
