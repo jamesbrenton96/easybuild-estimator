@@ -22,32 +22,37 @@ export default function MarkdownContentRenderer({ content }: { content: string }
 
     // Find header line & collect list
     React.Children.forEach(children, (child, idx) => {
-      // Type guard to ensure we're dealing with a valid React element
-      if (React.isValidElement(child) && 
-          child.props && 
-          child.props.node && 
-          typeof child.props.node === 'object' && 
-          'type' in child.props.node &&
-          child.props.node.type === "heading") {
-        // Use optional chaining and type checking for safety
-        const textProps = child.props?.children?.[0]?.props;
-        const text = textProps && typeof textProps === 'object' && 'value' in textProps ? textProps.value : "";
-        if (typeof text === 'string' && headerTest(text)) {
-          insideSection = true;
-          headerIndex = idx;
-        } else {
-          insideSection = false;
+      // Safely check if the child is a React element
+      if (!React.isValidElement(child)) return;
+      
+      // Safely access props and check for heading type
+      const props = child.props;
+      if (!props) return;
+      
+      // Check if it's a heading element
+      const nodeProps = props.node as { type?: string } | undefined;
+      if (nodeProps?.type === "heading") {
+        // Get the text content from children props if they exist
+        const childrenProps = props.children;
+        if (Array.isArray(childrenProps) && childrenProps.length > 0) {
+          const firstChild = childrenProps[0];
+          // Safely access the text value
+          if (React.isValidElement(firstChild) && firstChild.props) {
+            const textValue = firstChild.props.value;
+            if (typeof textValue === 'string' && headerTest(textValue)) {
+              insideSection = true;
+              headerIndex = idx;
+            } else {
+              insideSection = false;
+            }
+          }
         }
       } else if (insideSection) {
         // Only pick paragraphs (be strict, skip tables/lists etc)
-        if (React.isValidElement(child) && 
-            child.props && 
-            child.props.node && 
-            typeof child.props.node === 'object' && 
-            'type' in child.props.node && 
-            child.props.node.type === "paragraph") {
+        const nodeProps = props.node as { type?: string } | undefined;
+        if (nodeProps?.type === "paragraph") {
           // Safe extraction of text content
-          const childContent = React.Children.toArray(child.props?.children)
+          const childContent = React.Children.toArray(props.children)
             .map(str => (typeof str === "string" ? str.trim() : ""))
             .filter(Boolean)
             .join(" ");
