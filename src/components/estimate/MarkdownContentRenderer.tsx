@@ -1,3 +1,4 @@
+
 import React from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -41,6 +42,16 @@ export default function MarkdownContentRenderer({ content }: { content: string }
     return children;
   }
 
+  // Utility to detect if we are in the Notes & Terms section
+  function isNotesTermsSection(nodeProps) {
+    // nodeProps is the props passed to the heading element
+    const val = nodeProps?.children?.[0]?.props?.value || "";
+    return /Notes & Terms|NOTES & TERMS/i.test(val);
+  }
+
+  // Track if we are inside "Notes & Terms" section
+  let currentSection = null;
+
   return (
     <div className="p-8 markdown-content text-gray-800">
       <MarkdownTableStyle />
@@ -76,7 +87,17 @@ export default function MarkdownContentRenderer({ content }: { content: string }
           td: ({ ...props }) => (
             <td className="estimate-table-cell p-3 border border-gray-200" {...props} />
           ),
+          h3: ({ node, ...props }) => {
+            // Track if we are in Notes & Terms
+            const isNotes = /Notes & Terms|NOTES & TERMS/i.test(
+              (typeof props.children?.[0] === "string" && props.children?.[0]) || ""
+            );
+            currentSection = isNotes ? "notes-terms" : null;
+            return <h3 {...props}>{props.children}</h3>;
+          },
           p: ({ children, ...props }) => {
+            // Determine if this is within "Notes & Terms" section
+            const isInNotesTerms = currentSection === "notes-terms";
             // Numbered sections styling for Notes & Terms
             const childrenArray = React.Children.toArray(children);
             const textContent = childrenArray.map(child => 
@@ -88,7 +109,15 @@ export default function MarkdownContentRenderer({ content }: { content: string }
             if (numberMatch) {
               const number = numberMatch[1];
               const text = numberMatch[2];
-              return (
+              return isInNotesTerms ? (
+                // No color/bold if Notes & Terms
+                <p className="flex items-start mb-4 text-gray-800" {...props}>
+                  <span className="inline-flex items-center justify-center w-7 h-7 bg-[#e58c33] text-white rounded-full mr-2 font-bold text-sm flex-shrink-0">
+                    {number}
+                  </span>
+                  {text}
+                </p>
+              ) : (
                 <p className="flex items-start mb-4" {...props}>
                   <span className="inline-flex items-center justify-center w-7 h-7 bg-construction-orange text-white rounded-full mr-2 font-bold text-sm flex-shrink-0">
                     {number}
@@ -127,10 +156,12 @@ export default function MarkdownContentRenderer({ content }: { content: string }
               }
             }
             
-            // Regular paragraphs
-            return <p {...props}>{children}</p>;
+            // Regular paragraphs (Notes & Terms shouldn't be bold/orange)
+            return <p className={isInNotesTerms ? "text-gray-800" : ""} {...props}>{children}</p>;
           },
           li: ({ children, ...props }) => {
+            // Determine if this is within Notes & Terms
+            const isInNotesTerms = currentSection === "notes-terms";
             // Check if this is a numbered item (for Notes & Terms section)
             const childrenArray = React.Children.toArray(children);
             const textContent = childrenArray.map(child => 
@@ -141,7 +172,14 @@ export default function MarkdownContentRenderer({ content }: { content: string }
             if (numberMatch) {
               const number = numberMatch[1];
               const text = numberMatch[2];
-              return (
+              return isInNotesTerms ? (
+                <li className="flex items-start mb-4 text-gray-800" {...props}>
+                  <span className="inline-flex items-center justify-center w-7 h-7 bg-[#e58c33] text-white rounded-full mr-2 font-bold text-sm flex-shrink-0">
+                    {number}
+                  </span>
+                  {text}
+                </li>
+              ) : (
                 <li className="flex items-start mb-4" {...props}>
                   <span className="inline-flex items-center justify-center w-7 h-7 bg-construction-orange text-white rounded-full mr-2 font-bold text-sm flex-shrink-0">
                     {number}
@@ -151,7 +189,7 @@ export default function MarkdownContentRenderer({ content }: { content: string }
               );
             }
             
-            return <li {...props}>{children}</li>;
+            return <li className={isInNotesTerms ? "text-gray-800" : ""} {...props}>{children}</li>;
           }
         }}
       >

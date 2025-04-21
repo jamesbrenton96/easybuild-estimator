@@ -37,7 +37,7 @@ export default function MarkdownTableStyle() {
       }
       .markdown-content th,
       .estimate-table-header {
-        background: #f97316;
+        background: #e58c33;
         font-weight: 700;
         color: white;
         font-size: 1rem;
@@ -61,25 +61,25 @@ export default function MarkdownTableStyle() {
       .markdown-content tr.total-row td,
       .estimate-table tr.subtotal-row td,
       .estimate-table tr.total-row td {
-        border-top: 2.5px solid #f97316 !important;
+        border-top: 2.5px solid #e58c33 !important;
         font-weight: 700;
       }
       .markdown-content .summary-block {
         background: #fff8f3;
-        border-left: 4px solid #f97316;
+        border-left: 4px solid #e58c33;
         border-radius: 5px;
         padding: 1.25rem 1.5rem;
         margin: 1.75rem 0;
       }
       .markdown-content h1, .markdown-content .estimate-title {
-        color: #f97316 !important;
+        color: #e58c33 !important;
         font-size: 2.1rem !important;
         font-weight: 900;
         margin-bottom: 0.5rem !important;
         margin-top: 0.5rem !important;
       }
       .markdown-content h2 {
-        color: #f97316 !important;
+        color: #e58c33 !important;
         font-size: 1.45rem !important;
         font-weight: 700;
         margin-top: 1.75rem !important;
@@ -106,7 +106,7 @@ export default function MarkdownTableStyle() {
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        background: #f97316;
+        background: #e58c33;
         color: white;
         width: 28px;
         height: 28px;
@@ -149,14 +149,14 @@ export default function MarkdownTableStyle() {
         color: #283042;
       }
       .markdown-content ul li::marker {
-        color: #f97316;
+        color: #e58c33;
         font-size: 1.45em;
       }
       
       /* Subtotal cells */
       .markdown-content strong, .markdown-content b,
       .subtotal-cell {
-        color: #f97316;
+        color: #e58c33;
         font-weight: 700;
       }
       
@@ -175,14 +175,14 @@ export default function MarkdownTableStyle() {
       .markdown-content .subtotal-row td:first-child {
         text-align: left;
         width: 70%;
-        color: #f97316;
+        color: #e58c33;
         font-weight: 700;
       }
       
       .markdown-content .subtotal-row td:last-child {
         text-align: right;
         width: 30%;
-        color: #f97316;
+        color: #e58c33;
         font-weight: 700;
       }
       
@@ -198,7 +198,7 @@ export default function MarkdownTableStyle() {
         font-size: 1.5rem;
         font-weight: 900;
         color: #fff;
-        background: linear-gradient(90deg, #f97316 0%, #e58c33 100%);
+        background: linear-gradient(90deg, #e58c33 0%, #e58c33 100%);
         padding: 1.25rem 2.25rem;
         border-radius: 6px;
         margin: 2.5rem 0 1.75rem 0;
@@ -214,7 +214,7 @@ export default function MarkdownTableStyle() {
         border: none;
         height: 3px;
         width: 100%;
-        background: #f97316;
+        background: #e58c33;
         margin: 2.5rem 0 2rem;
       }
       
@@ -227,7 +227,7 @@ export default function MarkdownTableStyle() {
       
       .markdown-content table tr:last-child td {
         font-weight: 700;
-        border-top: 2px solid #f97316;
+        border-top: 2px solid #e58c33;
       }
       
       @media print {
