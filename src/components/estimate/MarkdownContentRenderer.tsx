@@ -22,12 +22,17 @@ export default function MarkdownContentRenderer({ content }: { content: string }
 
     // Find header line & collect list
     React.Children.forEach(children, (child, idx) => {
+      // Type guard to ensure we're dealing with a valid React element
       if (React.isValidElement(child) && 
           child.props && 
           child.props.node && 
+          typeof child.props.node === 'object' && 
+          'type' in child.props.node &&
           child.props.node.type === "heading") {
-        const text = child.props?.children?.[0]?.props?.value || "";
-        if (headerTest(text)) {
+        // Use optional chaining and type checking for safety
+        const textProps = child.props?.children?.[0]?.props;
+        const text = textProps && typeof textProps === 'object' && 'value' in textProps ? textProps.value : "";
+        if (typeof text === 'string' && headerTest(text)) {
           insideSection = true;
           headerIndex = idx;
         } else {
@@ -35,13 +40,21 @@ export default function MarkdownContentRenderer({ content }: { content: string }
         }
       } else if (insideSection) {
         // Only pick paragraphs (be strict, skip tables/lists etc)
-        if (React.isValidElement(child) && child.props?.node?.type === "paragraph") {
-          bulletPoints.push(
-            React.Children.toArray(child.props?.children)
-              .map(str => (typeof str === "string" ? str.trim() : ""))
-              .filter(Boolean)
-              .join(" ")
-          );
+        if (React.isValidElement(child) && 
+            child.props && 
+            child.props.node && 
+            typeof child.props.node === 'object' && 
+            'type' in child.props.node && 
+            child.props.node.type === "paragraph") {
+          // Safe extraction of text content
+          const childContent = React.Children.toArray(child.props?.children)
+            .map(str => (typeof str === "string" ? str.trim() : ""))
+            .filter(Boolean)
+            .join(" ");
+          
+          if (childContent) {
+            bulletPoints.push(childContent);
+          }
         }
         // If child is string (loose paragraphs)
         else if (typeof child === "string") {
@@ -86,7 +99,7 @@ export default function MarkdownContentRenderer({ content }: { content: string }
         remarkPlugins={[remarkGfm]}
         components={{
           // Handle custom spans for section numbers, subtotals, etc.
-          span: ({ node, className, children, ...props }) => {
+          span: ({ className, children, ...props }) => {
             if (className === "total-project-cost-block") {
               return <div className="total-project-cost-block">{children}</div>;
             }
@@ -103,30 +116,31 @@ export default function MarkdownContentRenderer({ content }: { content: string }
             return <span {...props}>{children}</span>;
           },
           // Improve table styling
-          table: ({ node, ...props }) => {
+          table: ({ ...props }) => {
             return <table className="estimate-table w-full my-6 border-collapse" {...props} />;
           },
-          thead: ({ node, ...props }) => {
+          thead: ({ ...props }) => {
             return <thead className="estimate-table-head bg-construction-orange text-white" {...props} />;
           },
-          tbody: ({ node, ...props }) => {
+          tbody: ({ ...props }) => {
             return <tbody className="estimate-table-body" {...props} />;
           },
-          th: ({ node, ...props }) => {
+          th: ({ ...props }) => {
             return <th className="estimate-table-header p-3 text-left font-bold" {...props} />;
           },
-          td: ({ node, ...props }) => {
+          td: ({ ...props }) => {
             return <td className="estimate-table-cell p-3 border border-gray-200" {...props} />;
           },
-          p: ({ node, children, ...props }) => {
+          p: ({ children, ...props }) => {
             // Check if this paragraph contains a section-number span
-            const hasNumberedSection = React.Children.toArray(children).some(
-              child => React.isValidElement(child) && child.props.className === "section-number"
+            const childrenArray = React.Children.toArray(children);
+            const hasNumberedSection = childrenArray.some(
+              child => React.isValidElement(child) && child.props?.className === "section-number"
             );
             
             // Special handling for paragraphs with subtotal cells
-            const hasSubtotalCells = React.Children.toArray(children).some(
-              child => React.isValidElement(child) && child.props.className === "subtotal-cell"
+            const hasSubtotalCells = childrenArray.some(
+              child => React.isValidElement(child) && child.props?.className === "subtotal-cell"
             );
             
             if (hasNumberedSection) {
@@ -135,7 +149,7 @@ export default function MarkdownContentRenderer({ content }: { content: string }
             
             if (hasSubtotalCells) {
               // Create a proper table row from subtotal cells
-              const cells = React.Children.toArray(children);
+              const cells = childrenArray;
               
               // SAFE way to check if the first cell is a <table>
               if (
@@ -153,8 +167,11 @@ export default function MarkdownContentRenderer({ content }: { content: string }
               
               // Extract the content of the subtotal cells
               cells.forEach(cell => {
-                if (React.isValidElement(cell) && cell.props.className === "subtotal-cell") {
-                  const content = React.Children.toArray(cell.props.children).join('').trim();
+                if (React.isValidElement(cell) && cell.props?.className === "subtotal-cell") {
+                  const cellChildren = React.Children.toArray(cell.props.children);
+                  const content = cellChildren.map(item => 
+                    typeof item === 'string' ? item : ''
+                  ).join('').trim();
                   
                   // Check if this cell contains a dollar sign (likely the amount)
                   if (content.includes('$')) {
@@ -182,9 +199,8 @@ export default function MarkdownContentRenderer({ content }: { content: string }
 
             return <p {...props}>{children}</p>;
           },
-          // Special handling for sections we want to render as bullet lists
-          code: ({ node, inline, className, children, ...props }) => {
-            // Pass through standard code rendering
+          // Handle code blocks without inline property
+          code: ({ className, children, ...props }) => {
             return (
               <code className={className} {...props}>
                 {children}
