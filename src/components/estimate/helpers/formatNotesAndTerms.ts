@@ -1,7 +1,7 @@
 
 /**
- * Formats the Notes & Terms section with a proper heading while keeping content as normal paragraphs.
- * Ensures the heading matches other section headings for consistency.
+ * Converts bullet/numbered items in the Notes & Terms section to normal body text paragraphs.
+ * Leaves the heading, but ensures all lines below it until next heading are just plain text.
  */
 export function formatNotesAndTerms(content: string) {
   // Match the Notes & Terms section
@@ -20,13 +20,11 @@ export function formatNotesAndTerms(content: string) {
             .trim();
         })
         .filter(line => line !== "");
-      
       const normalBody = lines.length
         ? '\n' + lines.map(line => `${line}`).join('\n\n') + '\n'
         : "";
-      
-      // Format with ### to match other section headings (consistent with formatSectionHeadings.ts)
-      return `\n### Notes & Terms\n${normalBody}`;
+      // Always render heading as ## Notes & Terms
+      return `\n## Notes & Terms\n${normalBody}`;
     }
   );
 }
