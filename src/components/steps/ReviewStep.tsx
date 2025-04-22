@@ -1,3 +1,4 @@
+
 import React, { useEffect, useRef } from "react";
 import { useEstimator } from "@/context/EstimatorContext";
 import { motion } from "framer-motion";
@@ -27,113 +28,160 @@ export default function ReviewStep() {
     if (!element) return;
     
     const opt = {
-      margin: [15, 15, 15, 15],
+      margin: [10, 10, 10, 10], // Reduced margins
       filename: 'brenton-building-estimate.pdf',
       image: { type: 'jpeg', quality: 0.98 },
-      html2canvas: { scale: 2, useCORS: true },
-      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-      pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+      html2canvas: { 
+        scale: 2,
+        useCORS: true,
+        letterRendering: true,
+      },
+      jsPDF: { 
+        unit: 'mm', 
+        format: 'a4', 
+        orientation: 'portrait',
+        compress: true
+      },
+      pagebreak: { 
+        mode: ['avoid-all', 'css', 'legacy'],
+        before: '.page-break-before',
+        after: '.page-break-after',
+        avoid: ['table', 'img']
+      }
     };
     
     const clone = element.cloneNode(true) as HTMLElement;
     
     const header = document.createElement('div');
     header.style.textAlign = 'center';
-    header.style.marginBottom = '30px';
-    header.style.padding = '20px';
+    header.style.marginBottom = '20px';
+    header.style.padding = '15px';
     
     const logo = document.createElement('img');
     logo.src = "/lovable-uploads/54be63ea-83fd-4f4a-8c94-dba12936b674.png";
-    logo.style.height = '150px';
-    logo.style.margin = '0 auto 20px auto';
+    logo.style.height = '100px';
+    logo.style.margin = '0 auto 15px auto';
     
     header.appendChild(logo);
-    
     clone.insertBefore(header, clone.firstChild);
     
     clone.style.fontFamily = 'Arial, sans-serif';
-    clone.style.fontSize = '12px';
+    clone.style.fontSize = '10px';
     
     const style = document.createElement('style');
     style.textContent = `
-      table { page-break-inside: avoid; }
-      h1, h2, h3 { page-break-after: avoid; }
+      @page {
+        margin: 10mm;
+        size: A4;
+      }
+      
+      body {
+        font-size: 10px !important;
+        line-height: 1.3 !important;
+      }
       
       table { 
-        width: 98%; 
-        max-width: 98%;
-        font-size: 8px; 
-        border-collapse: collapse;
-        table-layout: fixed;
-        margin: 0 auto;
+        page-break-inside: avoid !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 8px auto !important;
+        border-collapse: collapse !important;
+        table-layout: fixed !important;
       }
       
       td, th { 
-        word-break: break-word; 
-        padding: 2px; 
-        font-size: 8px;
+        padding: 4px !important;
+        font-size: 9px !important;
+        line-height: 1.2 !important;
+        overflow-wrap: break-word !important;
+        word-wrap: break-word !important;
       }
       
       .markdown-content table {
-        margin: 0.5rem auto;
+        margin: 0.5rem auto !important;
       }
       
       .markdown-content table th,
       .markdown-content table td {
-        padding: 2px;
-        font-size: 8px;
-        line-height: 1.1;
+        padding: 4px !important;
+        font-size: 9px !important;
+        line-height: 1.2 !important;
       }
       
       .markdown-content table th:first-child,
       .markdown-content table td:first-child {
-        width: 40%;
+        width: 45% !important;
       }
       
       .markdown-content table th:nth-child(2),
       .markdown-content table td:nth-child(2) {
-        width: 12%;
+        width: 15% !important;
       }
       
       .markdown-content table th:nth-child(3),
       .markdown-content table td:nth-child(3) {
-        width: 12%;
+        width: 15% !important;
       }
       
       .markdown-content table th:last-child,
       .markdown-content table td:last-child {
-        width: 26%;
+        width: 25% !important;
       }
       
-      @media print {
-        table { page-break-inside: avoid; }
-        tr    { page-break-inside: avoid; }
-        td    { page-break-inside: avoid; }
-        
-        @page {
-          margin: 10mm;
-        }
-        
-        h1 { page-break-before: always; }
-        h1:first-of-type { page-break-before: avoid; }
-        
-        p, h2, h3, h4, ul, ol {
-          margin-top: 0.3em;
-          margin-bottom: 0.3em;
-        }
-        
-        body, p, li, td, th {
-          font-size: 8px !important;
-          line-height: 1.2 !important;
-        }
-        
-        h1 { font-size: 14px !important; }
-        h2 { font-size: 12px !important; }
-        h3 { font-size: 10px !important; }
+      /* Tighter spacing for text content */
+      p, h2, h3, h4, ul, ol {
+        margin-top: 0.4em !important;
+        margin-bottom: 0.4em !important;
+        line-height: 1.3 !important;
+      }
+      
+      /* Adjusted heading sizes */
+      h1 { font-size: 16px !important; margin-bottom: 8px !important; }
+      h2 { font-size: 14px !important; margin-top: 12px !important; }
+      h3 { font-size: 12px !important; }
+      h4 { font-size: 11px !important; }
+      
+      /* Ensure proper table breaks */
+      tr { page-break-inside: avoid !important; }
+      
+      /* List item spacing */
+      li {
+        margin-bottom: 0.3em !important;
+        line-height: 1.3 !important;
+        font-size: 10px !important;
+      }
+      
+      /* Total project cost block adjustments */
+      .total-project-cost-block {
+        font-size: 14px !important;
+        padding: 10px 15px !important;
+        margin: 15px 0 12px 0 !important;
+      }
+      
+      /* Table spacing improvements */
+      .markdown-content table tr td:last-child {
+        text-align: right !important;
+      }
+      
+      .markdown-content table tr:last-child td {
+        border-top: 2px solid #e58c33 !important;
+      }
+      
+      /* Ensure notes and terms are properly formatted */
+      .markdown-content p:has(.section-number) {
+        padding-left: 0.3rem !important;
+        margin-bottom: 0.4rem !important;
+      }
+      
+      .section-number {
+        width: 22px !important;
+        height: 22px !important;
+        margin-right: 0.4rem !important;
+        font-size: 0.85rem !important;
       }
     `;
-    clone.appendChild(style);
     
+    clone.appendChild(style);
     html2pdf().from(clone).set(opt).save();
   };
 
