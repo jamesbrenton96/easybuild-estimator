@@ -1,4 +1,3 @@
-
 import React from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -17,7 +16,7 @@ import {
 
 /**
  * Render markdown content with professional table and content styling.
- * This version ensures "Notes and Terms" is rendered as standard body text, never as bullet/heading/bold/orange.
+ * Notes & Terms section is rendered with consistent heading styling like other major sections.
  */
 export default function MarkdownContentRenderer({ content }: { content: string }) {
 
@@ -92,7 +91,8 @@ export default function MarkdownContentRenderer({ content }: { content: string }
             // Track if we are in Notes & Terms section
             if (isNotesTermsHeading(props)) {
               currentSection = "notes-terms";
-              return <h2 className="text-xl font-semibold mt-6 text-gray-800">Notes & Terms</h2>;
+              // Apply same styling as other h2 headings
+              return <h2 className="text-xl font-semibold mt-6 text-construction-orange">{props.children}</h2>;
             }
             currentSection = null;
             return <h2 {...props}>{props.children}</h2>;
@@ -101,7 +101,8 @@ export default function MarkdownContentRenderer({ content }: { content: string }
             // Track if we are in Notes & Terms
             if (isNotesTermsHeading(props)) {
               currentSection = "notes-terms";
-              return <h3 className="text-lg font-semibold mt-5 text-gray-800">Notes & Terms</h3>;
+              // Apply same styling as other h3 headings
+              return <h3 className="text-lg font-semibold mt-5 text-construction-orange">{props.children}</h3>;
             }
             currentSection = null;
             return <h3 {...props}>{props.children}</h3>;
