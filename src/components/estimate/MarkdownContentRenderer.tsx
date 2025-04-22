@@ -1,4 +1,3 @@
-
 import React from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -53,26 +52,6 @@ export default function MarkdownContentRenderer({ content }: { content: string }
     return false;
   }
 
-  // Track the number of columns in the current table
-  const detectColumnCount = (props: any) => {
-    try {
-      // If a table has a thead with th elements, count them
-      const children = React.Children.toArray(props.children);
-      const thead = children.find(child => React.isValidElement(child) && child.type === 'thead');
-      if (thead && React.isValidElement(thead)) {
-        const theadChildren = React.Children.toArray(thead.props.children);
-        const tr = theadChildren.find(child => React.isValidElement(child) && child.type === 'tr');
-        if (tr && React.isValidElement(tr)) {
-          const trChildren = React.Children.toArray(tr.props.children);
-          return trChildren.length;
-        }
-      }
-    } catch (error) {
-      console.error("Error detecting column count:", error);
-    }
-    return 0;
-  };
-
   return (
     <div className="p-8 markdown-content text-gray-800">
       <MarkdownTableStyle />
@@ -93,13 +72,9 @@ export default function MarkdownContentRenderer({ content }: { content: string }
         remarkPlugins={[remarkGfm]}
         components={{
           span: CustomSpan,
-          table: ({ ...props }) => {
-            const columnCount = detectColumnCount(props);
-            const tableClassName = `estimate-table w-full my-6 border-collapse table-column-${columnCount}`;
-            return (
-              <table className={tableClassName} {...props} />
-            );
-          },
+          table: ({ ...props }) => (
+            <table className="estimate-table w-full my-6 border-collapse" {...props} />
+          ),
           thead: ({ ...props }) => (
             <thead className="estimate-table-head bg-construction-orange text-white" {...props} />
           ),

@@ -1,3 +1,4 @@
+
 import React from "react";
 
 /**
@@ -28,37 +29,12 @@ export default function MarkdownTableStyle() {
         text-align: right;
         vertical-align: top;
         word-break: normal;
-        overflow-wrap: break-word;
-        white-space: normal;
       }
       .markdown-content th:first-child, .markdown-content td:first-child,
       .estimate-table-header:first-child, .estimate-table-cell:first-child {
         text-align: left;
-        width: 35%;
+        width: 40%;
       }
-      
-      /* Add specific width for quantity, unit, rate, and amount columns */
-      .markdown-content th:nth-child(2), .markdown-content td:nth-child(2),
-      .estimate-table-header:nth-child(2), .estimate-table-cell:nth-child(2) {
-        width: 15%;
-      }
-      
-      .markdown-content th:nth-child(3), .markdown-content td:nth-child(3),
-      .estimate-table-header:nth-child(3), .estimate-table-cell:nth-child(3) {
-        width: 15%;
-      }
-      
-      .markdown-content th:nth-child(4), .markdown-content td:nth-child(4),
-      .estimate-table-header:nth-child(4), .estimate-table-cell:nth-child(4) {
-        width: 15%;
-      }
-      
-      .markdown-content th:nth-child(5), .markdown-content td:nth-child(5),
-      .estimate-table-header:nth-child(5), .estimate-table-cell:nth-child(5) {
-        width: 20%;
-        text-align: right;
-      }
-      
       .markdown-content th,
       .estimate-table-header {
         background: #e58c33;
@@ -88,40 +64,6 @@ export default function MarkdownTableStyle() {
         border-top: 2.5px solid #e58c33 !important;
         font-weight: 700;
       }
-      
-      /* For tables with only 2 columns (like subtotal tables) */
-      .markdown-content table.subtotal-table td:first-child,
-      .estimate-table.subtotal-table td:first-child {
-        width: 70%;
-      }
-      
-      .markdown-content table.subtotal-table td:last-child,
-      .estimate-table.subtotal-table td:last-child {
-        width: 30%;
-      }
-      
-      /* For tables with 3 columns */
-      .markdown-content table tr td:nth-child(1):nth-last-child(3),
-      .estimate-table tr td:nth-child(1):nth-last-child(3) {
-        width: 60%;
-      }
-      
-      .markdown-content table tr td:nth-child(2):nth-last-child(2),
-      .estimate-table tr td:nth-child(2):nth-last-child(2) {
-        width: 20%;
-      }
-      
-      .markdown-content table tr td:nth-child(3):nth-last-child(1),
-      .estimate-table tr td:nth-child(3):nth-last-child(1) {
-        width: 20%;
-      }
-      
-      /* For tables with 4 columns */
-      .markdown-content table tr td:nth-child(1):nth-last-child(4),
-      .estimate-table tr td:nth-child(1):nth-last-child(4) {
-        width: 40%;
-      }
-      
       .markdown-content .summary-block {
         background: #fff8f3;
         border-left: 4px solid #e58c33;
