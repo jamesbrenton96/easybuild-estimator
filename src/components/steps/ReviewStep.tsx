@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef } from "react";
 import { useEstimator } from "@/context/EstimatorContext";
 import { motion } from "framer-motion";
@@ -28,7 +27,7 @@ export default function ReviewStep() {
     if (!element) return;
     
     const opt = {
-      margin: [10, 10, 10, 10], // Reduced margins (top, right, bottom, left)
+      margin: [15, 15, 15, 15],
       filename: 'brenton-building-estimate.pdf',
       image: { type: 'jpeg', quality: 0.98 },
       html2canvas: { scale: 2, useCORS: true },
@@ -40,105 +39,70 @@ export default function ReviewStep() {
     
     const header = document.createElement('div');
     header.style.textAlign = 'center';
-    header.style.marginBottom = '15px'; // Reduced margin
-    header.style.padding = '10px'; // Reduced padding
+    header.style.marginBottom = '30px';
+    header.style.padding = '20px';
     
     const logo = document.createElement('img');
     logo.src = "/lovable-uploads/54be63ea-83fd-4f4a-8c94-dba12936b674.png";
-    logo.style.height = '100px'; // Smaller logo
-    logo.style.margin = '0 auto 10px auto'; // Reduced margin
+    logo.style.height = '150px';
+    logo.style.margin = '0 auto 20px auto';
     
     header.appendChild(logo);
     
     clone.insertBefore(header, clone.firstChild);
     
     clone.style.fontFamily = 'Arial, sans-serif';
-    clone.style.fontSize = '10px'; // Smaller base font size
+    clone.style.fontSize = '12px';
     
     const style = document.createElement('style');
     style.textContent = `
-      /* Prevent page breaks inside tables and after headings */
       table { page-break-inside: avoid; }
       h1, h2, h3 { page-break-after: avoid; }
       
-      /* Better table styling for PDF export */
       table { 
-        width: 100%;
-        max-width: 100%;
+        width: 98%; 
+        max-width: 98%;
         font-size: 8px; 
         border-collapse: collapse;
         table-layout: fixed;
-        margin: 6px auto;
+        margin: 0 auto;
       }
       
       td, th { 
         word-break: break-word; 
-        padding: 2px 4px; 
+        padding: 2px; 
         font-size: 8px;
-        overflow: hidden;
-        text-overflow: ellipsis;
       }
       
-      /* Fix column widths for better layout */
+      .markdown-content table {
+        margin: 0.5rem auto;
+      }
+      
+      .markdown-content table th,
+      .markdown-content table td {
+        padding: 2px;
+        font-size: 8px;
+        line-height: 1.1;
+      }
+      
       .markdown-content table th:first-child,
       .markdown-content table td:first-child {
-        width: 50%;
+        width: 40%;
       }
       
       .markdown-content table th:nth-child(2),
       .markdown-content table td:nth-child(2) {
-        width: 15%;
+        width: 12%;
       }
       
       .markdown-content table th:nth-child(3),
       .markdown-content table td:nth-child(3) {
-        width: 15%;
+        width: 12%;
       }
       
       .markdown-content table th:last-child,
       .markdown-content table td:last-child {
-        width: 20%;
-      }
-      
-      /* Reduced spacing for PDF */
-      .markdown-content p {
-        margin: 3px 0;
-        font-size: 9px;
-        line-height: 1.3;
-      }
-      
-      .markdown-content ul, .markdown-content ol {
-        margin: 3px 0;
-        padding-left: 15px;
-      }
-      
-      .markdown-content li {
-        margin-bottom: 2px;
-        font-size: 9px;
-        line-height: 1.3;
-      }
-      
-      /* Heading sizes */
-      .markdown-content h1 { 
-        font-size: 14px !important; 
-        margin: 8px 0 4px 0 !important;
-      }
-      
-      .markdown-content h2 { 
-        font-size: 12px !important; 
-        margin: 6px 0 3px 0 !important;
-      }
-      
-      .markdown-content h3 { 
-        font-size: 10px !important; 
-        margin: 5px 0 2px 0 !important;
-      }
-      
-      /* Small section number circles */
-      .markdown-content .section-number {
-        width: 18px !important;
-        height: 18px !important;
-        font-size: 8px !important;
+        width: 26%;
       }
       
       @media print {
@@ -147,7 +111,15 @@ export default function ReviewStep() {
         td    { page-break-inside: avoid; }
         
         @page {
-          margin: 8mm;
+          margin: 10mm;
+        }
+        
+        h1 { page-break-before: always; }
+        h1:first-of-type { page-break-before: avoid; }
+        
+        p, h2, h3, h4, ul, ol {
+          margin-top: 0.3em;
+          margin-bottom: 0.3em;
         }
         
         body, p, li, td, th {
@@ -158,12 +130,6 @@ export default function ReviewStep() {
         h1 { font-size: 14px !important; }
         h2 { font-size: 12px !important; }
         h3 { font-size: 10px !important; }
-        
-        /* Tighten spacing */
-        p, h2, h3, h4, ul, ol {
-          margin-top: 0.2em !important;
-          margin-bottom: 0.2em !important;
-        }
       }
     `;
     clone.appendChild(style);
