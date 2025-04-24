@@ -28,7 +28,7 @@ export default function ReviewStep() {
     if (!element) return;
     
     const opt = {
-      margin: [10, 10, 10, 10], // Reduced margins
+      margin: [10, 10, 10, 10],
       filename: 'brenton-building-estimate.pdf',
       image: { type: 'jpeg', quality: 0.98 },
       html2canvas: { 
@@ -107,25 +107,26 @@ export default function ReviewStep() {
         font-size: 9px !important;
         line-height: 1.2 !important;
       }
-      
-      .markdown-content table th:first-child,
-      .markdown-content table td:first-child {
-        width: 45% !important;
+
+      /* Header row adjustments */
+      .markdown-content table th {
+        font-size: 8px !important;
+        font-weight: normal !important;
+        text-transform: uppercase !important;
+        padding: 6px !important;
+        background-color: #e58c33 !important;
+        color: white !important;
+      }
+
+      /* Adjust width of header columns */
+      .markdown-content table th:first-child {
+        width: 50% !important;
       }
       
       .markdown-content table th:nth-child(2),
-      .markdown-content table td:nth-child(2) {
-        width: 15% !important;
-      }
-      
       .markdown-content table th:nth-child(3),
-      .markdown-content table td:nth-child(3) {
+      .markdown-content table th:nth-child(4) {
         width: 15% !important;
-      }
-      
-      .markdown-content table th:last-child,
-      .markdown-content table td:last-child {
-        width: 25% !important;
       }
       
       /* Tighter spacing for text content */
