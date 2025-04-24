@@ -16,6 +16,14 @@ export function useWebhookEstimate() {
   const getEstimate = useCallback(async (payload: Record<string, any>): Promise<WebhookResponse> => {
     try {
       console.log("Sending payload to webhook:", payload);
+      
+      // Check if there are any processed files in the payload
+      const hasFiles = payload.processedFiles && Array.isArray(payload.processedFiles) && payload.processedFiles.length > 0;
+      
+      if (hasFiles) {
+        console.log(`Sending ${payload.processedFiles.length} files to webhook`);
+      }
+
       const response = await fetch(webhookUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },

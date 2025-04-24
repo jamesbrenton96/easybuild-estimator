@@ -31,7 +31,37 @@ const useFormSubmission = ({
     setUploadProgress(20);
 
     try {
-      const estimateResult = await getEstimate(formData);
+      // Prepare form data for submission with files
+      const submissionData = { ...formData };
+      
+      // Process files if they exist
+      if (Array.isArray(submissionData.files) && submissionData.files.length > 0) {
+        // Convert files to base64 for transmission
+        setUploadProgress(30);
+        const processedFiles = await Promise.all(
+          submissionData.files.map(async (file: File) => {
+            try {
+              // For each file, convert to base64
+              const base64Data = await fileToBase64(file);
+              return {
+                name: file.name,
+                type: file.type,
+                size: file.size,
+                data: base64Data,
+              };
+            } catch (err) {
+              console.error("Error converting file to base64:", err);
+              return null;
+            }
+          })
+        );
+        
+        // Filter out any nulls from failed conversions
+        submissionData.processedFiles = processedFiles.filter(Boolean);
+        setUploadProgress(60);
+      }
+
+      const estimateResult = await getEstimate(submissionData);
       setEstimationResults(estimateResult);
       setStatus("success");
       setUploadProgress(100);
@@ -46,6 +76,16 @@ const useFormSubmission = ({
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  // Helper function to convert File to base64
+  const fileToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = (error) => reject(error);
+    });
   };
 
   return {
