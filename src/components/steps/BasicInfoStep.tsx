@@ -1,16 +1,7 @@
 import React, { useState } from "react";
 import { useEstimator, CorrespondenceData, ContentData } from "@/context/EstimatorContext";
 import { motion } from "framer-motion";
-import { Textarea } from "@/components/ui/textarea";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Label } from "@/components/ui/label";
-import { CalendarIcon } from "lucide-react";
-import { format } from "date-fns";
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { cn } from "@/lib/utils";
 import CorrespondenceAccordion from "./basic-info/CorrespondenceAccordion";
 import ProjectNameAccordion from "./basic-info/ProjectNameAccordion";
 import OverviewAccordion from "./basic-info/OverviewAccordion";
@@ -172,18 +163,12 @@ export default function BasicInfoStep() {
                 onProjectAddressChange={val => handleChange("location", val)}
                 onDateChange={val => handleNestedChange("correspondence", "date", val)}
               />
-            </AccordionContent>
-          </AccordionItem>
-          
-          <AccordionItem value="projectName" className="border-white/20">
-            <AccordionTrigger className="px-4 py-3 text-white hover:no-underline">
-              <span className="font-semibold">Project Name</span>
-            </AccordionTrigger>
-            <AccordionContent className="px-4 pb-4 text-white/90">
-              <ProjectNameAccordion
-                value={getContentValue("projectName")}
-                onChange={val => handleNestedChange("projectName", "content", val)}
-              />
+              <div className="mt-4">
+                <ProjectNameAccordion
+                  value={getContentValue("projectName")}
+                  onChange={val => handleNestedChange("projectName", "content", val)}
+                />
+              </div>
             </AccordionContent>
           </AccordionItem>
           
