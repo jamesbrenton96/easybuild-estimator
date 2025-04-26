@@ -15,104 +15,75 @@ export function useWebhookEstimate() {
 
   const getEstimate = useCallback(async (payload: Record<string, any>): Promise<WebhookResponse> => {
     try {
-      console.log("Sending payload to webhook:", payload);
+      console.log("Preparing payload for webhook submission");
       
-      // Check if there are any processed files in the payload
-      const hasFiles = payload.processedFiles && Array.isArray(payload.processedFiles) && payload.processedFiles.length > 0;
+      // Check if there are any files in the payload
+      const hasFiles = Array.isArray(payload.files) && payload.files.length > 0;
       
       if (hasFiles) {
-        console.log(`Sending ${payload.processedFiles.length} files to webhook`);
+        // Create FormData for multipart/form-data submission
+        const formData = new FormData();
         
-        // Log file information for debugging
-        payload.processedFiles.forEach((file: any, index: number) => {
-          console.log(`File ${index + 1}: ${file.name}, Type: ${file.type}, Size: ${file.size} bytes, Is PDF: ${file.isPDF}`);
+        // Get the first file (assuming it's the PDF we want to send)
+        const fileToUpload = payload.files[0];
+        if (fileToUpload instanceof File) {
+          console.log(`Uploading file: ${fileToUpload.name}, Type: ${fileToUpload.type}, Size: ${fileToUpload.size} bytes`);
           
-          // For PDF files, add explicit content type markers
-          if (file.isPDF || file.type === 'application/pdf' || file.extension === 'pdf') {
-            console.log("Detected PDF file:", file.name);
-          }
+          // Append the file as 'file' - this will be the binary data
+          formData.append('file', fileToUpload, fileToUpload.name);
+          
+          // Optional: Add filename as a separate field
+          formData.append('fileName', fileToUpload.name);
+        }
+        
+        // Create a copy of the payload without the files for the meta field
+        const metaData = { ...payload };
+        delete metaData.files;
+        
+        // Add the rest of the form data as a JSON string in the 'meta' field
+        formData.append('meta', JSON.stringify(metaData));
+        
+        console.log("Sending multipart/form-data to webhook");
+        
+        // Set longer timeout for webhook request (30 seconds)
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 30000);
+        
+        // Send the form data without setting Content-Type (browser will set it correctly with boundary)
+        const response = await fetch(webhookUrl, {
+          method: "POST",
+          body: formData,
+          signal: controller.signal
         });
-      }
-
-      // Set longer timeout for webhook request (30 seconds)
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 30000);
-      
-      const response = await fetch(webhookUrl, {
-        method: "POST",
-        headers: { 
-          "Content-Type": "application/json",
-          "Accept": "application/json, text/plain, */*"
-        },
-        body: JSON.stringify(payload),
-        signal: controller.signal
-      });
-      
-      clearTimeout(timeoutId);
-
-      if (!response.ok) throw new Error(`Webhook error: ${response.status} ${response.statusText}`);
-
-      try {
-        // Try JSON first
-        const jsonData = await response.json();
-        console.log("Webhook JSON response:", jsonData);
         
-        // Handle array response format (Make.com typical format)
-        if (Array.isArray(jsonData)) {
-          console.log("Detected array response format");
-          
-          // Look for a text entry in the array
-          const textEntry = jsonData.find(
-            item => item && typeof item === "object" && item.type === "text" && typeof item.text === "string"
-          );
-          
-          if (textEntry) {
-            console.log("Found text entry in array response");
-            return {
-              markdownContent: textEntry.text,
-              rawResponse: jsonData
-            };
-          }
-          
-          return {
-            rawResponse: jsonData,
-            // Just provide the raw response since we didn't find structured text
-            textContent: JSON.stringify(jsonData)
-          };
-        }
+        clearTimeout(timeoutId);
         
-        // If the response contains markdown content
-        if (jsonData.markdownContent || 
-            (jsonData.textContent && isMarkdownLike(jsonData.textContent)) || 
-            (typeof jsonData === 'string' && isMarkdownLike(jsonData))) {
-          
-          return {
-            markdownContent: jsonData.markdownContent || jsonData.textContent || jsonData,
-            rawResponse: jsonData
-          };
-        }
+        if (!response.ok) throw new Error(`Webhook error: ${response.status} ${response.statusText}`);
         
-        return jsonData;
-      } catch (jsonError) {
-        console.log("Not a JSON response, trying as text");
-        // If not JSON, try as text
-        try {
-          const textContent = await response.text();
-          console.log("Webhook text response:", textContent);
-          
-          // Check if it looks like markdown
-          if (isMarkdownLike(textContent)) {
-            console.log("Detected markdown-like content in response");
-            return { 
-              markdownContent: textContent,
-              rawResponse: textContent
-            };
-          }
-          
-          return { textContent };
-        } catch (textError) {
-          throw new Error("Failed to parse response as JSON or text");
-        }
+        return handleWebhookResponse(response);
+      } else {
+        // If no files, send a regular JSON payload
+        console.log("No files present, sending regular JSON payload");
+        
+        // Set longer timeout for webhook request (30 seconds)
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 30000);
+        
+        const response = await fetch(webhookUrl, {
+          method: "POST",
+          headers: { 
+            "Content-Type": "application/json",
+            "Accept": "application/json, text/plain, */*"
+          },
+          body: JSON.stringify(payload),
+          signal: controller.signal
+        });
+        
+        clearTimeout(timeoutId);
+        
+        if (!response.ok) throw new Error(`Webhook error: ${response.status} ${response.statusText}`);
+        
+        return handleWebhookResponse(response);
       }
     } catch (error: any) {
       console.error("Webhook error:", error);
@@ -122,6 +93,72 @@ export function useWebhookEstimate() {
       };
     }
   }, []);
+  
+  // Helper function to handle webhook response
+  const handleWebhookResponse = async (response: Response): Promise<WebhookResponse> => {
+    try {
+      // Try JSON first
+      const jsonData = await response.json();
+      console.log("Webhook JSON response:", jsonData);
+      
+      // Handle array response format (Make.com typical format)
+      if (Array.isArray(jsonData)) {
+        console.log("Detected array response format");
+        
+        // Look for a text entry in the array
+        const textEntry = jsonData.find(
+          item => item && typeof item === "object" && item.type === "text" && typeof item.text === "string"
+        );
+        
+        if (textEntry) {
+          console.log("Found text entry in array response");
+          return {
+            markdownContent: textEntry.text,
+            rawResponse: jsonData
+          };
+        }
+        
+        return {
+          rawResponse: jsonData,
+          // Just provide the raw response since we didn't find structured text
+          textContent: JSON.stringify(jsonData)
+        };
+      }
+      
+      // If the response contains markdown content
+      if (jsonData.markdownContent || 
+          (jsonData.textContent && isMarkdownLike(jsonData.textContent)) || 
+          (typeof jsonData === 'string' && isMarkdownLike(jsonData))) {
+        
+        return {
+          markdownContent: jsonData.markdownContent || jsonData.textContent || jsonData,
+          rawResponse: jsonData
+        };
+      }
+      
+      return jsonData;
+    } catch (jsonError) {
+      console.log("Not a JSON response, trying as text");
+      // If not JSON, try as text
+      try {
+        const textContent = await response.text();
+        console.log("Webhook text response:", textContent);
+        
+        // Check if it looks like markdown
+        if (isMarkdownLike(textContent)) {
+          console.log("Detected markdown-like content in response");
+          return { 
+            markdownContent: textContent,
+            rawResponse: textContent
+          };
+        }
+        
+        return { textContent };
+      } catch (textError) {
+        throw new Error("Failed to parse response as JSON or text");
+      }
+    }
+  };
 
   // Helper function to detect markdown-like content
   const isMarkdownLike = (text: string): boolean => {

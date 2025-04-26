@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useWebhookEstimate } from "./useWebhookEstimate";
 
@@ -33,36 +34,15 @@ const useFormSubmission = ({
       // Create a copy of the form data
       const submissionData = { ...formData };
       
-      // Keep files in the files array, but process them for transmission
+      // Validate files - no need to convert to base64 anymore
       if (Array.isArray(submissionData.files) && submissionData.files.length > 0) {
         setUploadProgress(30);
-        const processedFiles = await Promise.all(
-          submissionData.files.map(async (file: File) => {
-            try {
-              const base64Data = await fileToBase64(file);
-              return {
-                name: file.name,
-                type: file.type,
-                size: file.size,
-                data: base64Data,
-                extension: file.name.split('.').pop()?.toLowerCase() || '',
-                isPDF: file.type === 'application/pdf'
-              };
-            } catch (err) {
-              console.error("Error converting file to base64:", err);
-              return null;
-            }
-          })
-        );
         
-        // Keep the original files array and add processed data
-        submissionData.files = submissionData.files.map((file: File, index: number) => ({
-          ...file,
-          processedData: processedFiles[index]
-        }));
-        
+        // Log file information for debugging
         console.log(`Processing ${submissionData.files.length} files`);
-        console.log("File types:", submissionData.files.map((f: any) => f.type));
+        submissionData.files.forEach((file: File, index: number) => {
+          console.log(`File ${index + 1}: ${file.name}, Type: ${file.type}, Size: ${file.size} bytes`);
+        });
         
         setUploadProgress(60);
       }
@@ -82,16 +62,6 @@ const useFormSubmission = ({
     } finally {
       setIsSubmitting(false);
     }
-  };
-
-  // Helper function to convert File to base64
-  const fileToBase64 = (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = (error) => reject(error);
-    });
   };
 
   return {
