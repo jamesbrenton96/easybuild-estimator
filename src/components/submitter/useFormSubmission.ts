@@ -12,7 +12,7 @@ interface UseFormSubmissionProps {
 const useFormSubmission = ({
   formData,
   setIsLoading,
-  setIsSubmitting,
+  setEstimationResults,
   nextStep,
 }: UseFormSubmissionProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
