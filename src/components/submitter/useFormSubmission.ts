@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useWebhookEstimate } from "./useWebhookEstimate";
 
@@ -31,24 +30,21 @@ const useFormSubmission = ({
     setUploadProgress(20);
 
     try {
-      // Prepare form data for submission with files
+      // Create a copy of the form data
       const submissionData = { ...formData };
       
-      // Process files if they exist
+      // Keep files in the files array, but process them for transmission
       if (Array.isArray(submissionData.files) && submissionData.files.length > 0) {
-        // Convert files to base64 for transmission
         setUploadProgress(30);
         const processedFiles = await Promise.all(
           submissionData.files.map(async (file: File) => {
             try {
-              // For each file, convert to base64
               const base64Data = await fileToBase64(file);
               return {
                 name: file.name,
                 type: file.type,
                 size: file.size,
                 data: base64Data,
-                // Add filename extension explicitly to help the webhook identify file type
                 extension: file.name.split('.').pop()?.toLowerCase() || '',
                 isPDF: file.type === 'application/pdf'
               };
@@ -59,12 +55,14 @@ const useFormSubmission = ({
           })
         );
         
-        // Filter out any nulls from failed conversions
-        submissionData.processedFiles = processedFiles.filter(Boolean);
+        // Keep the original files array and add processed data
+        submissionData.files = submissionData.files.map((file: File, index: number) => ({
+          ...file,
+          processedData: processedFiles[index]
+        }));
         
-        // Log files being sent for debugging
-        console.log(`Sending ${submissionData.processedFiles.length} files to webhook`);
-        console.log("File types:", submissionData.processedFiles.map((f: any) => f.type));
+        console.log(`Processing ${submissionData.files.length} files`);
+        console.log("File types:", submissionData.files.map((f: any) => f.type));
         
         setUploadProgress(60);
       }
