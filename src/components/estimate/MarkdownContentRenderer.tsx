@@ -91,7 +91,7 @@ export default function MarkdownContentRenderer({ content }: { content: string }
             // Track if we are in Notes & Terms section
             if (isNotesTermsHeading(props)) {
               currentSection = "notes-terms";
-              return <h1 className="text-2xl text-construction-orange font-bold border-b pb-2 border-gray-200 mb-6 mt-8">Notes & Terms</h1>;
+              return <h2 className="text-xl text-construction-orange mt-6 font-semibold mb-4">Notes & Terms</h2>;
             }
             currentSection = null;
             return <h2 {...props}>{props.children}</h2>;
@@ -100,7 +100,7 @@ export default function MarkdownContentRenderer({ content }: { content: string }
             // Track if we are in Notes & Terms
             if (isNotesTermsHeading(props)) {
               currentSection = "notes-terms";
-              return <h1 className="text-2xl text-construction-orange font-bold border-b pb-2 border-gray-200 mb-6 mt-8">Notes & Terms</h1>;
+              return <h2 className="text-xl text-construction-orange mt-6 font-semibold mb-4">Notes & Terms</h2>;
             }
             currentSection = null;
             return <h3 {...props}>{props.children}</h3>;
