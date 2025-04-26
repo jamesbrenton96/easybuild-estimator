@@ -22,13 +22,33 @@ export function useWebhookEstimate() {
       
       if (hasFiles) {
         console.log(`Sending ${payload.processedFiles.length} files to webhook`);
+        
+        // Log file information for debugging
+        payload.processedFiles.forEach((file: any, index: number) => {
+          console.log(`File ${index + 1}: ${file.name}, Type: ${file.type}, Size: ${file.size} bytes, Is PDF: ${file.isPDF}`);
+          
+          // For PDF files, add explicit content type markers
+          if (file.isPDF || file.type === 'application/pdf' || file.extension === 'pdf') {
+            console.log("Detected PDF file:", file.name);
+          }
+        });
       }
 
+      // Set longer timeout for webhook request (30 seconds)
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000);
+      
       const response = await fetch(webhookUrl, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "Accept": "application/json, text/plain, */*"
+        },
         body: JSON.stringify(payload),
+        signal: controller.signal
       });
+      
+      clearTimeout(timeoutId);
 
       if (!response.ok) throw new Error(`Webhook error: ${response.status} ${response.statusText}`);
 

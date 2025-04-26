@@ -12,7 +12,7 @@ interface UseFormSubmissionProps {
 const useFormSubmission = ({
   formData,
   setIsLoading,
-  setEstimationResults,
+  setIsSubmitting,
   nextStep,
 }: UseFormSubmissionProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -48,6 +48,9 @@ const useFormSubmission = ({
                 type: file.type,
                 size: file.size,
                 data: base64Data,
+                // Add filename extension explicitly to help the webhook identify file type
+                extension: file.name.split('.').pop()?.toLowerCase() || '',
+                isPDF: file.type === 'application/pdf'
               };
             } catch (err) {
               console.error("Error converting file to base64:", err);
@@ -58,6 +61,11 @@ const useFormSubmission = ({
         
         // Filter out any nulls from failed conversions
         submissionData.processedFiles = processedFiles.filter(Boolean);
+        
+        // Log files being sent for debugging
+        console.log(`Sending ${submissionData.processedFiles.length} files to webhook`);
+        console.log("File types:", submissionData.processedFiles.map((f: any) => f.type));
+        
         setUploadProgress(60);
       }
 
