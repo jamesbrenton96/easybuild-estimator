@@ -28,7 +28,7 @@ export default function ReviewStep() {
     if (!element) return;
     
     const opt = {
-      margin: [10, 10, 10, 10],
+      margin: [10, 15, 10, 15],
       filename: 'brenton-building-estimate.pdf',
       image: { type: 'jpeg', quality: 0.98 },
       html2canvas: { 
@@ -59,7 +59,7 @@ export default function ReviewStep() {
     
     const logo = document.createElement('img');
     logo.src = "/lovable-uploads/54be63ea-83fd-4f4a-8c94-dba12936b674.png";
-    logo.style.height = '100px';
+    logo.style.height = '60px';
     logo.style.margin = '0 auto 15px auto';
     
     header.appendChild(logo);
@@ -71,15 +71,43 @@ export default function ReviewStep() {
     const style = document.createElement('style');
     style.textContent = `
       @page {
-        margin: 10mm;
+        margin: 15mm;
         size: A4;
       }
       
       body {
         font-size: 10px !important;
         line-height: 1.3 !important;
+        font-family: Arial, sans-serif !important;
       }
       
+      /* SECTION HEADERS */
+      .markdown-content h2, h2 {
+        color: #e58c33 !important;
+        font-size: 14px !important;
+        font-weight: bold !important;
+        text-transform: uppercase !important;
+        margin-top: 22px !important;
+        margin-bottom: 12px !important;
+        padding-bottom: 6px !important;
+        border-bottom: 1px solid #e58c33 !important;
+        letter-spacing: 0.03em !important;
+      }
+      
+      /* Section titles format */
+      .section-title {
+        color: #e58c33 !important;
+        text-transform: uppercase !important;
+        font-weight: bold !important;
+        border-bottom: 1px solid #e58c33 !important;
+        padding-bottom: 5px !important;
+        margin-bottom: 12px !important;
+        margin-top: 22px !important;
+        font-size: 14px !important;
+        letter-spacing: 0.03em !important;
+      }
+      
+      /* Table styles */
       table { 
         page-break-inside: avoid !important;
         width: 100% !important;
@@ -90,95 +118,90 @@ export default function ReviewStep() {
       }
       
       td, th { 
-        padding: 4px !important;
+        padding: 5px !important;
         font-size: 9px !important;
-        line-height: 1.2 !important;
+        line-height: 1.3 !important;
+        border: 1px solid #ddd !important;
         overflow-wrap: break-word !important;
         word-wrap: break-word !important;
       }
       
-      .markdown-content table {
-        margin: 0.5rem auto !important;
-      }
-      
-      .markdown-content table th,
-      .markdown-content table td {
-        padding: 4px !important;
+      th {
         font-size: 9px !important;
-        line-height: 1.2 !important;
-      }
-
-      /* Header row adjustments */
-      .markdown-content table th {
-        font-size: 8px !important;
-        font-weight: normal !important;
-        text-transform: uppercase !important;
-        padding: 6px !important;
-        background-color: #e58c33 !important;
-        color: white !important;
-      }
-
-      /* Adjust width of header columns */
-      .markdown-content table th:first-child {
-        width: 50% !important;
+        font-weight: bold !important;
+        background-color: #f5f5f5 !important;
+        color: #333 !important;
+        text-align: left !important;
       }
       
-      .markdown-content table th:nth-child(2),
-      .markdown-content table th:nth-child(3),
-      .markdown-content table th:nth-child(4) {
-        width: 15% !important;
+      /* List formatting */
+      ul {
+        margin-left: 0 !important;
+        padding-left: 16px !important;
       }
       
-      /* Tighter spacing for text content */
-      p, h2, h3, h4, ul, ol {
-        margin-top: 0.4em !important;
-        margin-bottom: 0.4em !important;
-        line-height: 1.3 !important;
-      }
-      
-      /* Adjusted heading sizes */
-      h1 { font-size: 16px !important; margin-bottom: 8px !important; }
-      h2 { font-size: 14px !important; margin-top: 12px !important; }
-      h3 { font-size: 12px !important; }
-      h4 { font-size: 11px !important; }
-      
-      /* Ensure proper table breaks */
-      tr { page-break-inside: avoid !important; }
-      
-      /* List item spacing */
-      li {
-        margin-bottom: 0.3em !important;
-        line-height: 1.3 !important;
+      ul li {
+        padding: 3px 0 !important;
         font-size: 10px !important;
       }
       
-      /* Total project cost block adjustments */
-      .total-project-cost-block {
-        font-size: 14px !important;
-        padding: 10px 15px !important;
-        margin: 15px 0 12px 0 !important;
+      ul li::marker {
+        color: #e58c33 !important;
       }
       
-      /* Table spacing improvements */
-      .markdown-content table tr td:last-child {
-        text-align: right !important;
+      /* Project title */
+      .project-title {
+        font-size: 20px !important;
+        color: #e58c33 !important;
+        text-align: center !important;
+        margin: 10px 0 25px 0 !important;
+        font-weight: bold !important;
       }
       
-      .markdown-content table tr:last-child td {
-        border-top: 2px solid #e58c33 !important;
+      /* Correspondence section */
+      .correspondence-item {
+        display: flex !important;
+        margin-bottom: 5px !important;
       }
       
-      /* Ensure notes and terms are properly formatted */
-      .markdown-content p:has(.section-number) {
-        padding-left: 0.3rem !important;
-        margin-bottom: 0.4rem !important;
+      .correspondence-label {
+        width: 120px !important;
+        font-weight: bold !important;
       }
       
-      .section-number {
-        width: 22px !important;
-        height: 22px !important;
-        margin-right: 0.4rem !important;
-        font-size: 0.85rem !important;
+      /* Total cost highlighting */
+      .total-project-cost {
+        font-weight: bold !important;
+        background-color: #f5f5f5 !important;
+      }
+      
+      /* Footer */
+      .document-footer {
+        margin-top: 30px !important;
+        font-size: 8px !important;
+        color: #666 !important;
+        text-align: center !important;
+        border-top: none !important;
+      }
+      
+      /* Notes and terms */
+      .notes-terms {
+        margin-top: 20px !important;
+      }
+      
+      .notes-terms p {
+        margin: 6px 0 !important;
+        font-size: 10px !important;
+      }
+      
+      /* Override any orange text with standard color */
+      .markdown-content p {
+        color: #333 !important;
+      }
+      
+      .markdown-content strong, .markdown-content b {
+        color: #333 !important;
+        font-weight: bold !important;
       }
     `;
     

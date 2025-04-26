@@ -26,6 +26,7 @@ export function ReviewTabs({ estimationResults, setEstimationResults }: {
   const projectDetails = {
     clientName: formData?.clientName || "",
     projectAddress: formData?.projectAddress || "",
+    projectType: formData?.projectType || "",
     date: new Date().toLocaleDateString('en-NZ', {
       year: 'numeric',
       month: 'long',
@@ -62,10 +63,67 @@ export function ReviewTabs({ estimationResults, setEstimationResults }: {
           <style dangerouslySetInnerHTML={{ __html: `
             .pdf-content {
               font-family: Arial, sans-serif;
-              font-size: 12px;
+              color: #333;
               line-height: 1.6;
             }
-            /* ... keep existing code */
+            
+            /* Project title */
+            .project-title-wrapper {
+              text-align: center;
+              margin: 20px 0 30px 0;
+            }
+            
+            .project-title {
+              font-size: 24px;
+              color: #e58c33;
+              font-weight: bold;
+            }
+            
+            /* Section headers */
+            .section-header {
+              color: #e58c33;
+              text-transform: uppercase;
+              font-weight: bold;
+              border-bottom: 1px solid #e58c33;
+              padding-bottom: 5px;
+              margin-bottom: 12px;
+              margin-top: 25px;
+              font-size: 14px;
+              letter-spacing: 0.03em;
+            }
+            
+            /* Table styles */
+            table {
+              width: 100%;
+              border-collapse: collapse;
+              margin: 10px 0;
+            }
+            
+            th, td {
+              border: 1px solid #ddd;
+              padding: 8px;
+              text-align: left;
+            }
+            
+            th {
+              background-color: #f5f5f5;
+            }
+            
+            tr:nth-child(even) {
+              background-color: #fafafa;
+            }
+            
+            /* Bullet points */
+            .scope-bullet {
+              display: flex;
+              align-items: flex-start;
+              margin-bottom: 5px;
+            }
+            
+            .bullet-marker {
+              color: #e58c33;
+              margin-right: 8px;
+            }
           `}} />
           {processEstimationResults}
         </div>
