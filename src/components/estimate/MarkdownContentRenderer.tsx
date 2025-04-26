@@ -1,4 +1,3 @@
-
 import React from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -92,7 +91,8 @@ export default function MarkdownContentRenderer({ content }: { content: string }
             // Track if we are in Notes & Terms section
             if (isNotesTermsHeading(props)) {
               currentSection = "notes-terms";
-              return <h2 className="text-xl font-semibold mt-6 text-gray-800">Notes & Terms</h2>;
+              // Render as h1 with larger styling
+              return <h1 className="text-2xl font-bold border-b pb-2 border-gray-200 mb-6 mt-8">Notes & Terms</h1>;
             }
             currentSection = null;
             return <h2 {...props}>{props.children}</h2>;
@@ -114,19 +114,14 @@ export default function MarkdownContentRenderer({ content }: { content: string }
               typeof child === 'string' ? child : ''
             ).join('');
 
-            // If this is a numbered item, render as plain body text inside Notes & Terms
+            // If this is a numbered item in Notes & Terms, render as plain text
             const numberMatch = textContent.match(/^(\d+)[\.\)]\s*(.*)/);
-            if (numberMatch) {
+            if (numberMatch && isInNotesTerms) {
               const number = numberMatch[1];
               const text = numberMatch[2];
-              return isInNotesTerms ? (
-                <p className="mb-2 text-gray-800 font-normal" {...props}>{number}. {text}</p>
-              ) : (
-                <p className="flex items-start mb-4" {...props}>
-                  <span className="inline-flex items-center justify-center w-7 h-7 bg-construction-orange text-white rounded-full mr-2 font-bold text-sm flex-shrink-0">
-                    {number}
-                  </span>
-                  {text}
+              return (
+                <p className="mb-3 text-gray-800 font-normal" {...props}>
+                  {number}. {text}
                 </p>
               );
             }
@@ -156,21 +151,20 @@ export default function MarkdownContentRenderer({ content }: { content: string }
               }
             }
 
-            // Regular paragraphs (within Notes & Terms shouldn't be bold/orange, just normal text)
-            return <p className={isInNotesTerms ? "mb-2 text-gray-800 font-normal" : ""} {...props}>{children}</p>;
+            // Regular paragraphs (within Notes & Terms as normal text)
+            return <p className={isInNotesTerms ? "mb-3 text-gray-800 font-normal" : ""} {...props}>{children}</p>;
           },
           li: ({ children, ...props }) => {
             const isInNotesTerms = currentSection === "notes-terms";
-            // ALWAYS render bullet/number items as normal paragraphs in Notes & Terms
+            // ALWAYS render items as normal paragraphs in Notes & Terms
             if (isInNotesTerms) {
               const childrenArray = React.Children.toArray(children);
               const textContent = childrenArray.map(child =>
                 typeof child === 'string' ? child : ''
               ).join('');
-              const numberMatch = textContent.match(/^(\d+)[\.\)]\s*(.*)/);
               return (
-                <li className="pl-2 mb-2 text-gray-800 font-normal list-none" {...props}>
-                  {numberMatch ? `${numberMatch[1]}. ${numberMatch[2]}` : textContent}
+                <li className="pl-2 mb-3 text-gray-800 font-normal list-none" {...props}>
+                  {textContent}
                 </li>
               );
             }
