@@ -1,4 +1,3 @@
-
 import { useCallback } from "react";
 
 export interface WebhookResponse {
@@ -45,18 +44,11 @@ export function useWebhookEstimate() {
         
         console.log("Sending multipart/form-data to webhook");
         
-        // Set longer timeout for webhook request (30 seconds)
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 30000);
-        
         // Send the form data without setting Content-Type (browser will set it correctly with boundary)
         const response = await fetch(webhookUrl, {
           method: "POST",
-          body: formData,
-          signal: controller.signal
+          body: formData
         });
-        
-        clearTimeout(timeoutId);
         
         if (!response.ok) throw new Error(`Webhook error: ${response.status} ${response.statusText}`);
         
@@ -65,21 +57,14 @@ export function useWebhookEstimate() {
         // If no files, send a regular JSON payload
         console.log("No files present, sending regular JSON payload");
         
-        // Set longer timeout for webhook request (30 seconds)
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 30000);
-        
         const response = await fetch(webhookUrl, {
           method: "POST",
           headers: { 
             "Content-Type": "application/json",
             "Accept": "application/json, text/plain, */*"
           },
-          body: JSON.stringify(payload),
-          signal: controller.signal
+          body: JSON.stringify(payload)
         });
-        
-        clearTimeout(timeoutId);
         
         if (!response.ok) throw new Error(`Webhook error: ${response.status} ${response.statusText}`);
         
