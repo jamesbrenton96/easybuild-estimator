@@ -1,3 +1,4 @@
+
 import React from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -91,8 +92,8 @@ export default function MarkdownContentRenderer({ content }: { content: string }
             // Track if we are in Notes & Terms section
             if (isNotesTermsHeading(props)) {
               currentSection = "notes-terms";
-              // Render as h1 with larger styling
-              return <h1 className="text-2xl font-bold border-b pb-2 border-gray-200 mb-6 mt-8">Notes & Terms</h1>;
+              // Render as h1 with larger, black styling
+              return <h1 className="text-2xl font-bold border-b pb-2 border-gray-200 mb-6 mt-8 text-gray-900">Notes & Terms</h1>;
             }
             currentSection = null;
             return <h2 {...props}>{props.children}</h2>;
@@ -101,7 +102,7 @@ export default function MarkdownContentRenderer({ content }: { content: string }
             // Track if we are in Notes & Terms
             if (isNotesTermsHeading(props)) {
               currentSection = "notes-terms";
-              return <h3 className="text-lg font-semibold mt-5 text-gray-800">Notes & Terms</h3>;
+              return <h1 className="text-2xl font-bold border-b pb-2 border-gray-200 mb-6 mt-8 text-gray-900">Notes & Terms</h1>;
             }
             currentSection = null;
             return <h3 {...props}>{props.children}</h3>;
@@ -114,7 +115,7 @@ export default function MarkdownContentRenderer({ content }: { content: string }
               typeof child === 'string' ? child : ''
             ).join('');
 
-            // If this is a numbered item in Notes & Terms, render as plain text
+            // If this is a numbered item in Notes & Terms, render as plain black text
             const numberMatch = textContent.match(/^(\d+)[\.\)]\s*(.*)/);
             if (numberMatch && isInNotesTerms) {
               const number = numberMatch[1];
@@ -156,19 +157,30 @@ export default function MarkdownContentRenderer({ content }: { content: string }
           },
           li: ({ children, ...props }) => {
             const isInNotesTerms = currentSection === "notes-terms";
-            // ALWAYS render items as normal paragraphs in Notes & Terms
+            // In Notes & Terms, render as standard black text paragraphs
             if (isInNotesTerms) {
               const childrenArray = React.Children.toArray(children);
               const textContent = childrenArray.map(child =>
                 typeof child === 'string' ? child : ''
               ).join('');
+              // Check if it's a numbered item
+              const numberMatch = textContent.match(/^(\d+)[\.\)]\s*(.*)/);
+              if (numberMatch) {
+                const number = numberMatch[1];
+                const text = numberMatch[2];
+                return (
+                  <li className="pl-2 mb-3 text-gray-800 font-normal list-none" {...props}>
+                    {number}. {text}
+                  </li>
+                );
+              }
               return (
                 <li className="pl-2 mb-3 text-gray-800 font-normal list-none" {...props}>
                   {textContent}
                 </li>
               );
             }
-            // For other sections: as before
+            // For other sections: handle numbered items with orange circles
             const childrenArray = React.Children.toArray(children);
             const textContent = childrenArray.map(child =>
               typeof child === 'string' ? child : ''

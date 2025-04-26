@@ -1,4 +1,3 @@
-
 /**
  * Converts bullet/numbered items in the Notes & Terms section to normal body text paragraphs.
  * Leaves the heading, but ensures all lines below it until next heading are just plain text.
@@ -12,10 +11,15 @@ export function formatNotesAndTerms(content: string) {
       const lines = body
         .split('\n')
         .map(line => {
-          // Remove leading bullets, numbers, dashes, and excess spaces
+          // Preserve the numbered items format but strip any other formatting
+          const numberMatch = line.match(/^\s*(\d+)[\.\)]\s*(.*)/);
+          if (numberMatch) {
+            // Keep the number. format but remove any markdown styling
+            return `${numberMatch[1]}. ${numberMatch[2].trim()}`;
+          }
+          // Remove leading bullets, dashes, and excess spaces
           return line
             .replace(/^\s*[-*]\s*/, "")         // - item
-            .replace(/^\s*\d+[\.\)]\s*/, "")    // 1.  2)
             .replace(/^\s*•\s*/, "")            // • bullet
             .trim();
         })
@@ -23,7 +27,7 @@ export function formatNotesAndTerms(content: string) {
       const normalBody = lines.length
         ? '\n' + lines.map(line => `${line}`).join('\n\n') + '\n'
         : "";
-      // Always render heading as ## Notes & Terms
+      // Always render heading as ## Notes & Terms (will be styled as H1 in the renderer)
       return `\n## Notes & Terms\n${normalBody}`;
     }
   );
