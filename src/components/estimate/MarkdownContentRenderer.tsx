@@ -1,4 +1,3 @@
-
 import React from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -92,8 +91,7 @@ export default function MarkdownContentRenderer({ content }: { content: string }
             // Track if we are in Notes & Terms section
             if (isNotesTermsHeading(props)) {
               currentSection = "notes-terms";
-              // Render as h1 with larger, black styling
-              return <h1 className="text-2xl font-bold border-b pb-2 border-gray-200 mb-6 mt-8 text-gray-900">Notes & Terms</h1>;
+              return <h1 className="text-2xl text-construction-orange font-bold border-b pb-2 border-gray-200 mb-6 mt-8">Notes & Terms</h1>;
             }
             currentSection = null;
             return <h2 {...props}>{props.children}</h2>;
@@ -102,7 +100,7 @@ export default function MarkdownContentRenderer({ content }: { content: string }
             // Track if we are in Notes & Terms
             if (isNotesTermsHeading(props)) {
               currentSection = "notes-terms";
-              return <h1 className="text-2xl font-bold border-b pb-2 border-gray-200 mb-6 mt-8 text-gray-900">Notes & Terms</h1>;
+              return <h1 className="text-2xl text-construction-orange font-bold border-b pb-2 border-gray-200 mb-6 mt-8">Notes & Terms</h1>;
             }
             currentSection = null;
             return <h3 {...props}>{props.children}</h3>;
