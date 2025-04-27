@@ -1,3 +1,4 @@
+
 import { createCorrespondenceSection } from './markdown/correspondence';
 import { createSection } from './markdown/sections';
 import { createMaterialsTable, createLabourTable, createTimelineTable, createTotalSummaryTable } from './markdown/tables';
@@ -70,11 +71,11 @@ export function createMarkdownDescription(formData: any): string {
     
     // Try to identify sections based on patterns
     let currentSection = '';
-    let sectionNotes = [];
-    let sections = {};
+    let sectionNotes: string[] = [];
+    let sections: Record<string, string[]> = {};
     
     // First pass: try to identify section headings
-    formData.notes.forEach(note => {
+    formData.notes.forEach((note: string) => {
       // Check if this could be a heading (ends with colon, short text)
       if (note.endsWith(':') && note.length < 30) {
         currentSection = note;
@@ -93,12 +94,12 @@ export function createMarkdownDescription(formData: any): string {
     // Output sections with their notes
     for (const [heading, notes] of Object.entries(sections)) {
       markdown += `${heading}\n\n`;
-      markdown += notes.map(note => `• ${note}`).join('\n') + '\n\n';
+      markdown += notes.map((note: string) => `• ${note}`).join('\n') + '\n\n';
     }
     
     // Output remaining standalone notes
     if (sectionNotes.length > 0) {
-      markdown += sectionNotes.map(note => `• ${note}`).join('\n') + '\n\n';
+      markdown += sectionNotes.map((note: string) => `• ${note}`).join('\n') + '\n\n';
     }
   }
   
