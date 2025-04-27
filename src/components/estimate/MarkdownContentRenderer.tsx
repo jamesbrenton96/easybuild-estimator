@@ -1,3 +1,4 @@
+
 import React from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -10,7 +11,8 @@ export default function MarkdownContentRenderer({ content }: { content: string }
           font-family: Arial, sans-serif !important;
           font-size: 10px !important;
           line-height: 1.3 !important;
-          padding: 16px !important;
+          padding: 12px !important;
+          width: 100% !important;
         }
         
         /* SECTION HEADERS */
@@ -70,6 +72,7 @@ export default function MarkdownContentRenderer({ content }: { content: string }
         .markdown-content ul li {
           padding: 3px 0 !important;
           font-size: 10px !important;
+          line-height: 1.3 !important;
           width: 100% !important;
         }
         
@@ -82,11 +85,13 @@ export default function MarkdownContentRenderer({ content }: { content: string }
           font-weight: bold !important;
           margin-top: 15px !important;
           margin-bottom: 5px !important;
+          width: 100% !important;
         }
         
         .markdown-content h1:contains("Notes & Terms") ~ ul {
           margin-top: 5px !important;
           margin-bottom: 15px !important;
+          width: 100% !important;
         }
         
         /* Project title */
@@ -97,12 +102,14 @@ export default function MarkdownContentRenderer({ content }: { content: string }
           margin: 10px 0 25px 0 !important;
           font-weight: bold !important;
           border-bottom: none !important;
+          width: 100% !important;
         }
         
         /* Correspondence section */
         .correspondence-item {
           display: flex !important;
           margin-bottom: 5px !important;
+          width: 100% !important;
         }
         
         .correspondence-label {
@@ -119,11 +126,13 @@ export default function MarkdownContentRenderer({ content }: { content: string }
         /* Notes and terms */
         .notes-terms {
           margin-top: 20px !important;
+          width: 100% !important;
         }
         
         .notes-terms p {
           margin: 6px 0 !important;
           font-size: 10px !important;
+          width: 100% !important;
         }
         
         /* Override any orange text with standard color */
