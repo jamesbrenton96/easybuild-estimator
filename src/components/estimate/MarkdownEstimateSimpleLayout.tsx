@@ -9,7 +9,9 @@ export default function MarkdownEstimateSimpleLayout({
 }) {
   return (
     <div className="bg-white rounded-lg overflow-hidden shadow-lg mb-8 max-w-[210mm] mx-auto">
-      <MarkdownContentRenderer content={formattedMarkdown} />
+      <div className="px-8">
+        <MarkdownContentRenderer content={formattedMarkdown} />
+      </div>
     </div>
   );
 }

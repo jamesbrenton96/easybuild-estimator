@@ -1,11 +1,10 @@
-
 import React from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
 export default function MarkdownContentRenderer({ content }: { content: string }) {
   return (
-    <div className="p-8 markdown-content text-gray-800">
+    <div className="p-0 markdown-content text-gray-800">
       <style>{`
         .markdown-content {
           font-family: Arial, sans-serif !important;
@@ -21,7 +20,7 @@ export default function MarkdownContentRenderer({ content }: { content: string }
           text-transform: uppercase !important;
           margin-top: 22px !important;
           margin-bottom: 12px !important;
-          padding-bottom: 6px !important;
+          padding: 0 0 6px 0 !important;
           border-bottom: 1px solid #e58c33 !important;
           letter-spacing: 0.03em !important;
         }
@@ -32,7 +31,7 @@ export default function MarkdownContentRenderer({ content }: { content: string }
           text-transform: uppercase !important;
           font-weight: bold !important;
           border-bottom: 1px solid #e58c33 !important;
-          padding-bottom: 5px !important;
+          padding: 0 0 5px 0 !important;
           margin-bottom: 12px !important;
           margin-top: 22px !important;
           font-size: 14px !important;
