@@ -1,4 +1,3 @@
-
 /**
  * All the logic for calculating an estimate and formatting as markdown.
  */
@@ -136,17 +135,12 @@ export function createMaterialsBreakdown(formData: any) {
 }
 
 export function createMarkdownDescription(formData: any) {
-  let markdownContent = "";
   const projectType = formData.projectType || "Construction Project";
-  
-  // Start with project type as H1
-  markdownContent += `# ${projectType}\n\n`;
+  let markdownContent = `${projectType}\n\n`;
 
   // SECTION 1: Correspondence
-  markdownContent += "## SECTION 1: CORRESPONDENCE\n\n";
-  
-  const correspondenceType = formData.subcategories?.correspondence?.type || "";
-  const fullCorrespondenceType = getFullCorrespondenceType(correspondenceType);
+  markdownContent += "# 1. Correspondence\n\n";
+  const correspondenceType = getFullCorrespondenceType(formData.subcategories?.correspondence?.type || "");
   const clientName = formData.subcategories?.correspondence?.clientName || "";
   const projectAddress = formData.location || "";
   const currentDate = new Date().toLocaleDateString('en-NZ', {
@@ -155,140 +149,152 @@ export function createMarkdownDescription(formData: any) {
     day: 'numeric'
   });
   const projectName = formData.subcategories?.projectName?.content || "";
-  
-  markdownContent += `- **Correspondence Type:** ${fullCorrespondenceType}\n`;
+
+  markdownContent += `- **Correspondence Type:** ${correspondenceType}\n`;
   markdownContent += `- **Client Name:** ${clientName}\n`;
   markdownContent += `- **Project Address:** ${projectAddress}\n`;
   markdownContent += `- **Current Date:** ${currentDate}\n`;
   markdownContent += `- **Project Name:** ${projectName}\n\n`;
 
   // SECTION 2: Project Overview
-  markdownContent += "## SECTION 2: PROJECT OVERVIEW\n\n";
-  if (formData.subcategories?.overview?.content) {
-    markdownContent += `${formData.subcategories.overview.content}\n\n`;
-  } else {
-    markdownContent += "No overview provided.\n\n";
-  }
+  markdownContent += "# 2. Project Overview\n\n";
+  markdownContent += `${formData.subcategories?.overview?.content || "Project details to be confirmed."}\n\n`;
 
   // SECTION 3: Scope of Works
-  markdownContent += "## SECTION 3: SCOPE OF WORKS\n\n";
-  if (formData.subcategories?.overview?.content) {
-    // Convert paragraph-style overview to bullet points if needed
-    const scopeLines = formData.subcategories.overview.content.split('.')
-      .filter((line: string) => line.trim().length > 0)
-      .map((line: string) => `- ${line.trim()}`);
-    
-    markdownContent += scopeLines.join('\n') + '\n\n';
-  } else {
-    markdownContent += "- Project scope to be determined\n\n";
-  }
+  markdownContent += "# 3. Scope of Works\n\n";
+  const scopeLines = (formData.subcategories?.overview?.content || "")
+    .split('.')
+    .filter((line: string) => line.trim())
+    .map((line: string) => `- ${line.trim()}`);
+  markdownContent += scopeLines.join('\n') + '\n\n';
 
   // SECTION 4: Dimensions
-  markdownContent += "## SECTION 4: DIMENSIONS\n\n";
-  if (formData.subcategories?.dimensions?.content) {
-    markdownContent += `${formData.subcategories.dimensions.content}\n\n`;
-  } else {
-    markdownContent += "No dimensions provided.\n\n";
-  }
+  markdownContent += "# 4. Dimensions\n\n";
+  const dimensionsContent = formData.subcategories?.dimensions?.content || "";
+  const dimensionLines = dimensionsContent
+    .split('\n')
+    .filter(line => line.trim())
+    .map(line => `- ${line.trim()}`);
+  markdownContent += dimensionLines.join('\n') + '\n\n';
 
-  // SECTION 5: Materials and Cost Breakdown
-  markdownContent += "## SECTION 5: MATERIALS AND COST BREAKDOWN\n\n";
+  // SECTION 5: Materials & Cost Breakdown
+  markdownContent += "# 5. Materials & Cost Breakdown\n\n";
   const materialsBreakdown = createMaterialsBreakdown(formData);
-  const buildersMargin = 0.18; // 18% margin
   const materialsSubtotal = calculateMaterialsCost(formData);
-  const marginAmount = materialsSubtotal * buildersMargin;
-  
-  markdownContent += "| Item | Quantity | Unit Price | Total Cost | Source |\n";
-  markdownContent += "|------|----------|------------|------------|--------|\n";
+  const gst = materialsSubtotal * 0.15;
+  const materialsTotal = materialsSubtotal + gst;
+  const buildersMargin = materialsTotal * 0.18;
+  const materialsGrandTotal = materialsTotal + buildersMargin;
+
+  markdownContent += "| Item | Qty | Unit Price (NZD) | Total (NZD) | Source |\n";
+  markdownContent += "|------|----:|----------------:|------------:|--------|\n";
   
   materialsBreakdown.forEach(item => {
     markdownContent += `| ${item.name} | 1 | $${item.cost.toFixed(2)} | $${item.cost.toFixed(2)} | Local supplier |\n`;
   });
   
-  markdownContent += `| **Materials Subtotal** | | | $${materialsSubtotal.toFixed(2)} | |\n`;
-  markdownContent += `| **Builder's Margin (18%)** | | | $${marginAmount.toFixed(2)} | |\n`;
-  markdownContent += `| **Materials Total** | | | $${(materialsSubtotal + marginAmount).toFixed(2)} | |\n\n`;
+  markdownContent += `\n**Materials Sub-total (ex GST):** $${materialsSubtotal.toFixed(2)}\n`;
+  markdownContent += `**GST 15 %:** $${gst.toFixed(2)}\n`;
+  markdownContent += `**Materials Total (incl GST):** $${materialsTotal.toFixed(2)}\n`;
+  markdownContent += `**Builder's Margin 18 %:** $${buildersMargin.toFixed(2)}\n`;
+  markdownContent += `**Materials Grand Total:** **$${materialsGrandTotal.toFixed(2)}**\n\n`;
 
-  // SECTION 6: Labor Hours Breakdown
-  markdownContent += "## SECTION 6: LABOR HOURS BREAKDOWN\n\n";
-  const laborCost = calculateLaborCost(formData);
-  const hours = estimateHours(formData);
-  const hourlyRate = laborCost / hours;
+  // SECTION 6: Labour Hours Breakdown
+  markdownContent += "# 6. Labour Hours Breakdown\n\n";
+  const laborTasks = calculateLaborTasks(formData);
   
-  markdownContent += "| Task Description | Hours | Rate | Cost |\n";
-  markdownContent += "|-----------------|-------|------|------|\n";
+  markdownContent += "| Task | Hours | Rate (NZD/hr) | Total (NZD) |\n";
+  markdownContent += "|------|------:|-------------:|------------:|\n";
   
-  // Create labor tasks based on project type
-  const laborTasks = [];
-  if (formData.projectType?.toLowerCase().includes("deck")) {
-    laborTasks.push(["Site preparation", Math.round(hours * 0.2), hourlyRate]);
-    laborTasks.push(["Foundation work", Math.round(hours * 0.3), hourlyRate]);
-    laborTasks.push(["Framing and structure", Math.round(hours * 0.3), hourlyRate]);
-    laborTasks.push(["Finishing and cleanup", Math.round(hours * 0.2), hourlyRate]);
-  } else if (formData.projectType?.toLowerCase().includes("fence")) {
-    laborTasks.push(["Site preparation", Math.round(hours * 0.2), hourlyRate]);
-    laborTasks.push(["Post installation", Math.round(hours * 0.4), hourlyRate]);
-    laborTasks.push(["Panel installation", Math.round(hours * 0.3), hourlyRate]);
-    laborTasks.push(["Finishing and cleanup", Math.round(hours * 0.1), hourlyRate]);
-  } else {
-    laborTasks.push(["Initial setup and preparation", Math.round(hours * 0.15), hourlyRate]);
-    laborTasks.push(["Main construction phase", Math.round(hours * 0.6), hourlyRate]);
-    laborTasks.push(["Finishing work", Math.round(hours * 0.15), hourlyRate]);
-    laborTasks.push(["Final cleanup", Math.round(hours * 0.1), hourlyRate]);
-  }
-  
-  // Add rows to the labor table
-  let taskHoursTotal = 0;
-  let taskCostTotal = 0;
-  
+  let laborTotal = 0;
   laborTasks.forEach(task => {
-    const [description, taskHours, rate] = task;
-    const taskCost = taskHours * rate;
-    taskHoursTotal += taskHours;
-    taskCostTotal += taskCost;
-    
-    markdownContent += `| ${description} | ${taskHours} | $${rate.toFixed(2)}/hr | $${taskCost.toFixed(2)} |\n`;
+    const taskTotal = task.hours * task.rate;
+    laborTotal += taskTotal;
+    markdownContent += `| ${task.description} | ${task.hours} | $${task.rate.toFixed(2)} | $${taskTotal.toFixed(2)} |\n`;
   });
-  
-  markdownContent += `| **Labor Total** | **${taskHoursTotal}** | | **$${taskCostTotal.toFixed(2)}** |\n\n`;
 
-  // SECTION 7: Total Summary of Costs
-  markdownContent += "## SECTION 7: TOTAL SUMMARY OF COSTS\n\n";
-  const totalCost = laborCost + materialsSubtotal + marginAmount;
-  const gst = totalCost * 0.15; // 15% GST
-  const grandTotal = totalCost + gst;
+  // SECTION 7: Total Summary
+  markdownContent += "\n# 7. Total Summary\n\n";
+  const grandTotal = materialsGrandTotal + laborTotal;
   
-  markdownContent += "| Cost Category | Amount |\n";
-  markdownContent += "|---------------|--------|\n";
-  markdownContent += `| Labor | $${laborCost.toFixed(2)} |\n`;
-  markdownContent += `| Materials (incl. margin) | $${(materialsSubtotal + marginAmount).toFixed(2)} |\n`;
-  markdownContent += `| Subtotal | $${totalCost.toFixed(2)} |\n`;
-  markdownContent += `| GST (15%) | $${gst.toFixed(2)} |\n`;
-  markdownContent += `| **TOTAL PROJECT COST** | **$${grandTotal.toFixed(2)}** |\n\n`;
+  markdownContent += "| Category | Amount (NZD) |\n";
+  markdownContent += "|----------|-------------:|\n";
+  markdownContent += `| Materials (incl GST & margin) | $${materialsGrandTotal.toFixed(2)} |\n`;
+  markdownContent += `| Labour (incl GST) | $${laborTotal.toFixed(2)} |\n`;
+  markdownContent += `| **Total Project Cost** | **$${grandTotal.toFixed(2)}** |\n\n`;
 
   // SECTION 8: Project Timeline
-  markdownContent += "## SECTION 8: PROJECT TIMELINE\n\n";
-  if (formData.subcategories?.timeframe?.content) {
-    markdownContent += `${formData.subcategories.timeframe.content}\n\n`;
-  } else {
-    const days = Math.ceil(hours / 8);
-    markdownContent += `- Estimated completion time: ${days} working day${days > 1 ? 's' : ''}\n`;
-    markdownContent += `- Project start: Upon agreement and deposit payment\n`;
-    markdownContent += `- Project completion: ${days} working days from start date\n\n`;
-  }
+  markdownContent += "# 8. Project Timeline\n\n";
+  const timeframeTasks = createTimelineTasks(formData, laborTasks);
+  
+  markdownContent += "| Phase | Duration |\n";
+  markdownContent += "|-------|----------|\n";
+  timeframeTasks.forEach(task => {
+    markdownContent += `| ${task.phase} | ${task.duration} |\n`;
+  });
+  markdownContent += "\n";
 
-  // SECTION 9: Notes and Terms
-  markdownContent += "## SECTION 9: NOTES AND TERMS\n\n";
-  if (formData.subcategories?.notes?.content) {
-    markdownContent += `${formData.subcategories.notes.content}\n\n`;
-  } else {
-    markdownContent += "- This estimate is valid for 30 days from the date issued\n";
-    markdownContent += "- Price may vary based on unforeseen circumstances or changes to project scope\n";
-    markdownContent += "- Payment terms: 50% deposit required to begin work, remaining balance due upon completion\n";
-    markdownContent += "- All materials are subject to availability and price fluctuations\n";
-    markdownContent += "- Warranty: All workmanship is guaranteed for 1 year from completion\n";
-    markdownContent += "- Client is responsible for obtaining necessary permits unless otherwise specified\n\n";
+  // SECTION 9: Notes & Terms
+  markdownContent += "# 9. Notes & Terms\n\n";
+  const defaultNotes = [
+    "This estimate is valid for 30 days from the date issued",
+    "Price may vary based on unforeseen circumstances or changes to project scope",
+    "Payment terms: 50% deposit required to begin work, remaining balance due upon completion",
+    "All materials are subject to availability and price fluctuations",
+    "Warranty: All workmanship is guaranteed for 1 year from completion",
+    "Client is responsible for obtaining necessary permits unless otherwise specified"
+  ];
+
+  const notes = formData.subcategories?.notes?.content
+    ? formData.subcategories.notes.content.split('\n').filter(Boolean)
+    : defaultNotes;
+
+  notes.forEach(note => {
+    markdownContent += `- ${note.trim()}\n`;
+  });
+
+  // Footer
+  markdownContent += "\n---\n*Generated automatically – Brenton Building*\n";
+
+  return markdownContent;
+}
+
+function calculateLaborTasks(formData: any) {
+  const hours = estimateHours(formData);
+  const hourlyRate = calculateLaborCost(formData) / hours;
+  
+  if (formData.projectType?.toLowerCase().includes("deck")) {
+    return [
+      { description: "Site preparation", hours: Math.round(hours * 0.2), rate: hourlyRate },
+      { description: "Foundation work", hours: Math.round(hours * 0.3), rate: hourlyRate },
+      { description: "Framing and structure", hours: Math.round(hours * 0.3), rate: hourlyRate },
+      { description: "Finishing and cleanup", hours: Math.round(hours * 0.2), rate: hourlyRate }
+    ];
   }
   
-  return markdownContent;
+  if (formData.projectType?.toLowerCase().includes("fence")) {
+    return [
+      { description: "Site preparation", hours: Math.round(hours * 0.2), rate: hourlyRate },
+      { description: "Post installation", hours: Math.round(hours * 0.4), rate: hourlyRate },
+      { description: "Panel installation", hours: Math.round(hours * 0.3), rate: hourlyRate },
+      { description: "Finishing and cleanup", hours: Math.round(hours * 0.1), rate: hourlyRate }
+    ];
+  }
+  
+  return [
+    { description: "Initial setup and preparation", hours: Math.round(hours * 0.15), rate: hourlyRate },
+    { description: "Main construction phase", hours: Math.round(hours * 0.6), rate: hourlyRate },
+    { description: "Finishing work", hours: Math.round(hours * 0.15), rate: hourlyRate },
+    { description: "Final cleanup", hours: Math.round(hours * 0.1), rate: hourlyRate }
+  ];
+}
+
+function createTimelineTasks(formData: any, laborTasks: any[]) {
+  const totalHours = laborTasks.reduce((sum, task) => sum + task.hours, 0);
+  const daysPerPhase = Math.ceil(totalHours / 8);
+  
+  return laborTasks.map(task => ({
+    phase: task.description,
+    duration: `${Math.ceil(task.hours / 8)} working days`
+  }));
 }
