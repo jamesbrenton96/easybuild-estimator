@@ -6,7 +6,7 @@ import { createMaterialsTable, createLabourTable, createTimelineTable, createTot
 export function createMarkdownDescription(formData: any): string {
   let markdown = '';
   
-  // Project type (line 1, plain text)
+  // Line 1: plain text project type (no #, no bold)
   markdown += `${formData.projectType || 'Construction Project'}\n\n`;
   
   // 1. Correspondence section
@@ -19,6 +19,7 @@ export function createMarkdownDescription(formData: any): string {
   
   // 2. Project Overview
   markdown += `# 2. Project Overview
+
 ${formData.description || ''}
 
 `;
@@ -36,8 +37,8 @@ ${formData.description || ''}
   // 5. Materials & Cost Breakdown
   if (Array.isArray(formData.materials)) {
     markdown += `# 5. Materials & Cost Breakdown
-${createMaterialsTable(formData.materials)}
-**Materials Sub-total (ex GST):** $${formData.materialsSubtotal || 0}
+
+${createMaterialsTable(formData.materials)}**Materials Sub-total (ex GST):** $${formData.materialsSubtotal || 0}
 **GST 15 %:** $${formData.gst || 0}
 **Materials Total (incl GST):** $${formData.materialsTotal || 0}
 **Builder's Margin 18 %:** $${formData.margin || 0}
@@ -49,6 +50,7 @@ ${createMaterialsTable(formData.materials)}
   // 6. Labour Hours Breakdown
   if (Array.isArray(formData.labour)) {
     markdown += `# 6. Labour Hours Breakdown
+
 ${createLabourTable(formData.labour)}`;
   }
   
@@ -58,12 +60,15 @@ ${createLabourTable(formData.labour)}`;
     labourGrandTotal: formData.labourGrandTotal || 0,
     grandTotal: formData.grandTotal || 0
   };
+  
   markdown += `# 7. Total Summary
+
 ${createTotalSummaryTable(totals)}`;
   
   // 8. Project Timeline
   if (Array.isArray(formData.timeline)) {
     markdown += `# 8. Project Timeline
+
 ${createTimelineTable(formData.timeline)}`;
   }
   

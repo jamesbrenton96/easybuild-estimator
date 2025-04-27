@@ -15,6 +15,7 @@ export function createCorrespondenceSection(details: CorrespondenceDetails): str
   });
 
   return `# 1. Correspondence
+
 - **Correspondence Type:** ${details.correspondenceType}
 - **Client Name:** ${details.clientName}
 - **Project Address:** ${details.projectAddress}

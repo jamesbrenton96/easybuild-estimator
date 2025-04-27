@@ -3,6 +3,7 @@ export function createSection(sectionNumber: number, title: string, items: strin
   if (!items?.length) return '';
   
   return `# ${sectionNumber}. ${title}
+
 ${items.map(item => `- ${item}`).join('\n')}
 
 `;
