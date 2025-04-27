@@ -10,6 +10,7 @@ export default function MarkdownContentRenderer({ content }: { content: string }
           font-family: Arial, sans-serif !important;
           font-size: 10px !important;
           line-height: 1.3 !important;
+          padding: 16px !important;
         }
         
         /* SECTION HEADERS */
@@ -23,26 +24,12 @@ export default function MarkdownContentRenderer({ content }: { content: string }
           padding: 0 0 6px 0 !important;
           border-bottom: 1px solid #e58c33 !important;
           letter-spacing: 0.03em !important;
-        }
-        
-        /* Section titles format */
-        .section-title {
-          color: #e58c33 !important;
-          text-transform: uppercase !important;
-          font-weight: bold !important;
-          border-bottom: 1px solid #e58c33 !important;
-          padding: 0 0 5px 0 !important;
-          margin-bottom: 12px !important;
-          margin-top: 22px !important;
-          font-size: 14px !important;
-          letter-spacing: 0.03em !important;
+          width: 100% !important;
         }
         
         /* Table styles */
         .markdown-content table { 
-          page-break-inside: avoid !important;
           width: 100% !important;
-          max-width: 100% !important;
           margin: 8px 0 !important;
           border-collapse: collapse !important;
           table-layout: fixed !important;
@@ -146,6 +133,7 @@ export default function MarkdownContentRenderer({ content }: { content: string }
           padding: 0 !important;
           font-size: 10px !important;
           line-height: 1.3 !important;
+          color: #222 !important;
         }
         
         .markdown-content strong, .markdown-content b {
