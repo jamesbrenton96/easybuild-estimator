@@ -1,4 +1,3 @@
-
 import { createCorrespondenceSection } from './markdown/correspondence';
 import { createSection } from './markdown/sections';
 import { createMaterialsTable, createLabourTable, createTimelineTable, createTotalSummaryTable } from './markdown/tables';
@@ -65,10 +64,21 @@ export function createMarkdownDescription(formData: any): string {
     markdown += createTimelineTable(formData.timeline) + '\n\n';
   }
   
+  // Process the notes differently - extract keyword and content
+  function formatNote(note: string): string {
+    const colonIndex = note.indexOf(':');
+    if (colonIndex > -1) {
+      const keyword = note.substring(0, colonIndex).trim();
+      const content = note.substring(colonIndex + 1).trim();
+      return `- **${keyword}:** ${content}`;
+    }
+    return `- ${note}`;
+  }
+
   // 9. Notes & Terms
   if (Array.isArray(formData.notes)) {
     markdown += `<span style="color: #e58c33"># 9. Notes & Terms</span>\n\n`;
-    markdown += formData.notes.map(item => `• ${item}`).join('\n') + '\n';
+    markdown += formData.notes.map(item => formatNote(item)).join('\n') + '\n';
   }
   
   return markdown.trim();
