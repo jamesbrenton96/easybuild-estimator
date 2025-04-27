@@ -17,7 +17,6 @@ export default function MarkdownContentRenderer({ content }: { content: string }
         /* Project type title */
         .markdown-content > p:first-of-type {
           font-size: 24px;
-          color: #e58c33;
           font-weight: bold;
           text-align: center;
           margin: 20px 0 30px;
@@ -25,12 +24,12 @@ export default function MarkdownContentRenderer({ content }: { content: string }
         
         /* Section headers */
         .markdown-content h1 {
-          color: #e58c33;
+          color: #333;
           font-size: 18px;
           font-weight: bold;
-          border-bottom: 2px solid #e58c33;
-          padding-bottom: 8px;
           margin: 30px 0 20px;
+          padding-bottom: 8px;
+          border-bottom: 2px solid #e5e7eb;
         }
         
         /* Lists */
@@ -47,8 +46,7 @@ export default function MarkdownContentRenderer({ content }: { content: string }
         }
         
         .markdown-content li:before {
-          content: "•";
-          color: #e58c33;
+          content: "–";
           position: absolute;
           left: 0;
         }
@@ -84,7 +82,7 @@ export default function MarkdownContentRenderer({ content }: { content: string }
         
         /* Strong text */
         .markdown-content strong {
-          color: #e58c33;
+          color: #333;
           font-weight: bold;
         }
         

@@ -2,12 +2,10 @@
 import { useMemo } from "react";
 
 /**
- * Format numbers with thin space separators for thousands
+ * Format numbers with or without thin space separators for thousands
  */
 const formatNumber = (num: number): string => {
-  const parts = num.toFixed(2).split('.');
-  parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
-  return parts.join('.');
+  return num.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
 };
 
 export function useFormattedMarkdown(markdownContent: string) {
@@ -23,7 +21,7 @@ export function useFormattedMarkdown(markdownContent: string) {
       .replace(/\\"/g, '"')
       .replace(/\\\\/g, "\\");
 
-    // Ensure correct section numbering
+    // Ensure correct section numbering and formatting
     const sections = [
       "Correspondence",
       "Project Overview",
@@ -39,18 +37,17 @@ export function useFormattedMarkdown(markdownContent: string) {
     sections.forEach((section, index) => {
       const numberPrefix = `# ${index + 1}. `;
       const sectionRegex = new RegExp(`#\\s*(?:${index + 1}\\.\\s*)?${section}`, 'gi');
-      formatted = formatted.replace(sectionRegex, `\n${numberPrefix}${section}\n`);
+      formatted = formatted.replace(sectionRegex, `\n${numberPrefix}${section}\n\n`);
     });
 
     // Format tables with proper alignment and spacing
     formatted = formatted.replace(/\|[\s-:|]+\|/g, match => {
-      return match.replace(/(\|)(\s*):?-+:?\s*(\|)/g, (_, start, content, end) => {
-        const alignment = content.includes(':') ? 'center' : 'left';
+      return match.replace(/(\|)(\s*:?-+:?\s*(\|))/g, (_, start, content, end) => {
         return `${start}${'-'.repeat(20)}${end}`;
       });
     });
 
-    // Format numbers in tables with thin spaces
+    // Format numbers in tables
     formatted = formatted.replace(
       /\|\s*\$?(\d{1,3}(?:,\d{3})*(?:\.\d{2})?)\s*\|/g,
       (match, number) => {
@@ -59,11 +56,14 @@ export function useFormattedMarkdown(markdownContent: string) {
       }
     );
 
-    // Ensure proper spacing around sections
+    // Ensure proper spacing after sections
     formatted = formatted.replace(/\n{3,}/g, '\n\n');
     formatted = formatted.replace(/(\n#\s[^\n]+)\n(?!\n)/g, '$1\n\n');
     
-    // Add footer
+    // Ensure bullet points use dash instead of any other character
+    formatted = formatted.replace(/^[•\*]\s/gm, '- ');
+
+    // Add footer if not present
     if (!formatted.includes('---')) {
       formatted += '\n\n---\n*Generated automatically – Brenton Building*\n';
     }
