@@ -61,126 +61,102 @@ export function usePdfDownload() {
       }
       
       /* SECTION HEADERS */
-      .markdown-content h2, h2 {
+      .markdown-content h2, h2, .section-title {
         color: #e58c33 !important;
-        font-size: 14px !important;
+        font-size: 16px !important;
         font-weight: bold !important;
         text-transform: uppercase !important;
-        margin-top: 22px !important;
-        margin-bottom: 12px !important;
+        margin-top: 25px !important;
+        margin-bottom: 15px !important;
         padding-bottom: 6px !important;
         border-bottom: 1px solid #e58c33 !important;
         letter-spacing: 0.03em !important;
       }
       
-      /* Section titles format */
-      .section-title {
+      /* Project title */
+      .project-title {
+        font-size: 24px !important;
         color: #e58c33 !important;
-        text-transform: uppercase !important;
+        text-align: center !important;
+        margin: 20px 0 30px 0 !important;
         font-weight: bold !important;
-        border-bottom: 1px solid #e58c33 !important;
-        padding-bottom: 5px !important;
-        margin-bottom: 12px !important;
-        margin-top: 22px !important;
-        font-size: 14px !important;
-        letter-spacing: 0.03em !important;
       }
       
       /* Table styles */
       table { 
-        page-break-inside: avoid !important;
         width: 100% !important;
         max-width: 100% !important;
-        margin: 8px auto !important;
+        margin: 12px auto !important;
         border-collapse: collapse !important;
-        table-layout: fixed !important;
+        background: #fff !important;
+        font-size: 9px !important;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.05) !important;
+        page-break-inside: avoid !important;
       }
       
       td, th { 
-        padding: 5px !important;
+        padding: 8px !important;
         font-size: 9px !important;
         line-height: 1.3 !important;
         border: 1px solid #ddd !important;
-        overflow-wrap: break-word !important;
-        word-wrap: break-word !important;
+        text-align: left !important;
       }
       
       th {
-        font-size: 9px !important;
-        font-weight: bold !important;
         background-color: #f5f5f5 !important;
         color: #333 !important;
-        text-align: left !important;
+        font-weight: bold !important;
+      }
+      
+      tr:nth-child(even) {
+        background: #fafafa !important;
       }
       
       /* List formatting */
       ul {
-        margin-left: 0 !important;
+        margin: 8px 0 !important;
         padding-left: 16px !important;
       }
       
       ul li {
         padding: 3px 0 !important;
         font-size: 10px !important;
-      }
-      
-      ul li::marker {
-        color: #e58c33 !important;
-      }
-      
-      /* Project title */
-      .project-title {
-        font-size: 20px !important;
-        color: #e58c33 !important;
-        text-align: center !important;
-        margin: 10px 0 25px 0 !important;
-        font-weight: bold !important;
+        margin-bottom: 6px !important;
+        line-height: 1.4 !important;
       }
       
       /* Correspondence section */
       .correspondence-item {
         display: flex !important;
-        margin-bottom: 5px !important;
+        margin-bottom: 6px !important;
       }
       
       .correspondence-label {
-        width: 120px !important;
+        width: 140px !important;
         font-weight: bold !important;
-      }
-      
-      /* Total cost highlighting */
-      .total-project-cost {
-        font-weight: bold !important;
-        background-color: #f5f5f5 !important;
-      }
-      
-      /* Footer */
-      .document-footer {
-        margin-top: 30px !important;
-        font-size: 8px !important;
-        color: #666 !important;
-        text-align: center !important;
-        border-top: none !important;
       }
       
       /* Notes and terms */
-      .notes-terms {
-        margin-top: 20px !important;
-      }
-      
       .notes-terms p {
         margin: 6px 0 !important;
         font-size: 10px !important;
       }
       
-      /* Override any orange text with standard color */
-      .markdown-content p {
+      /* Override font colors */
+      .markdown-content p, .markdown-content li {
         color: #333 !important;
       }
       
       .markdown-content strong, .markdown-content b {
         color: #333 !important;
         font-weight: bold !important;
+      }
+      
+      /* Total rows highlight */
+      tr:has(td:first-child:contains("TOTAL")),
+      tr:has(td:first-child:contains("Total")) {
+        font-weight: bold !important;
+        background-color: #f5f5f5 !important;
       }
     `;
     
