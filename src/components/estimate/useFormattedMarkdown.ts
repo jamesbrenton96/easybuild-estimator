@@ -2,7 +2,7 @@
 import { useMemo } from "react";
 
 /**
- * Format numbers with or without thin space separators for thousands
+ * Format numbers with thin space separators for thousands
  */
 const formatNumber = (num: number): string => {
   return num.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
@@ -21,7 +21,10 @@ export function useFormattedMarkdown(markdownContent: string) {
       .replace(/\\"/g, '"')
       .replace(/\\\\/g, "\\");
 
-    // Ensure correct section numbering and formatting
+    // Ensure project type is on first line without formatting
+    formatted = formatted.replace(/^#?\s*(.+?)\s*\n/, '$1\n\n\n');
+
+    // Ensure correct section numbering and double spacing
     const sections = [
       "Correspondence",
       "Project Overview",
@@ -35,17 +38,20 @@ export function useFormattedMarkdown(markdownContent: string) {
     ];
 
     sections.forEach((section, index) => {
-      const numberPrefix = `# ${index + 1}. `;
-      const sectionRegex = new RegExp(`#\\s*(?:${index + 1}\\.\\s*)?${section}`, 'gi');
-      formatted = formatted.replace(sectionRegex, `\n${numberPrefix}${section}\n\n`);
+      const sectionNumber = index + 1;
+      const pattern = new RegExp(`#\\s*(?:${sectionNumber}\\.\\s*)?${section}`, 'gi');
+      formatted = formatted.replace(pattern, `\n\n# ${sectionNumber}. ${section}\n`);
     });
 
-    // Format tables with proper alignment and spacing
+    // Format tables
     formatted = formatted.replace(/\|[\s-:|]+\|/g, match => {
       return match.replace(/(\|)(\s*:?-+:?\s*(\|))/g, (_, start, content, end) => {
         return `${start}${'-'.repeat(20)}${end}`;
       });
     });
+
+    // Ensure bullet points use dash
+    formatted = formatted.replace(/^[•\*]\s/gm, '- ');
 
     // Format numbers in tables
     formatted = formatted.replace(
@@ -56,12 +62,9 @@ export function useFormattedMarkdown(markdownContent: string) {
       }
     );
 
-    // Ensure proper spacing after sections
-    formatted = formatted.replace(/\n{3,}/g, '\n\n');
+    // Ensure correct spacing
+    formatted = formatted.replace(/\n{3,}/g, '\n\n\n');
     formatted = formatted.replace(/(\n#\s[^\n]+)\n(?!\n)/g, '$1\n\n');
-    
-    // Ensure bullet points use dash instead of any other character
-    formatted = formatted.replace(/^[•\*]\s/gm, '- ');
 
     // Add footer if not present
     if (!formatted.includes('---')) {

@@ -11,25 +11,23 @@ export default function MarkdownContentRenderer({ content }: { content: string }
         .markdown-content {
           font-family: Arial, sans-serif;
           line-height: 1.6;
-          color: #333;
         }
         
         /* Project type title */
         .markdown-content > p:first-of-type {
           font-size: 24px;
-          font-weight: bold;
+          font-weight: 400;
           text-align: center;
           margin: 20px 0 30px;
         }
         
         /* Section headers */
         .markdown-content h1 {
-          color: #333;
           font-size: 18px;
-          font-weight: bold;
+          font-weight: normal;
           margin: 30px 0 20px;
           padding-bottom: 8px;
-          border-bottom: 2px solid #e5e7eb;
+          border-bottom: 1px solid #e5e7eb;
         }
         
         /* Lists */
@@ -58,17 +56,11 @@ export default function MarkdownContentRenderer({ content }: { content: string }
           margin: 20px 0;
         }
         
-        .markdown-content th {
-          background: #f5f5f5;
-          font-weight: bold;
-          text-align: left;
-          padding: 12px;
-          border: 1px solid #ddd;
-        }
-        
+        .markdown-content th,
         .markdown-content td {
           padding: 12px;
           border: 1px solid #ddd;
+          text-align: left;
         }
         
         .markdown-content td:not(:first-child),
@@ -80,13 +72,13 @@ export default function MarkdownContentRenderer({ content }: { content: string }
           background: #fafafa;
         }
         
-        /* Strong text */
+        /* No bold headers outside tables */
         .markdown-content strong {
-          color: #333;
+          color: inherit;
           font-weight: bold;
         }
         
-        /* Horizontal rule and footer */
+        /* Footer */
         .markdown-content hr {
           border: none;
           border-top: 1px solid #ddd;
