@@ -1,3 +1,4 @@
+
 import React from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -65,10 +66,19 @@ export default function MarkdownContentRenderer({ content }: { content: string }
           text-align: left !important;
         }
         
+        /* Notes & Terms formatting */
+        .markdown-content h1:contains("Notes & Terms") + p {
+          font-weight: bold !important;
+          font-size: 12px !important;
+          margin-top: 15px !important;
+          margin-bottom: 5px !important;
+        }
+        
         /* List formatting */
         .markdown-content ul {
           margin-left: 0 !important;
           padding-left: 16px !important;
+          margin-bottom: 15px !important;
         }
         
         .markdown-content ul li {
@@ -78,6 +88,18 @@ export default function MarkdownContentRenderer({ content }: { content: string }
         
         .markdown-content ul li::marker {
           color: #e58c33 !important;
+        }
+        
+        /* Notes & Terms section special formatting */
+        .markdown-content h1:contains("Notes & Terms") ~ p {
+          font-weight: bold !important;
+          margin-top: 15px !important;
+          margin-bottom: 5px !important;
+        }
+        
+        .markdown-content h1:contains("Notes & Terms") ~ ul {
+          margin-top: 5px !important;
+          margin-bottom: 15px !important;
         }
         
         /* Project title */

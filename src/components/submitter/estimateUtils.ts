@@ -64,21 +64,42 @@ export function createMarkdownDescription(formData: any): string {
     markdown += createTimelineTable(formData.timeline) + '\n\n';
   }
   
-  // Process the notes differently - extract keyword and content
-  function formatNote(note: string): string {
-    const colonIndex = note.indexOf(':');
-    if (colonIndex > -1) {
-      const keyword = note.substring(0, colonIndex).trim();
-      const content = note.substring(colonIndex + 1).trim();
-      return `- **${keyword}:** ${content}`;
-    }
-    return `- ${note}`;
-  }
-
-  // 9. Notes & Terms
+  // 9. Notes & Terms - Group by section headings if possible
   if (Array.isArray(formData.notes)) {
     markdown += `# 9. Notes & Terms\n\n`;
-    markdown += formData.notes.map(item => formatNote(item)).join('\n') + '\n\n';
+    
+    // Try to identify sections based on patterns
+    let currentSection = '';
+    let sectionNotes = [];
+    let sections = {};
+    
+    // First pass: try to identify section headings
+    formData.notes.forEach(note => {
+      // Check if this could be a heading (ends with colon, short text)
+      if (note.endsWith(':') && note.length < 30) {
+        currentSection = note;
+        sections[currentSection] = [];
+      }
+      // If we have a section, add this note to it
+      else if (currentSection) {
+        sections[currentSection].push(note);
+      }
+      // Otherwise it's a standalone note
+      else {
+        sectionNotes.push(note);
+      }
+    });
+    
+    // Output sections with their notes
+    for (const [heading, notes] of Object.entries(sections)) {
+      markdown += `${heading}\n\n`;
+      markdown += notes.map(note => `• ${note}`).join('\n') + '\n\n';
+    }
+    
+    // Output remaining standalone notes
+    if (sectionNotes.length > 0) {
+      markdown += sectionNotes.map(note => `• ${note}`).join('\n') + '\n\n';
+    }
   }
   
   return markdown.trim();

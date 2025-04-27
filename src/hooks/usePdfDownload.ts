@@ -113,10 +113,18 @@ export function usePdfDownload() {
         text-align: left !important;
       }
       
+      /* Notes & Terms section subheadings */
+      h1:contains("Notes & Terms") ~ p {
+        font-weight: bold !important;
+        margin-top: 15px !important;
+        margin-bottom: 5px !important;
+      }
+      
       /* List formatting */
       ul {
         margin-left: 0 !important;
         padding-left: 16px !important;
+        margin-bottom: 15px !important;
       }
       
       ul li {
