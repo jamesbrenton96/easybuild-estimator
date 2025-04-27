@@ -1,4 +1,3 @@
-
 import React from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -44,7 +43,7 @@ export default function MarkdownContentRenderer({ content }: { content: string }
           page-break-inside: avoid !important;
           width: 100% !important;
           max-width: 100% !important;
-          margin: 8px auto !important;
+          margin: 8px 0 !important;
           border-collapse: collapse !important;
           table-layout: fixed !important;
         }
@@ -74,16 +73,17 @@ export default function MarkdownContentRenderer({ content }: { content: string }
           margin-bottom: 5px !important;
         }
         
-        /* List formatting */
+        /* List formatting - updated for full width */
         .markdown-content ul {
-          margin-left: 0 !important;
+          margin: 0 0 15px 0 !important;
           padding-left: 16px !important;
-          margin-bottom: 15px !important;
+          width: 100% !important;
         }
         
         .markdown-content ul li {
           padding: 3px 0 !important;
           font-size: 10px !important;
+          width: 100% !important;
         }
         
         .markdown-content ul li::marker {
@@ -141,9 +141,10 @@ export default function MarkdownContentRenderer({ content }: { content: string }
         
         /* Override any orange text with standard color */
         .markdown-content p {
-          color: #333 !important;
-          font-size: 10px !important;
+          width: 100% !important;
           margin: 6px 0 !important;
+          padding: 0 !important;
+          font-size: 10px !important;
           line-height: 1.3 !important;
         }
         
