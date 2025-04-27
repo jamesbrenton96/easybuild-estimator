@@ -24,8 +24,8 @@ export function ReviewTabs({ estimationResults, setEstimationResults }: {
 
   // Extract project details from form data
   const projectDetails = {
-    clientName: formData?.clientName || "",
-    projectAddress: formData?.projectAddress || "",
+    clientName: formData?.clientName || formData?.subcategories?.correspondence?.clientName || "",
+    projectAddress: formData?.projectAddress || formData?.location || "",
     projectType: formData?.projectType || "",
     date: new Date().toLocaleDateString('en-NZ', {
       year: 'numeric',
@@ -71,12 +71,26 @@ export function ReviewTabs({ estimationResults, setEstimationResults }: {
             .project-title-wrapper {
               text-align: center;
               margin: 20px 0 30px 0;
+              position: relative;
             }
             
             .project-title {
               font-size: 24px;
               color: #e58c33;
               font-weight: bold;
+              display: inline-block;
+              position: relative;
+            }
+            
+            .project-title:after {
+              content: '';
+              position: absolute;
+              bottom: -10px;
+              left: 50%;
+              transform: translateX(-50%);
+              width: 80px;
+              height: 3px;
+              background-color: #e58c33;
             }
             
             /* Section headers */
@@ -88,29 +102,55 @@ export function ReviewTabs({ estimationResults, setEstimationResults }: {
               padding-bottom: 5px;
               margin-bottom: 12px;
               margin-top: 25px;
-              font-size: 14px;
+              font-size: 16px;
               letter-spacing: 0.03em;
+              display: flex;
+              align-items: center;
+            }
+            
+            .section-number {
+              background: #e58c33;
+              color: white;
+              border-radius: 50%;
+              width: 28px;
+              height: 28px;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              margin-right: 10px;
+              font-size: 14px;
+              flex-shrink: 0;
             }
             
             /* Table styles */
             table {
               width: 100%;
               border-collapse: collapse;
-              margin: 10px 0;
+              margin: 10px 0 20px;
             }
             
             th, td {
               border: 1px solid #ddd;
-              padding: 8px;
+              padding: 10px;
               text-align: left;
             }
             
             th {
               background-color: #f5f5f5;
+              font-weight: bold;
             }
             
             tr:nth-child(even) {
               background-color: #fafafa;
+            }
+            
+            tr:last-child {
+              border-bottom: 2px solid #ddd;
+            }
+            
+            /* Totals row */
+            tr:last-child td {
+              font-weight: bold;
             }
             
             /* Bullet points */
@@ -123,6 +163,30 @@ export function ReviewTabs({ estimationResults, setEstimationResults }: {
             .bullet-marker {
               color: #e58c33;
               margin-right: 8px;
+              font-size: 16px;
+            }
+            
+            /* Correspondence items */
+            .correspondence-item {
+              display: flex;
+              align-items: baseline;
+              margin-bottom: 6px;
+              line-height: 1.4;
+            }
+            
+            /* Notes and terms section */
+            .notes-terms-list li {
+              margin-bottom: 8px;
+              position: relative;
+              padding-left: 20px;
+            }
+            
+            .notes-terms-list li:before {
+              content: '•';
+              color: #e58c33;
+              position: absolute;
+              left: 0;
+              top: 0;
             }
           `}} />
           {processEstimationResults}
