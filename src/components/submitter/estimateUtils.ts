@@ -1,3 +1,4 @@
+
 import { createCorrespondenceSection } from './markdown/correspondence';
 import { createSection } from './markdown/sections';
 import { createMaterialsTable, createLabourTable, createTimelineTable, createTotalSummaryTable } from './markdown/tables';
@@ -9,7 +10,7 @@ export function createMarkdownDescription(formData: any): string {
   markdown += `${formData.projectType || 'Construction Project'}\n\n`;
   
   // 1. Correspondence section
-  markdown += `<span style="color: #e58c33"># 1. Correspondence</span>\n\n`;
+  markdown += `# 1. Correspondence\n\n`;
   markdown += createCorrespondenceSection({
     correspondenceType: formData.subcategories?.correspondence?.type || 'Quote',
     clientName: formData.subcategories?.correspondence?.clientName || '',
@@ -18,23 +19,23 @@ export function createMarkdownDescription(formData: any): string {
   });
   
   // 2. Project Overview
-  markdown += `<span style="color: #e58c33"># 2. Project Overview</span>\n\n${formData.description || ''}\n\n`;
+  markdown += `# 2. Project Overview\n\n${formData.description || ''}\n\n`;
   
   // 3. Scope of Works
   if (Array.isArray(formData.scope)) {
-    markdown += `<span style="color: #e58c33"># 3. Scope of Works</span>\n\n`;
+    markdown += `# 3. Scope of Works\n\n`;
     markdown += formData.scope.map(item => `• ${item}`).join('\n') + '\n\n';
   }
   
   // 4. Dimensions
   if (Array.isArray(formData.dimensions)) {
-    markdown += `<span style="color: #e58c33"># 4. Dimensions</span>\n\n`;
+    markdown += `# 4. Dimensions\n\n`;
     markdown += formData.dimensions.map(item => `• ${item}`).join('\n') + '\n\n';
   }
   
   // 5. Materials & Cost Breakdown
   if (Array.isArray(formData.materials)) {
-    markdown += `<span style="color: #e58c33"># 5. Materials & Cost Breakdown</span>\n\n`;
+    markdown += `# 5. Materials & Cost Breakdown\n\n`;
     markdown += createMaterialsTable(formData.materials) + '\n\n';
     markdown += `**Materials Sub-total (ex GST):** $${formData.materialsSubtotal || 0}\n`;
     markdown += `**GST 15 %:** $${formData.gst || 0}\n`;
@@ -45,7 +46,7 @@ export function createMarkdownDescription(formData: any): string {
   
   // 6. Labour Hours Breakdown
   if (Array.isArray(formData.labour)) {
-    markdown += `<span style="color: #e58c33"># 6. Labour Hours Breakdown</span>\n\n`;
+    markdown += `# 6. Labour Hours Breakdown\n\n`;
     markdown += createLabourTable(formData.labour) + '\n\n';
   }
   
@@ -55,12 +56,12 @@ export function createMarkdownDescription(formData: any): string {
     labourGrandTotal: formData.labourGrandTotal || 0,
     grandTotal: formData.grandTotal || 0
   };
-  markdown += `<span style="color: #e58c33"># 7. Total Summary</span>\n\n`;
+  markdown += `# 7. Total Summary\n\n`;
   markdown += createTotalSummaryTable(totals) + '\n\n';
   
   // 8. Project Timeline
   if (Array.isArray(formData.timeline)) {
-    markdown += `<span style="color: #e58c33"># 8. Project Timeline</span>\n\n`;
+    markdown += `# 8. Project Timeline\n\n`;
     markdown += createTimelineTable(formData.timeline) + '\n\n';
   }
   
@@ -77,7 +78,7 @@ export function createMarkdownDescription(formData: any): string {
 
   // 9. Notes & Terms
   if (Array.isArray(formData.notes)) {
-    markdown += `<span style="color: #e58c33"># 9. Notes & Terms</span>\n\n`;
+    markdown += `# 9. Notes & Terms\n\n`;
     markdown += formData.notes.map(item => formatNote(item)).join('\n') + '\n';
   }
   
