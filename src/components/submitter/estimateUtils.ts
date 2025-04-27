@@ -10,6 +10,7 @@ export function createMarkdownDescription(formData: any): string {
   markdown += `${formData.projectType || 'Construction Project'}\n\n`;
   
   // 1. Correspondence section
+  markdown += `# 1. Correspondence\n\n`;
   markdown += createCorrespondenceSection({
     correspondenceType: formData.subcategories?.correspondence?.type || 'Quote',
     clientName: formData.subcategories?.correspondence?.clientName || '',
@@ -18,40 +19,35 @@ export function createMarkdownDescription(formData: any): string {
   });
   
   // 2. Project Overview
-  markdown += `# 2. Project Overview
-
-${formData.description || ''}
-
-`;
+  markdown += `# 2. Project Overview\n\n${formData.description || ''}\n\n`;
   
   // 3. Scope of Works
   if (Array.isArray(formData.scope)) {
-    markdown += createSection(3, 'Scope of Works', formData.scope);
+    markdown += `# 3. Scope of Works\n\n`;
+    markdown += formData.scope.map(item => `• ${item}`).join('\n') + '\n\n';
   }
   
   // 4. Dimensions
   if (Array.isArray(formData.dimensions)) {
-    markdown += createSection(4, 'Dimensions', formData.dimensions);
+    markdown += `# 4. Dimensions\n\n`;
+    markdown += formData.dimensions.map(item => `• ${item}`).join('\n') + '\n\n';
   }
   
   // 5. Materials & Cost Breakdown
   if (Array.isArray(formData.materials)) {
-    markdown += `# 5. Materials & Cost Breakdown
-
-${createMaterialsTable(formData.materials)}**Materials Sub-total (ex GST):** $${formData.materialsSubtotal || 0}
-**GST 15 %:** $${formData.gst || 0}
-**Materials Total (incl GST):** $${formData.materialsTotal || 0}
-**Builder's Margin 18 %:** $${formData.margin || 0}
-**Materials Grand Total:** **$${formData.materialsGrandTotal || 0}**
-
-`;
+    markdown += `# 5. Materials & Cost Breakdown\n\n`;
+    markdown += createMaterialsTable(formData.materials);
+    markdown += `**Materials Sub-total (ex GST):** $${formData.materialsSubtotal || 0}\n`;
+    markdown += `**GST 15 %:** $${formData.gst || 0}\n`;
+    markdown += `**Materials Total (incl GST):** $${formData.materialsTotal || 0}\n`;
+    markdown += `**Builder's Margin 18 %:** $${formData.margin || 0}\n`;
+    markdown += `**Materials Grand Total:** **$${formData.materialsGrandTotal || 0}**\n\n`;
   }
   
   // 6. Labour Hours Breakdown
   if (Array.isArray(formData.labour)) {
-    markdown += `# 6. Labour Hours Breakdown
-
-${createLabourTable(formData.labour)}`;
+    markdown += `# 6. Labour Hours Breakdown\n\n`;
+    markdown += createLabourTable(formData.labour) + '\n';
   }
   
   // 7. Total Summary
@@ -60,21 +56,19 @@ ${createLabourTable(formData.labour)}`;
     labourGrandTotal: formData.labourGrandTotal || 0,
     grandTotal: formData.grandTotal || 0
   };
-  
-  markdown += `# 7. Total Summary
-
-${createTotalSummaryTable(totals)}`;
+  markdown += `# 7. Total Summary\n\n`;
+  markdown += createTotalSummaryTable(totals) + '\n';
   
   // 8. Project Timeline
   if (Array.isArray(formData.timeline)) {
-    markdown += `# 8. Project Timeline
-
-${createTimelineTable(formData.timeline)}`;
+    markdown += `# 8. Project Timeline\n\n`;
+    markdown += createTimelineTable(formData.timeline) + '\n';
   }
   
   // 9. Notes & Terms
   if (Array.isArray(formData.notes)) {
-    markdown += createSection(9, 'Notes & Terms', formData.notes);
+    markdown += `# 9. Notes & Terms\n\n`;
+    markdown += formData.notes.map(item => `• ${item}`).join('\n') + '\n';
   }
   
   return markdown.trim();
