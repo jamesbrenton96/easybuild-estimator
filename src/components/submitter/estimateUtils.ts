@@ -1,4 +1,3 @@
-
 import { createCorrespondenceSection } from './markdown/correspondence';
 import { createSection } from './markdown/sections';
 import { createMaterialsTable, createLabourTable, createTimelineTable, createTotalSummaryTable } from './markdown/tables';
@@ -79,7 +78,7 @@ export function createMarkdownDescription(formData: any): string {
   // 9. Notes & Terms
   if (Array.isArray(formData.notes)) {
     markdown += `# 9. Notes & Terms\n\n`;
-    markdown += formData.notes.map(item => formatNote(item)).join('\n') + '\n';
+    markdown += formData.notes.map(item => formatNote(item)).join('\n') + '\n\n';
   }
   
   return markdown.trim();
