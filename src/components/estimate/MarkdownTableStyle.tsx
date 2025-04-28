@@ -132,6 +132,19 @@ export default function MarkdownTableStyle() {
         background-color: #f5f5f5;
       }
       
+      /* Special override for Notes & Terms section */
+      .markdown-content h1:has(strong:contains("NOTES AND TERMS")) ~ p,
+      .markdown-content h1:has(strong:contains("NOTES & TERMS")) ~ p,
+      .markdown-content h1[id*="notes-and-terms"] ~ p,
+      .markdown-content h1[id*="section-9"] ~ p {
+        color: #333 !important;
+        font-weight: normal !important;
+        font-size: 10pt !important;
+        margin: 6px 0 !important;
+        text-transform: none !important;
+        border: none !important;
+      }
+      
       /* Print mode adjustments */
       @media print {
         .markdown-content {

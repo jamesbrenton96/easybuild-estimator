@@ -129,73 +129,129 @@ export default function MarkdownContentRenderer({ content }: { content: string }
         }
 
         /* ──────────────────────────────────────────────────────────────
-           SECTION 9 – Notes & Terms
+           SECTION 9 – Notes & Terms - CRITICAL FIX
            ────────────────────────────────────────────────────────────── */
 
-        /* Allow "Notes & Terms" section heading to keep orange styling */
-        .markdown-content h1[id*="section-9"], 
-        .markdown-content h1[id*="notes"], 
-        .markdown-content h1[id*="terms"] {
-          /* Keep existing orange styling */
-        }
-
-        /* Override numbering styles for Notes & Terms section */
-        .markdown-content h1[id*="section-9"] ~ p, 
-        .markdown-content h1[id*="notes"] ~ p,
-        .markdown-content h1[id*="terms"] ~ p {
-          font-weight: normal;
+        /* Critical fix for numbered items in Notes & Terms section */
+        .markdown-content p strong:first-child + span,
+        .markdown-content li strong:first-child + span {
           color: #000 !important;
-          border: none;
-          text-transform: none;
+          font-weight: normal !important;
+        }
+        
+        /* Override for any rule that might be turning numbered items into orange headers */
+        .markdown-content h1 ~ p:has(strong:first-child),
+        .markdown-content h1[id*="section-9"] ~ p,
+        .markdown-content h1[id*="notes"] ~ p,
+        .markdown-content h1[id*="terms"] ~ p,
+        .markdown-content h1:last-of-type ~ p {
           font-size: 10px !important;
+          color: #000 !important;
+          font-weight: normal !important;
+          text-transform: none !important;
+          border: none !important;
           margin: 6px 0 !important;
+          padding: 0 !important;
         }
 
-        /* Make numbered list items normal text, not orange headings */
+        /* Override for numbered list items in the Notes & Terms section */
+        .markdown-content ol {
+          list-style-type: decimal !important;
+          margin: 0 0 15px 0 !important;
+          padding-left: 16px !important;
+          width: 100% !important;
+        }
+
+        .markdown-content ol li {
+          padding: 3px 0 !important;
+          font-size: 10px !important;
+          line-height: 1.3 !important;
+          width: 100% !important;
+          color: #000 !important;
+          font-weight: normal !important;
+          text-transform: none !important;
+          border: none !important;
+        }
+        
+        /* Important: Override for any numbered prefixes that might be styled */
+        .markdown-content h1 ~ ol,
+        .markdown-content h1[id*="section-9"] ~ ol,
+        .markdown-content h1[id*="notes"] ~ ol,
+        .markdown-content h1[id*="terms"] ~ ol,
+        .markdown-content h1:last-of-type ~ ol {
+          counter-reset: item !important;
+          list-style-type: decimal !important;
+          margin: 10px 0 15px 0 !important;
+          padding-left: 20px !important;
+        }
+        
+        .markdown-content h1 ~ ol li,
         .markdown-content h1[id*="section-9"] ~ ol li,
         .markdown-content h1[id*="notes"] ~ ol li,
         .markdown-content h1[id*="terms"] ~ ol li,
         .markdown-content h1:last-of-type ~ ol li {
-          font-weight: normal !important;
-          color: #000 !important;
-          border: none !important;
-          text-transform: none !important;
+          display: block !important;
           font-size: 10px !important;
+          color: #000 !important;
+          font-weight: normal !important;
+          text-transform: none !important;
+          border: none !important;
           padding: 3px 0 !important;
+          margin: 0 !important;
         }
-
-        /* Same for unnumbered list items */
-        .markdown-content h1[id*="section-9"] ~ ul li,
-        .markdown-content h1[id*="notes"] ~ ul li,
-        .markdown-content h1[id*="terms"] ~ ul li,
-        .markdown-content h1:last-of-type ~ ul li {
-          font-weight: normal !important; 
-          color: #000 !important;
-          border: none !important;
-          text-transform: none !important;
-          font-size: 10px !important;
-        }
-
-        /* Bold keywords before colons in list items */
-        .markdown-content h1[id*="section-9"] ~ ul li strong,
-        .markdown-content h1[id*="notes"] ~ ul li strong,
-        .markdown-content h1[id*="terms"] ~ ul li strong,
-        .markdown-content h1[id*="section-9"] ~ ol li strong,
-        .markdown-content h1[id*="notes"] ~ ol li strong,
-        .markdown-content h1[id*="terms"] ~ ol li strong,
-        .markdown-content h1:last-of-type ~ ul li strong,
-        .markdown-content h1:last-of-type ~ ol li strong {
-          font-weight: bold !important;
-          color: #000 !important;
-        }
-
-        /* Fix numbered items with prefixes like "1. PAYMENT TERMS" */
-        .markdown-content h1[id*="section-9"] ~ ol li:before,
-        .markdown-content h1[id*="notes"] ~ ol li:before,
-        .markdown-content h1[id*="terms"] ~ ol li:before,
-        .markdown-content h1:last-of-type ~ ol li:before {
+        
+        /* Ensure number+description following a colon doesn't get themed as a heading */
+        .markdown-content h1 ~ ol li strong + span,
+        .markdown-content h1[id*="section-9"] ~ ol li strong + span,
+        .markdown-content h1[id*="notes"] ~ ol li strong + span,
+        .markdown-content h1[id*="terms"] ~ ol li strong + span,
+        .markdown-content h1:last-of-type ~ ol li strong + span {
           color: #000 !important;
           font-weight: normal !important;
+          text-transform: none !important;
+        }
+
+        /* Special fix for p elements that have a number at the beginning */
+        .markdown-content p:has(strong:first-child:matches(/^[0-9]+\./)) {
+          color: #000 !important;
+          font-weight: normal !important;
+          font-size: 10px !important;
+          text-transform: none !important;
+          border: none !important;
+        }
+        
+        /* Fix for paragraphs that start with a number */
+        .markdown-content p strong:first-child:matches(/^[0-9]+\./) {
+          color: #000 !important;
+        }
+        
+        /* Target any element that has text content starting with a number followed by a period */
+        .markdown-content p[data-content^="1."],
+        .markdown-content p[data-content^="2."],
+        .markdown-content p[data-content^="3."],
+        .markdown-content p[data-content^="4."],
+        .markdown-content p[data-content^="5."],
+        .markdown-content p[data-content^="6."],
+        .markdown-content p[data-content^="7."],
+        .markdown-content p[data-content^="8."],
+        .markdown-content p[data-content^="9."],
+        .markdown-content p[data-content^="10."] {
+          color: #000 !important;
+          font-weight: normal !important;
+          font-size: 10px !important;
+          text-transform: none !important;
+          border: none !important;
+        }
+        
+        /* Force the formatting on Notes & Terms section specifically */
+        #section-9-notes-and-terms ~ p,
+        #notes-terms ~ p,
+        #notes-and-terms ~ p {
+          color: #000 !important;
+          font-weight: normal !important;
+          font-size: 10px !important;
+          text-transform: none !important;
+          border: none !important;
         }
       `}</style>
       <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>

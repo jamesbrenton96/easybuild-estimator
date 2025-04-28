@@ -113,11 +113,34 @@ export function usePdfDownload() {
         text-align: left !important;
       }
       
-      /* Notes & Terms section subheadings */
-      h1:contains("Notes & Terms") ~ p {
-        font-weight: bold !important;
-        margin-top: 15px !important;
-        margin-bottom: 5px !important;
+      /* Notes & Terms section - FIXED to ensure non-orange styling */
+      h1:last-of-type ~ p,
+      h1:contains("Notes & Terms") ~ p,
+      h1:contains("NOTES AND TERMS") ~ p {
+        font-size: 10px !important;
+        font-weight: normal !important;
+        color: #000 !important;
+        border: none !important;
+        text-transform: none !important;
+        margin: 6px 0 !important;
+      }
+      
+      /* Fix for numbered list items in Notes & Terms section */
+      h1:last-of-type ~ ol,
+      h1:contains("Notes & Terms") ~ ol,
+      h1:contains("NOTES AND TERMS") ~ ol {
+        padding-left: 20px !important;
+      }
+      
+      h1:last-of-type ~ ol li,
+      h1:contains("Notes & Terms") ~ ol li,
+      h1:contains("NOTES AND TERMS") ~ ol li {
+        font-size: 10px !important;
+        font-weight: normal !important;
+        color: #000 !important;
+        border: none !important;
+        text-transform: none !important;
+        padding: 3px 0 !important;
       }
       
       /* List formatting */

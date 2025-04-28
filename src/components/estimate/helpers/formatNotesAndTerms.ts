@@ -1,4 +1,3 @@
-
 /**
  * Formats the Notes and Terms section to match heading style and standardize bullet points.
  * Converts numbered items into bullet points and bolds keywords before colons.
@@ -37,11 +36,25 @@ export function formatNotesAndTerms(content: string): string {
       const indentation = line.match(/^(\s+)/)?.[1] || '';
       line = line.trim();
       
-      // Skip if it's already a bullet point
-      if (!line.startsWith('-') && !line.startsWith('•')) {
-        // Remove any leading numbers (1., 1), etc.)
-        line = line.replace(/^\d+[\.\)]\s*/, '');
+      // Format numbered items consistently
+      const numberedItemMatch = line.match(/^(\d+)[\.\)]\s*(.*)/);
+      if (numberedItemMatch) {
+        const number = numberedItemMatch[1];
+        const text = numberedItemMatch[2];
         
+        // Check for keyword: description pattern and bold the keyword
+        const colonIndex = text.indexOf(':');
+        if (colonIndex > 0) {
+          const keyword = text.substring(0, colonIndex).trim();
+          const rest = text.substring(colonIndex);
+          // Format as paragraph instead of list item to avoid styling conflicts
+          line = `${number}. **${keyword}**${rest}`;
+        } else {
+          line = `${number}. ${text}`;  
+        }
+      }
+      // Skip if it's already a bullet point
+      else if (!line.startsWith('-') && !line.startsWith('•')) {
         // Check for keyword: description pattern and bold the keyword
         const colonIndex = line.indexOf(':');
         if (colonIndex > 0) {
