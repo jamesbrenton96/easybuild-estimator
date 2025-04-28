@@ -143,8 +143,8 @@ export default function MarkdownContentRenderer({ content }: { content: string }
         .markdown-content h1:contains("Notes & Terms") {}
 
         /* list items under the section: normal body text */
-        .markdown-content h1:contains("Notes & Terms") ~ ul li,
-        .markdown-content h1:contains("Notes & Terms") ~ ol li {
+        .markdown-content h1:last-of-type ~ ul li,
+        .markdown-content h1:last-of-type ~ ol li {
           font-weight: normal;
           color: #000;
           border: none;
@@ -152,8 +152,8 @@ export default function MarkdownContentRenderer({ content }: { content: string }
         }
 
         /* keep keyword before the colon bold but not orange */
-        .markdown-content h1:contains("Notes & Terms") ~ ul li strong,
-        .markdown-content h1:contains("Notes & Terms") ~ ol li strong {
+        .markdown-content h1:last-of-type ~ ul li strong,
+        .markdown-content h1:last-of-type ~ ol li strong {
           font-weight: bold;
           color: #000;
         }
