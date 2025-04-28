@@ -132,18 +132,18 @@ export default function MarkdownContentRenderer({ content }: { content: string }
            SECTION 9 – Notes & Terms - CRITICAL FIX
            ────────────────────────────────────────────────────────────── */
 
-        /* Critical fix for numbered items in Notes & Terms section */
-        .markdown-content p strong:first-child + span,
-        .markdown-content li strong:first-child + span {
-          color: #000 !important;
-          font-weight: normal !important;
+        /* Make sure notes section heading is orange - but only the heading */
+        .markdown-content h1[id*="section-9"],
+        .markdown-content h1[id*="notes-and-terms"] {
+          color: #e58c33 !important;
+          text-transform: uppercase !important;
+          font-weight: bold !important;
+          border-bottom: 1px solid #e58c33 !important;
         }
         
-        /* Override for any rule that might be turning numbered items into orange headers */
-        .markdown-content h1 ~ p:has(strong:first-child),
+        /* All content following Notes & Terms heading should be normal black text */
         .markdown-content h1[id*="section-9"] ~ p,
-        .markdown-content h1[id*="notes"] ~ p,
-        .markdown-content h1[id*="terms"] ~ p,
+        .markdown-content h1[id*="notes-and-terms"] ~ p,
         .markdown-content h1:last-of-type ~ p {
           font-size: 10px !important;
           color: #000 !important;
@@ -154,7 +154,7 @@ export default function MarkdownContentRenderer({ content }: { content: string }
           padding: 0 !important;
         }
 
-        /* Override for numbered list items in the Notes & Terms section */
+        /* Fix for numbered list items in Notes & Terms section */
         .markdown-content ol {
           list-style-type: decimal !important;
           margin: 0 0 15px 0 !important;
@@ -173,8 +173,7 @@ export default function MarkdownContentRenderer({ content }: { content: string }
           border: none !important;
         }
         
-        /* Important: Override for any numbered prefixes that might be styled */
-        .markdown-content h1 ~ ol,
+        /* Fix specifically for numbered items in Notes section */
         .markdown-content h1[id*="section-9"] ~ ol,
         .markdown-content h1[id*="notes"] ~ ol,
         .markdown-content h1[id*="terms"] ~ ol,
@@ -185,7 +184,6 @@ export default function MarkdownContentRenderer({ content }: { content: string }
           padding-left: 20px !important;
         }
         
-        .markdown-content h1 ~ ol li,
         .markdown-content h1[id*="section-9"] ~ ol li,
         .markdown-content h1[id*="notes"] ~ ol li,
         .markdown-content h1[id*="terms"] ~ ol li,
@@ -200,50 +198,40 @@ export default function MarkdownContentRenderer({ content }: { content: string }
           margin: 0 !important;
         }
         
+        /* Critical fix for numbered items in the Notes section */
+        .markdown-content p:has(> strong:first-child:contains("1.")),
+        .markdown-content p:has(> strong:first-child:contains("2.")),
+        .markdown-content p:has(> strong:first-child:contains("3.")),
+        .markdown-content p:has(> strong:first-child:contains("4.")),
+        .markdown-content p:has(> strong:first-child:contains("5.")),
+        .markdown-content p:has(> strong:first-child:contains("6.")),
+        .markdown-content p:has(> strong:first-child:contains("7.")),
+        .markdown-content p:has(> strong:first-child:contains("8.")),
+        .markdown-content p:has(> strong:first-child:contains("9.")),
+        .markdown-content p:has(> strong:first-child:contains("10.")) {
+          color: #000 !important;
+          font-weight: normal !important;
+          font-size: 10px !important;
+          text-transform: none !important;
+          border: none !important;
+          margin: 6px 0 !important;
+        }
+        
         /* Ensure number+description following a colon doesn't get themed as a heading */
-        .markdown-content h1 ~ ol li strong + span,
-        .markdown-content h1[id*="section-9"] ~ ol li strong + span,
-        .markdown-content h1[id*="notes"] ~ ol li strong + span,
-        .markdown-content h1[id*="terms"] ~ ol li strong + span,
-        .markdown-content h1:last-of-type ~ ol li strong + span {
+        .markdown-content strong + span,
+        .markdown-content strong:first-child + span {
           color: #000 !important;
           font-weight: normal !important;
           text-transform: none !important;
         }
 
-        /* Special fix for p elements that have a number at the beginning */
-        .markdown-content p:has(strong:first-child:matches(/^[0-9]+\./)) {
-          color: #000 !important;
-          font-weight: normal !important;
-          font-size: 10px !important;
-          text-transform: none !important;
-          border: none !important;
+        /* Extra override for any paragraph that contains a numbered item */
+        .markdown-content p strong:first-child,
+        .markdown-content p b:first-child {
+          display: inline-block !important;
         }
-        
-        /* Fix for paragraphs that start with a number */
-        .markdown-content p strong:first-child:matches(/^[0-9]+\./) {
-          color: #000 !important;
-        }
-        
-        /* Target any element that has text content starting with a number followed by a period */
-        .markdown-content p[data-content^="1."],
-        .markdown-content p[data-content^="2."],
-        .markdown-content p[data-content^="3."],
-        .markdown-content p[data-content^="4."],
-        .markdown-content p[data-content^="5."],
-        .markdown-content p[data-content^="6."],
-        .markdown-content p[data-content^="7."],
-        .markdown-content p[data-content^="8."],
-        .markdown-content p[data-content^="9."],
-        .markdown-content p[data-content^="10."] {
-          color: #000 !important;
-          font-weight: normal !important;
-          font-size: 10px !important;
-          text-transform: none !important;
-          border: none !important;
-        }
-        
-        /* Force the formatting on Notes & Terms section specifically */
+
+        /* Force normal formatting on Notes & Terms section content */
         #section-9-notes-and-terms ~ p,
         #notes-terms ~ p,
         #notes-and-terms ~ p {
