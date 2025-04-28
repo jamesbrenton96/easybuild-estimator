@@ -1,4 +1,3 @@
-
 import React from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -80,20 +79,6 @@ export default function MarkdownContentRenderer({ content }: { content: string }
           color: #e58c33 !important;
         }
         
-        /* Notes & Terms section special formatting */
-        .markdown-content h1:contains("Notes & Terms") ~ p {
-          font-weight: bold !important;
-          margin-top: 15px !important;
-          margin-bottom: 5px !important;
-          width: 100% !important;
-        }
-        
-        .markdown-content h1:contains("Notes & Terms") ~ ul {
-          margin-top: 5px !important;
-          margin-bottom: 15px !important;
-          width: 100% !important;
-        }
-        
         /* Project title */
         .markdown-content h1:first-child {
           font-size: 20px !important;
@@ -148,6 +133,36 @@ export default function MarkdownContentRenderer({ content }: { content: string }
         .markdown-content strong, .markdown-content b {
           color: #333 !important;
           font-weight: bold !important;
+        }
+
+        /* ──────────────────────────────────────────────────────────────
+           SECTION 9 – Notes & Terms
+           ────────────────────────────────────────────────────────────── */
+
+        /* keep existing orange H1 styling */
+        .markdown-content h1:contains("Notes & Terms") {}
+
+        /* first paragraph after the H1 becomes a black, bold sub-title */
+        .markdown-content h1:contains("Notes & Terms") + p {
+          font-weight: bold;
+          margin: 16px 0 8px;
+          color: #000;
+        }
+
+        /* list items under the section: normal body text */
+        .markdown-content h1:contains("Notes & Terms") ~ ul li,
+        .markdown-content h1:contains("Notes & Terms") ~ ol li {
+          font-weight: normal;
+          color: #000;
+          border: none;
+          text-transform: none;
+        }
+
+        /* keep keyword before the colon bold but not orange */
+        .markdown-content h1:contains("Notes & Terms") ~ ul li strong,
+        .markdown-content h1:contains("Notes & Terms") ~ ol li strong {
+          font-weight: bold;
+          color: #000;
         }
       `}</style>
       <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
