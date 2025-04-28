@@ -1,17 +1,17 @@
+
 /**
- * Formats the Notes and Terms section to match heading style and standardize bullet points
+ * Formats the Notes and Terms section to match heading style and standardize bullet points.
+ * Converts numbered items into bullet points and bolds keywords before colons.
  */
 export function formatNotesAndTerms(content: string): string {
-  // Early return if no content
   if (!content) return content;
   
-  // Split content into lines for processing
   const lines = content.split('\n');
   let formatted = '';
   let inNotesSection = false;
   
   for (let i = 0; i < lines.length; i++) {
-    const line = lines[i].trim();
+    let line = lines[i];
     
     // Check for section heading
     if (line.toLowerCase().includes('notes and terms') || line.toLowerCase().includes('notes & terms')) {
@@ -20,27 +20,40 @@ export function formatNotesAndTerms(content: string): string {
       continue;
     }
     
-    // If we're in notes section and find a new heading, exit
+    // Exit notes section if we hit another heading
     if (inNotesSection && line.startsWith('#')) {
       inNotesSection = false;
     }
     
-    // Process lines within notes section
-    if (inNotesSection && line) {
-      // Skip the line if it's the section heading
+    if (inNotesSection && line.trim()) {
+      // Skip if it's the section heading line
       if (line.toLowerCase().includes('notes and terms') || line.toLowerCase().includes('notes & terms')) {
         continue;
       }
       
-      // Remove any numbers at start (like "1.", "2.", etc)
-      let cleanLine = line.replace(/^\d+[\.\)]\s*/, '');
+      line = line.trim();
       
-      // If line doesn't start with a bullet point or dash, add one
-      if (!cleanLine.startsWith('-') && !cleanLine.startsWith('•')) {
-        cleanLine = `- ${cleanLine}`;
+      // Preserve indentation for sub-bullets
+      const indentation = line.match(/^(\s+)/)?.[1] || '';
+      line = line.trim();
+      
+      // Skip if it's already a bullet point
+      if (!line.startsWith('-') && !line.startsWith('•')) {
+        // Remove any leading numbers (1., 1), etc.)
+        line = line.replace(/^\d+[\.\)]\s*/, '');
+        
+        // Check for keyword: description pattern and bold the keyword
+        const colonIndex = line.indexOf(':');
+        if (colonIndex > 0) {
+          const keyword = line.substring(0, colonIndex).trim();
+          const rest = line.substring(colonIndex);
+          line = `- **${keyword}**${rest}`;
+        } else {
+          line = `- ${line}`;
+        }
       }
       
-      formatted += `${cleanLine}\n`;
+      formatted += `${indentation}${line}\n`;
     } else if (!inNotesSection) {
       // If we're not in notes section, keep the line as is
       formatted += `${line}\n`;
