@@ -142,13 +142,6 @@ export default function MarkdownContentRenderer({ content }: { content: string }
         /* keep existing orange H1 styling */
         .markdown-content h1:contains("Notes & Terms") {}
 
-        /* first paragraph after the H1 becomes a black, bold sub-title */
-        .markdown-content h1:contains("Notes & Terms") + p {
-          font-weight: bold;
-          margin: 16px 0 8px;
-          color: #000;
-        }
-
         /* list items under the section: normal body text */
         .markdown-content h1:contains("Notes & Terms") ~ ul li,
         .markdown-content h1:contains("Notes & Terms") ~ ol li {
