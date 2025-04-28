@@ -1,4 +1,3 @@
-
 import React from "react";
 
 /**
@@ -111,11 +110,6 @@ export default function MarkdownTableStyle() {
         align-items: flex-start;
       }
       
-      /* Notes and terms section */
-      .notes-terms p {
-        margin: 6px 0 !important;
-      }
-      
       /* Document footer */
       .document-footer {
         margin-top: 30px;
@@ -130,37 +124,6 @@ export default function MarkdownTableStyle() {
       .markdown-content tr:has(td:first-child:contains("Total")) {
         font-weight: bold;
         background-color: #f5f5f5;
-      }
-      
-      /* Special override for Notes & Terms section */
-      .markdown-content h1:contains("SECTION 9: NOTES AND TERMS"),
-      .markdown-content h1[id*="section-9"],
-      .markdown-content h1[id*="notes-and-terms"] {
-        color: #e58c33 !important;
-        text-transform: uppercase !important;
-        font-weight: bold !important;
-        border-bottom: 1px solid #e58c33 !important;
-      }
-      
-      /* Critical fix for Notes & Terms numbered items */
-      .markdown-content h1[id*="section-9"] ~ p,
-      .markdown-content h1[id*="notes-and-terms"] ~ p,
-      .markdown-content h1:last-of-type ~ p {
-        color: #333 !important;
-        font-weight: normal !important;
-        font-size: 10pt !important;
-        margin: 6px 0 !important;
-        text-transform: none !important;
-        border: none !important;
-      }
-      
-      /* Fix for numbered items that start with a digit followed by a dot */
-      .markdown-content p:has(strong:first-child:matches(/^[0-9]+\./)),
-      .markdown-content p:has(strong:first-child:matches(/^[0-9]+\)/)) {
-        color: #333 !important;
-        font-weight: normal !important;
-        text-transform: none !important;
-        border: none !important;
       }
       
       /* Print mode adjustments */

@@ -1,4 +1,3 @@
-
 import html2pdf from "html2pdf.js";
 
 export function usePdfDownload() {
@@ -113,63 +112,6 @@ export function usePdfDownload() {
         text-align: left !important;
       }
       
-      /* Notes & Terms section heading - keep orange heading */
-      h1[id*="section-9"],
-      h1[id*="notes-and-terms"],
-      h1:contains("SECTION 9: NOTES AND TERMS") {
-        color: #e58c33 !important;
-        text-transform: uppercase !important;
-        font-weight: bold !important;
-        border-bottom: 1px solid #e58c33 !important;
-        font-size: 14px !important;
-      }
-      
-      /* Notes & Terms section content - normal black text */
-      h1[id*="section-9"] ~ p,
-      h1[id*="notes-and-terms"] ~ p,
-      h1:contains("SECTION 9: NOTES AND TERMS") ~ p {
-        font-size: 10px !important;
-        font-weight: normal !important;
-        color: #000 !important;
-        border: none !important;
-        text-transform: none !important;
-        margin: 6px 0 !important;
-      }
-      
-      /* Fix for numbered list items in Notes & Terms section */
-      h1[id*="section-9"] ~ ol,
-      h1[id*="notes-and-terms"] ~ ol {
-        padding-left: 20px !important;
-        margin-left: 0 !important;
-      }
-      
-      h1[id*="section-9"] ~ ol li,
-      h1[id*="notes-and-terms"] ~ ol li {
-        font-size: 10px !important;
-        font-weight: normal !important;
-        color: #000 !important;
-        border: none !important;
-        text-transform: none !important;
-        padding: 3px 0 !important;
-      }
-      
-      /* Fix for numbered items with leading numbers - critical fix */
-      p:first-child[data-content^="1."],
-      p:first-child[data-content^="2."],
-      p:first-child[data-content^="3."],
-      p:first-child[data-content^="4."],
-      p:first-child[data-content^="5."],
-      p:first-child[data-content^="6."],
-      p:first-child[data-content^="7."],
-      p:first-child[data-content^="8."],
-      p:first-child[data-content^="9."],
-      p:first-child[data-content^="10."] {
-        color: #000 !important;
-        font-weight: normal !important;
-        text-transform: none !important;
-        border: none !important;
-      }
-      
       /* List formatting */
       ul {
         margin-left: 0 !important;
@@ -219,33 +161,6 @@ export function usePdfDownload() {
         color: #666 !important;
         text-align: center !important;
         border-top: none !important;
-      }
-      
-      /* Notes and terms */
-      .notes-terms {
-        margin-top: 20px !important;
-      }
-      
-      .notes-terms p {
-        margin: 6px 0 !important;
-        font-size: 10px !important;
-      }
-      
-      /* Specific numbered items fix for Notes section */
-      p strong:first-child:matches(/^[0-9]+\./),
-      p strong:first-child:matches(/^[0-9]+\)/),
-      p > strong:contains("1."),
-      p > strong:contains("2."),
-      p > strong:contains("3."),
-      p > strong:contains("4."),
-      p > strong:contains("5."),
-      p > strong:contains("6."),
-      p > strong:contains("7."),
-      p > strong:contains("8."),
-      p > strong:contains("9."),
-      p > strong:contains("10.") {
-        color: #000 !important;
-        font-weight: bold !important;
       }
       
       /* Override any orange text with standard color */
