@@ -1,3 +1,4 @@
+
 import React from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -51,14 +52,6 @@ export default function MarkdownContentRenderer({ content }: { content: string }
           background-color: #f5f5f5 !important;
           color: #333 !important;
           text-align: left !important;
-        }
-        
-        /* Notes & Terms formatting */
-        .markdown-content h1:contains("Notes & Terms") + p {
-          font-weight: bold !important;
-          font-size: 12px !important;
-          margin-top: 15px !important;
-          margin-bottom: 5px !important;
         }
         
         /* List formatting - updated for full width */
@@ -139,23 +132,70 @@ export default function MarkdownContentRenderer({ content }: { content: string }
            SECTION 9 – Notes & Terms
            ────────────────────────────────────────────────────────────── */
 
-        /* keep existing orange H1 styling */
-        .markdown-content h1:contains("Notes & Terms") {}
-
-        /* list items under the section: normal body text */
-        .markdown-content h1:last-of-type ~ ul li,
-        .markdown-content h1:last-of-type ~ ol li {
-          font-weight: normal;
-          color: #000;
-          border: none;
-          text-transform: none;
+        /* Allow "Notes & Terms" section heading to keep orange styling */
+        .markdown-content h1[id*="section-9"], 
+        .markdown-content h1[id*="notes"], 
+        .markdown-content h1[id*="terms"] {
+          /* Keep existing orange styling */
         }
 
-        /* keep keyword before the colon bold but not orange */
+        /* Override numbering styles for Notes & Terms section */
+        .markdown-content h1[id*="section-9"] ~ p, 
+        .markdown-content h1[id*="notes"] ~ p,
+        .markdown-content h1[id*="terms"] ~ p {
+          font-weight: normal;
+          color: #000 !important;
+          border: none;
+          text-transform: none;
+          font-size: 10px !important;
+          margin: 6px 0 !important;
+        }
+
+        /* Make numbered list items normal text, not orange headings */
+        .markdown-content h1[id*="section-9"] ~ ol li,
+        .markdown-content h1[id*="notes"] ~ ol li,
+        .markdown-content h1[id*="terms"] ~ ol li,
+        .markdown-content h1:last-of-type ~ ol li {
+          font-weight: normal !important;
+          color: #000 !important;
+          border: none !important;
+          text-transform: none !important;
+          font-size: 10px !important;
+          padding: 3px 0 !important;
+        }
+
+        /* Same for unnumbered list items */
+        .markdown-content h1[id*="section-9"] ~ ul li,
+        .markdown-content h1[id*="notes"] ~ ul li,
+        .markdown-content h1[id*="terms"] ~ ul li,
+        .markdown-content h1:last-of-type ~ ul li {
+          font-weight: normal !important; 
+          color: #000 !important;
+          border: none !important;
+          text-transform: none !important;
+          font-size: 10px !important;
+        }
+
+        /* Bold keywords before colons in list items */
+        .markdown-content h1[id*="section-9"] ~ ul li strong,
+        .markdown-content h1[id*="notes"] ~ ul li strong,
+        .markdown-content h1[id*="terms"] ~ ul li strong,
+        .markdown-content h1[id*="section-9"] ~ ol li strong,
+        .markdown-content h1[id*="notes"] ~ ol li strong,
+        .markdown-content h1[id*="terms"] ~ ol li strong,
         .markdown-content h1:last-of-type ~ ul li strong,
         .markdown-content h1:last-of-type ~ ol li strong {
-          font-weight: bold;
-          color: #000;
+          font-weight: bold !important;
+          color: #000 !important;
+        }
+
+        /* Fix numbered items with prefixes like "1. PAYMENT TERMS" */
+        .markdown-content h1[id*="section-9"] ~ ol li:before,
+        .markdown-content h1[id*="notes"] ~ ol li:before,
+        .markdown-content h1[id*="terms"] ~ ol li:before,
+        .markdown-content h1:last-of-type ~ ol li:before {
+          color: #000 !important;
+          font-weight: normal !important;
         }
       `}</style>
       <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
