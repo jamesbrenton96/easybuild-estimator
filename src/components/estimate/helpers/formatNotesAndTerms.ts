@@ -16,7 +16,7 @@ export function formatNotesAndTerms(content: string): string {
   const sectionHeadingEndIndex = sectionStartIndex + match[1].length;
   
   // Replace the heading with a properly formatted one
-  const heading = "### Notes & Terms\n\n";
+  const heading = "# Notes & Terms\n\n";
   
   // Extract the section content and format as normal paragraphs (not headings)
   const remainingContent = content.slice(sectionHeadingEndIndex);
