@@ -1,3 +1,4 @@
+
 /**
  * Formats the Notes and Terms section to bold keywords before colons and create proper bullet points.
  * Removes numbering and "SECTION" wording.
@@ -36,8 +37,9 @@ export function formatNotesAndTerms(content: string): string {
       const indentation = line.match(/^(\s+)/)?.[1] || '';
       line = line.trim();
       
-      // Remove numbering from items (e.g., "1. Payment Terms:" becomes just "Payment Terms:")
-      const numberedItemMatch = line.match(/^(\d+)[\.\)]\s*(.*)/);
+      // Remove numbering from items completely including both patterns:
+      // "1. Payment Terms:" and also "1. " style numbering
+      const numberedItemMatch = line.match(/^(\d+)[\.\)\:\s]+\s*(.*)/);
       if (numberedItemMatch) {
         line = numberedItemMatch[2];
       }
@@ -52,7 +54,7 @@ export function formatNotesAndTerms(content: string): string {
       
       // Only add bullets if it's not already a bullet point
       if (!line.startsWith('-') && !line.startsWith('•')) {
-        formatted += `${indentation}${line}\n`;
+        formatted += `${indentation}- ${line}\n`;
       } else {
         formatted += `${indentation}${line}\n`;
       }
