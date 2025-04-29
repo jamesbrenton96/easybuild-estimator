@@ -73,6 +73,18 @@ export function usePdfDownload() {
         letter-spacing: 0.03em !important;
       }
       
+      /* Notes and Terms heading */
+      h1:contains("Notes and Terms"),
+      h1:contains("Notes & Terms") {
+        color: #e58c33 !important;
+        font-weight: bold !important;
+        border-bottom: 1px solid #e58c33 !important;
+        padding-bottom: 5px !important;
+        margin-bottom: 12px !important;
+        margin-top: 20px !important;
+        font-size: 14px !important;
+      }
+      
       /* Table styles */
       table { 
         page-break-inside: avoid !important;

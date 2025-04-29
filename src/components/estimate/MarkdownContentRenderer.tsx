@@ -51,6 +51,18 @@ export default function MarkdownContentRenderer({ content }: { content: string }
           width: 100% !important;
         }
         
+        /* Notes and Terms heading */
+        .markdown-content h1:contains("Notes and Terms"),
+        .markdown-content h1:contains("Notes & Terms") {
+          font-size: 14px !important;
+          color: #e58c33 !important;
+          margin: 16px 0 8px 0 !important;
+          padding-bottom: 5px !important;
+          font-weight: bold !important;
+          border-bottom: 1px solid #e58c33 !important;
+          text-transform: none !important;
+        }
+        
         /* Correspondence section */
         .correspondence-item {
           display: flex !important;

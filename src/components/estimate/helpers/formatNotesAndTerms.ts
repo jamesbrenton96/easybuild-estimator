@@ -1,7 +1,6 @@
-
 /**
- * Formats the Notes and Terms section to match heading style and standardize bullet points.
- * Converts numbered items into bullet points and bolds keywords before colons.
+ * Formats the Notes and Terms section to bold keywords before colons and create proper bullet points.
+ * Removes numbering and "SECTION" wording.
  */
 export function formatNotesAndTerms(content: string): string {
   if (!content) return content;
@@ -16,7 +15,7 @@ export function formatNotesAndTerms(content: string): string {
     // Check for section heading
     if (line.toLowerCase().includes('notes and terms') || line.toLowerCase().includes('notes & terms')) {
       inNotesSection = true;
-      formatted += '# SECTION 9: NOTES AND TERMS\n\n';
+      formatted += '# Notes and Terms\n\n';
       continue;
     }
     
@@ -37,37 +36,26 @@ export function formatNotesAndTerms(content: string): string {
       const indentation = line.match(/^(\s+)/)?.[1] || '';
       line = line.trim();
       
-      // Format numbered items without turning them into headings
+      // Remove numbering from items (e.g., "1. Payment Terms:" becomes just "Payment Terms:")
       const numberedItemMatch = line.match(/^(\d+)[\.\)]\s*(.*)/);
       if (numberedItemMatch) {
-        const number = numberedItemMatch[1];
-        const text = numberedItemMatch[2];
-        
-        // Check for keyword: description pattern and bold the keyword
-        const colonIndex = text.indexOf(':');
-        if (colonIndex > 0) {
-          const keyword = text.substring(0, colonIndex).trim();
-          const rest = text.substring(colonIndex);
-          // Add a class for proper styling
-          line = `${number}. **${keyword}**${rest}`;
-        } else {
-          line = `${number}. ${text}`;  
-        }
-      }
-      // Skip if it's already a bullet point
-      else if (!line.startsWith('-') && !line.startsWith('•')) {
-        // Check for keyword: description pattern and bold the keyword
-        const colonIndex = line.indexOf(':');
-        if (colonIndex > 0) {
-          const keyword = line.substring(0, colonIndex).trim();
-          const rest = line.substring(colonIndex);
-          line = `- **${keyword}**${rest}`;
-        } else {
-          line = `- ${line}`;
-        }
+        line = numberedItemMatch[2];
       }
       
-      formatted += `${indentation}${line}\n`;
+      // Check for keyword: description pattern and bold the keyword
+      const colonIndex = line.indexOf(':');
+      if (colonIndex > 0) {
+        const keyword = line.substring(0, colonIndex).trim();
+        const rest = line.substring(colonIndex);
+        line = `**${keyword}**${rest}`;
+      }
+      
+      // Only add bullets if it's not already a bullet point
+      if (!line.startsWith('-') && !line.startsWith('•')) {
+        formatted += `${indentation}${line}\n`;
+      } else {
+        formatted += `${indentation}${line}\n`;
+      }
     } else if (!inNotesSection) {
       // If we're not in notes section, keep the line as is
       formatted += `${line}\n`;
