@@ -21,6 +21,5 @@ export function createCorrespondenceSection(details: CorrespondenceDetails): str
 - **Project Address:** ${details.projectAddress}
 - **Current Date:** ${currentDate}
 - **Project Name:** ${details.projectName}
-
 `;
 }
