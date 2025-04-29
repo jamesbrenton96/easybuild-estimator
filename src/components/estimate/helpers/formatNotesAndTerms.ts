@@ -7,6 +7,19 @@
 export function formatNotesAndTerms(content: string): string {
   if (!content) return content;
   
+  // First check if Notes & Terms is in a table
+  const tableRowRegex = /\|\s*Notes\s*&\s*Terms\s*\|.*\|/i;
+  const tableMatch = content.match(tableRowRegex);
+  
+  if (tableMatch) {
+    // Remove the Notes & Terms row from the table
+    const modifiedContent = content.replace(tableRowRegex, '');
+    
+    // Add Notes & Terms as H1 heading after the table
+    return modifiedContent + "\n\n# Notes & Terms\n\n";
+  }
+  
+  // Regular heading detection (as before)
   const notesAndTermsRegex = /(?:^|\n)(#+\s*notes\s*(?:&|and)\s*terms.*?)(?:\n#+\s|\n$|$)/is;
   const match = content.match(notesAndTermsRegex);
   
@@ -22,7 +35,6 @@ export function formatNotesAndTerms(content: string): string {
   const remainingContent = content.slice(sectionHeadingEndIndex);
   
   // Convert any numbered headings (1. Text) to regular text without # markers
-  // This regex matches lines that start with a number, period, and text
   const formattedContent = remainingContent.replace(/^#+\s*(\d+\.\s+.*?)$/gm, '$1');
   
   return (
