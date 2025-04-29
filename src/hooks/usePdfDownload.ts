@@ -1,3 +1,4 @@
+
 import html2pdf from "html2pdf.js";
 
 export function usePdfDownload() {
@@ -60,19 +61,6 @@ export function usePdfDownload() {
       }
       
       /* SECTION HEADERS */
-      .markdown-content h2, h2 {
-        color: #e58c33 !important;
-        font-size: 14px !important;
-        font-weight: bold !important;
-        text-transform: uppercase !important;
-        margin-top: 22px !important;
-        margin-bottom: 12px !important;
-        padding-bottom: 6px !important;
-        border-bottom: 1px solid #e58c33 !important;
-        letter-spacing: 0.03em !important;
-      }
-      
-      /* Section titles format */
       .section-title {
         color: #e58c33 !important;
         text-transform: uppercase !important;
@@ -112,22 +100,6 @@ export function usePdfDownload() {
         text-align: left !important;
       }
       
-      /* List formatting */
-      ul {
-        margin-left: 0 !important;
-        padding-left: 16px !important;
-        margin-bottom: 15px !important;
-      }
-      
-      ul li {
-        padding: 3px 0 !important;
-        font-size: 10px !important;
-      }
-      
-      ul li::marker {
-        color: #e58c33 !important;
-      }
-      
       /* Project title */
       .project-title {
         font-size: 20px !important;
@@ -148,12 +120,6 @@ export function usePdfDownload() {
         font-weight: bold !important;
       }
       
-      /* Total cost highlighting */
-      .total-project-cost {
-        font-weight: bold !important;
-        background-color: #f5f5f5 !important;
-      }
-      
       /* Footer */
       .document-footer {
         margin-top: 30px !important;
@@ -161,16 +127,6 @@ export function usePdfDownload() {
         color: #666 !important;
         text-align: center !important;
         border-top: none !important;
-      }
-      
-      /* Override any orange text with standard color */
-      .markdown-content p {
-        color: #333 !important;
-      }
-      
-      .markdown-content strong, .markdown-content b {
-        color: #333 !important;
-        font-weight: bold !important;
       }
     `;
     

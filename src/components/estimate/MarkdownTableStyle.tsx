@@ -1,3 +1,4 @@
+
 import React from "react";
 
 /**
@@ -89,25 +90,6 @@ export default function MarkdownTableStyle() {
         margin: 0.5rem 0;
         line-height: 1.6;
         font-size: 1rem;
-      }
-      
-      /* Bullet points styling */
-      .markdown-content ul {
-        margin: 0.5rem 0 1rem 0;
-        padding-left: 0;
-      }
-      
-      .markdown-content li {
-        margin-bottom: 0.5rem;
-        line-height: 1.6;
-        font-size: 1rem;
-        color: #333;
-      }
-      
-      /* Custom list formatting */
-      .markdown-content li:has(.text-construction-orange) {
-        display: flex;
-        align-items: flex-start;
       }
       
       /* Document footer */
