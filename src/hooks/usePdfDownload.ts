@@ -55,90 +55,76 @@ export function usePdfDownload() {
       }
       
       body {
-        font-size: 10px !important;
-        line-height: 1.3 !important;
-        font-family: Arial, sans-serif !important;
+        font-size: 10px;
+        line-height: 1.3;
+        font-family: Arial, sans-serif;
       }
       
       /* SECTION HEADERS */
       .section-title {
-        color: #e58c33 !important;
-        text-transform: uppercase !important;
-        font-weight: bold !important;
-        border-bottom: 1px solid #e58c33 !important;
-        padding-bottom: 5px !important;
-        margin-bottom: 12px !important;
-        margin-top: 22px !important;
-        font-size: 14px !important;
-        letter-spacing: 0.03em !important;
+        color: #e58c33;
+        font-weight: bold;
+        border-bottom: 1px solid #e58c33;
+        padding-bottom: 5px;
+        margin-bottom: 12px;
+        margin-top: 22px;
+        font-size: 14px;
       }
       
       /* Notes and Terms heading */
-      h1:contains("Notes and Terms"),
-      h1:contains("Notes & Terms") {
-        color: #e58c33 !important;
-        font-weight: bold !important;
-        border-bottom: 1px solid #e58c33 !important;
-        padding-bottom: 5px !important;
-        margin-bottom: 12px !important;
-        margin-top: 20px !important;
-        font-size: 14px !important;
+      h1, h2 {
+        color: #e58c33;
+        font-weight: bold;
+        border-bottom: 1px solid #e58c33;
+        padding-bottom: 5px;
+        margin-bottom: 12px;
+        margin-top: 20px;
+        font-size: 14px;
       }
       
       /* Table styles */
       table { 
-        page-break-inside: avoid !important;
-        width: 100% !important;
-        max-width: 100% !important;
-        margin: 8px auto !important;
-        border-collapse: collapse !important;
-        table-layout: fixed !important;
+        page-break-inside: avoid;
+        width: 100%;
+        max-width: 100%;
+        margin: 8px auto;
+        border-collapse: collapse;
+        table-layout: fixed;
       }
       
       td, th { 
-        padding: 5px !important;
-        font-size: 9px !important;
-        line-height: 1.3 !important;
-        border: 1px solid #ddd !important;
-        overflow-wrap: break-word !important;
-        word-wrap: break-word !important;
+        padding: 5px;
+        font-size: 9px;
+        line-height: 1.3;
+        border: 1px solid #ddd;
+        overflow-wrap: break-word;
+        word-wrap: break-word;
       }
       
       th {
-        font-size: 9px !important;
-        font-weight: bold !important;
-        background-color: #f5f5f5 !important;
-        color: #333 !important;
-        text-align: left !important;
+        font-size: 9px;
+        font-weight: bold;
+        background-color: #f5f5f5;
+        color: #333;
+        text-align: left;
       }
       
       /* Project title */
       .project-title {
-        font-size: 20px !important;
-        color: #e58c33 !important;
-        text-align: center !important;
-        margin: 10px 0 25px 0 !important;
-        font-weight: bold !important;
-      }
-      
-      /* Correspondence section */
-      .correspondence-item {
-        display: flex !important;
-        margin-bottom: 5px !important;
-      }
-      
-      .correspondence-label {
-        width: 120px !important;
-        font-weight: bold !important;
+        font-size: 20px;
+        color: #e58c33;
+        text-align: center;
+        margin: 10px 0 25px 0;
+        font-weight: bold;
       }
       
       /* Footer */
       .document-footer {
-        margin-top: 30px !important;
-        font-size: 8px !important;
-        color: #666 !important;
-        text-align: center !important;
-        border-top: none !important;
+        margin-top: 30px;
+        font-size: 8px;
+        color: #666;
+        text-align: center;
+        border-top: none;
       }
     `;
     
