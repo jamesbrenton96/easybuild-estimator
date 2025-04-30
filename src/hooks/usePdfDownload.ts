@@ -1,3 +1,4 @@
+
 import html2pdf from "html2pdf.js";
 
 export function usePdfDownload() {
@@ -70,6 +71,24 @@ export function usePdfDownload() {
         padding-bottom: 6px !important;
         border-bottom: 1px solid #e58c33 !important;
         letter-spacing: 0.03em !important;
+      }
+      
+      /* Notes and Terms heading - plain black styling */
+      h1:contains("Notes and Terms") {
+        color: #333 !important;
+        font-size: 14px !important;
+        font-weight: bold !important;
+        text-transform: none !important;
+        margin-top: 22px !important;
+        margin-bottom: 12px !important;
+        padding-bottom: 6px !important;
+        border-bottom: 1px solid #333 !important;
+      }
+      
+      /* Notes and Terms content - plain black text */
+      h1:contains("Notes and Terms") ~ * {
+        color: #333 !important;
+        font-weight: normal !important;
       }
       
       /* Section titles format */

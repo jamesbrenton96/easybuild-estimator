@@ -33,6 +33,21 @@ export default function MarkdownTableStyle() {
         letter-spacing: 0.03em !important;
       }
       
+      /* Notes and Terms heading - black with no styling */
+      h1:contains("Notes and Terms") {
+        color: #333 !important;
+        font-weight: bold !important;
+        border-bottom: 1px solid #333 !important;
+        text-transform: none !important;
+        margin-top: 25px !important;
+      }
+      
+      /* Notes and Terms content - standard black text */
+      h1:contains("Notes and Terms") ~ * {
+        color: #333 !important;
+        font-weight: normal !important;
+      }
+      
       /* Table styles matching Brenton template */
       .markdown-content table, .estimate-table {
         border-collapse: collapse;
@@ -156,6 +171,21 @@ export default function MarkdownTableStyle() {
         .document-footer {
           margin-top: 20pt !important;
           font-size: 7pt !important;
+        }
+        
+        /* Notes and Terms heading in print - ensure standard styling */
+        h1:contains("Notes and Terms") {
+          color: #333 !important;
+          font-size: 12pt !important;
+          font-weight: bold !important;
+          border-bottom: 1px solid #333 !important;
+          text-transform: none !important;
+        }
+        
+        /* Notes and Terms content in print */
+        h1:contains("Notes and Terms") ~ * {
+          color: #333 !important;
+          font-weight: normal !important;
         }
       }
     `}</style>
