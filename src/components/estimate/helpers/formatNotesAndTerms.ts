@@ -7,68 +7,65 @@
 export function formatNotesAndTerms(content: string): string {
   if (!content) return content;
   
-  // Check if Notes & Terms is in a table row anywhere in the document
-  const tableRowRegex = /\|[^\|]*Notes\s*&\s*Terms[^\|]*\|/i;
-  const tableMatch = content.match(tableRowRegex);
+  // Extract all Notes & Terms content from the document
+  // Create our clean Section that we'll inject
+  let notesAndTermsContent = "";
   
-  if (tableMatch) {
-    console.log("Found Notes & Terms in a table");
-    
-    // Find the table that contains Notes & Terms
-    const tableRegex = /(\|.*\|(\r?\n\|.*\|)+)/g;
-    let tables = [...content.matchAll(tableRegex)];
-    
-    // Find the specific table with Notes & Terms
-    let targetTable = null;
-    let targetTableIndex = -1;
-    
-    for (let i = 0; i < tables.length; i++) {
-      if (tables[i][0].match(tableRowRegex)) {
-        targetTable = tables[i][0];
-        targetTableIndex = tables[i].index;
-        break;
+  // First check if Notes & Terms is in a table
+  if (content.includes("| Notes & Terms") || content.includes("|Notes & Terms")) {
+    // Get everything after this table row - we'll extract the content for our section
+    const afterNotesRow = content.split(/\|[^\|]*Notes\s*&\s*Terms[^\|]*\|/i)[1];
+    if (afterNotesRow) {
+      // Look for any text content after the table row, until the next section heading
+      const contentMatch = afterNotesRow.match(/(?:.*?)(?=\n#|\n\||$)/s);
+      if (contentMatch) {
+        notesAndTermsContent = contentMatch[0].trim();
       }
     }
     
-    if (targetTable && targetTableIndex !== -1) {
-      // Get content before and after the table
-      const contentBefore = content.substring(0, targetTableIndex);
-      const contentAfter = content.substring(targetTableIndex + targetTable.length);
+    // Remove the original "Notes & Terms" row and any content from the table
+    // First, find the table containing Notes & Terms
+    const tableRegex = /(\|.*\|(\r?\n\|.*\|)+)/g;
+    let tables = [...content.matchAll(tableRegex)];
+    
+    // Find and remove specifically the table with Notes & Terms
+    for (let i = 0; i < tables.length; i++) {
+      if (tables[i][0].match(/\|[^\|]*Notes\s*&\s*Terms[^\|]*\|/i)) {
+        const tableStart = tables[i].index || 0;
+        const tableEnd = tableStart + tables[i][0].length;
+        
+        // Remove the table itself
+        content = content.substring(0, tableStart) + content.substring(tableEnd);
+        break;
+      }
+    }
+  } else {
+    // If not in a table, look for a Notes & Terms section with a heading
+    const notesHeadingMatch = content.match(/(?:^|\n)#+\s*notes\s*(?:&|and)\s*terms.*?(?=\n#+|\n$|$)/is);
+    if (notesHeadingMatch) {
+      // Found a heading, now get all content that follows until the next heading
+      const headingIndex = notesHeadingMatch.index || 0;
+      const headingText = notesHeadingMatch[0];
+      const contentAfterHeading = content.substring(headingIndex + headingText.length);
       
-      // Remove the Notes & Terms row from the table
-      const newTable = targetTable.split('\n')
-        .filter(row => !row.match(tableRowRegex))
-        .join('\n');
+      // Extract content until the next heading or end of content
+      const contentMatch = contentAfterHeading.match(/^(.*?)(?=\n#+\s|\n$|$)/s);
+      if (contentMatch) {
+        notesAndTermsContent = contentMatch[0].trim();
+      }
       
-      // Rebuild the content with the modified table and add Notes & Terms as H1
-      return contentBefore + 
-             (newTable.trim().length > 0 ? newTable : '') + 
-             "\n\n# Notes & Terms\n\n" + 
-             contentAfter;
+      // Remove the original heading and content
+      content = content.substring(0, headingIndex) + 
+                content.substring(headingIndex + headingText.length + (contentMatch ? contentMatch[0].length : 0));
     }
   }
   
-  // Regular heading detection (fallback)
-  const notesAndTermsRegex = /(?:^|\n)(#+\s*notes\s*(?:&|and)\s*terms.*?)(?:\n#+\s|\n$|$)/is;
-  const match = content.match(notesAndTermsRegex);
+  // Create a clean "Notes & Terms" H1 heading with the extracted content
+  let notesAndTermsSection = "\n\n# Notes & Terms\n\n";
+  if (notesAndTermsContent) {
+    notesAndTermsSection += notesAndTermsContent;
+  }
   
-  if (!match) return content;
-  
-  const sectionStartIndex = match.index as number;
-  const sectionHeadingEndIndex = sectionStartIndex + match[1].length;
-  
-  // Replace the heading with a properly formatted H1
-  const heading = "# Notes & Terms\n\n";
-  
-  // Extract the section content
-  const remainingContent = content.slice(sectionHeadingEndIndex);
-  
-  // Convert any numbered headings (1. Text) to regular text without # markers
-  const formattedContent = remainingContent.replace(/^#+\s*(\d+\.\s+.*?)$/gm, '$1');
-  
-  return (
-    content.slice(0, sectionStartIndex) +
-    heading +
-    formattedContent
-  );
+  // Append the new section to the end of the document
+  return content + notesAndTermsSection;
 }
