@@ -1,7 +1,7 @@
 
 /**
- * Formats the Notes and Terms section to ensure consistent styling with other sections.
- * Converts the heading to an H1 with standard orange styling like other sections.
+ * Formats the Notes and Terms section to match heading style and standardize bullet points.
+ * Converts numbered items into bullet points and bolds keywords before colons.
  */
 export function formatNotesAndTerms(content: string): string {
   if (!content) return content;
@@ -13,33 +13,62 @@ export function formatNotesAndTerms(content: string): string {
   for (let i = 0; i < lines.length; i++) {
     let line = lines[i];
     
-    // Check for section heading (with any variations and remove "SECTION X:" prefix)
-    if (line.match(/(?:SECTION \d+:\s*)?(?:NOTES AND TERMS|NOTES & TERMS|Notes and Terms|Notes & Terms)/i)) {
+    // Check for section heading
+    if (line.toLowerCase().includes('notes and terms') || line.toLowerCase().includes('notes & terms')) {
       inNotesSection = true;
-      formatted += '# Notes and Terms\n\n';
+      formatted += '# SECTION 9: NOTES AND TERMS\n\n';
       continue;
     }
     
     // Exit notes section if we hit another heading
-    if (inNotesSection && line.match(/^#+\s/)) {
+    if (inNotesSection && line.startsWith('#')) {
       inNotesSection = false;
     }
     
-    if (inNotesSection) {
-      // Skip if it's the section heading line we already processed
-      if (line.match(/(?:SECTION \d+:\s*)?(?:NOTES AND TERMS|NOTES & TERMS|Notes and Terms|Notes & Terms)/i)) {
+    if (inNotesSection && line.trim()) {
+      // Skip if it's the section heading line
+      if (line.toLowerCase().includes('notes and terms') || line.toLowerCase().includes('notes & terms')) {
         continue;
       }
       
-      // Remove any styling, make it plain text
-      // Remove number prefixes and colons that might trigger styling
-      line = line.replace(/^\s*(\d+)[\.\)]\s*([A-Z\s]+):\s*/i, '$1. $2: ');
       line = line.trim();
       
-      if (line) {
-        formatted += `${line}\n`;
+      // Preserve indentation for sub-bullets
+      const indentation = line.match(/^(\s+)/)?.[1] || '';
+      line = line.trim();
+      
+      // Format numbered items without turning them into headings
+      const numberedItemMatch = line.match(/^(\d+)[\.\)]\s*(.*)/);
+      if (numberedItemMatch) {
+        const number = numberedItemMatch[1];
+        const text = numberedItemMatch[2];
+        
+        // Check for keyword: description pattern and bold the keyword
+        const colonIndex = text.indexOf(':');
+        if (colonIndex > 0) {
+          const keyword = text.substring(0, colonIndex).trim();
+          const rest = text.substring(colonIndex);
+          // Add a class for proper styling
+          line = `${number}. **${keyword}**${rest}`;
+        } else {
+          line = `${number}. ${text}`;  
+        }
       }
-    } else {
+      // Skip if it's already a bullet point
+      else if (!line.startsWith('-') && !line.startsWith('•')) {
+        // Check for keyword: description pattern and bold the keyword
+        const colonIndex = line.indexOf(':');
+        if (colonIndex > 0) {
+          const keyword = line.substring(0, colonIndex).trim();
+          const rest = line.substring(colonIndex);
+          line = `- **${keyword}**${rest}`;
+        } else {
+          line = `- ${line}`;
+        }
+      }
+      
+      formatted += `${indentation}${line}\n`;
+    } else if (!inNotesSection) {
       // If we're not in notes section, keep the line as is
       formatted += `${line}\n`;
     }
