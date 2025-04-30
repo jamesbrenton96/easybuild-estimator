@@ -60,6 +60,19 @@ export function usePdfDownload() {
         font-family: Arial, sans-serif !important;
       }
       
+      /* Main headings - H1 */
+      .markdown-content h1, h1 {
+        color: #e58c33 !important;
+        font-size: 14px !important;
+        font-weight: bold !important;
+        text-transform: uppercase !important;
+        margin-top: 22px !important;
+        margin-bottom: 12px !important;
+        padding-bottom: 6px !important;
+        border-bottom: 1px solid #e58c33 !important;
+        letter-spacing: 0.03em !important;
+      }
+      
       /* SECTION HEADERS */
       .markdown-content h2, h2 {
         color: #e58c33 !important;

@@ -15,8 +15,22 @@ export default function MarkdownContentRenderer({ content }: { content: string }
           width: 100% !important;
         }
         
+        /* Main headings - restore H1 styling */
+        .markdown-content h1 {
+          color: #e58c33 !important;
+          font-size: 14px !important;
+          font-weight: bold !important;
+          text-transform: uppercase !important;
+          margin-top: 22px !important;
+          margin-bottom: 12px !important;
+          padding: 0 0 6px 0 !important;
+          border-bottom: 1px solid #e58c33 !important;
+          letter-spacing: 0.03em !important;
+          width: 100% !important;
+        }
+        
         /* SECTION HEADERS */
-        .markdown-content h2, .markdown-content h1:not(:has(+ p:contains("Notes and Terms"))) {
+        .markdown-content h2 {
           color: #e58c33 !important;
           font-size: 14px !important;
           font-weight: bold !important;
@@ -30,7 +44,7 @@ export default function MarkdownContentRenderer({ content }: { content: string }
         }
         
         /* Special styling for Notes and Terms heading */
-        .markdown-content h1:has(+ *:contains("VALIDITY")) {
+        .markdown-content h1:contains("Notes and Terms") {
           color: #333 !important;
           font-size: 14px !important;
           font-weight: bold !important;
@@ -44,7 +58,7 @@ export default function MarkdownContentRenderer({ content }: { content: string }
         }
         
         /* Standard styling for Notes and Terms content */
-        .markdown-content h1:has(+ *:contains("VALIDITY")) + * {
+        .markdown-content h1:contains("Notes and Terms") + * {
           color: #333 !important;
           font-weight: normal !important;
           text-decoration: none !important;

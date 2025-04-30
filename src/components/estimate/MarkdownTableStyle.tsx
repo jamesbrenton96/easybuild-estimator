@@ -1,3 +1,4 @@
+
 import React from "react";
 
 /**
@@ -9,6 +10,19 @@ export default function MarkdownTableStyle() {
     <style>{`
       .markdown-content {
         font-family: Arial, sans-serif !important;
+      }
+      
+      /* Main headings - H1 */
+      .markdown-content h1 {
+        color: #e58c33 !important;
+        font-size: 16px !important;
+        font-weight: bold !important;
+        text-transform: uppercase !important;
+        margin-top: 25px !important;
+        margin-bottom: 15px !important;
+        padding-bottom: 5px !important;
+        border-bottom: 1px solid #e58c33 !important;
+        letter-spacing: 0.03em !important;
       }
       
       /* Project title */
@@ -145,6 +159,12 @@ export default function MarkdownTableStyle() {
       @media print {
         .markdown-content {
           font-size: 10pt !important;
+        }
+        
+        .markdown-content h1 {
+          font-size: 12pt !important;
+          margin-top: 18pt !important;
+          margin-bottom: 10pt !important;
         }
         
         .section-title {
