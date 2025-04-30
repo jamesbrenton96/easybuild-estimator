@@ -7,19 +7,48 @@
 export function formatNotesAndTerms(content: string): string {
   if (!content) return content;
   
-  // First check if Notes & Terms is in a table
-  const tableRowRegex = /\|\s*Notes\s*&\s*Terms\s*\|.*\|/i;
+  // Check if Notes & Terms is in a table row anywhere in the document
+  const tableRowRegex = /\|[^\|]*Notes\s*&\s*Terms[^\|]*\|/i;
   const tableMatch = content.match(tableRowRegex);
   
   if (tableMatch) {
-    // Remove the Notes & Terms row from the table
-    const modifiedContent = content.replace(tableRowRegex, '');
+    console.log("Found Notes & Terms in a table");
     
-    // Add Notes & Terms as H1 heading after the table
-    return modifiedContent + "\n\n# Notes & Terms\n\n";
+    // Find the table that contains Notes & Terms
+    const tableRegex = /(\|.*\|(\r?\n\|.*\|)+)/g;
+    let tables = [...content.matchAll(tableRegex)];
+    
+    // Find the specific table with Notes & Terms
+    let targetTable = null;
+    let targetTableIndex = -1;
+    
+    for (let i = 0; i < tables.length; i++) {
+      if (tables[i][0].match(tableRowRegex)) {
+        targetTable = tables[i][0];
+        targetTableIndex = tables[i].index;
+        break;
+      }
+    }
+    
+    if (targetTable && targetTableIndex !== -1) {
+      // Get content before and after the table
+      const contentBefore = content.substring(0, targetTableIndex);
+      const contentAfter = content.substring(targetTableIndex + targetTable.length);
+      
+      // Remove the Notes & Terms row from the table
+      const newTable = targetTable.split('\n')
+        .filter(row => !row.match(tableRowRegex))
+        .join('\n');
+      
+      // Rebuild the content with the modified table and add Notes & Terms as H1
+      return contentBefore + 
+             (newTable.trim().length > 0 ? newTable : '') + 
+             "\n\n# Notes & Terms\n\n" + 
+             contentAfter;
+    }
   }
   
-  // Regular heading detection (as before)
+  // Regular heading detection (fallback)
   const notesAndTermsRegex = /(?:^|\n)(#+\s*notes\s*(?:&|and)\s*terms.*?)(?:\n#+\s|\n$|$)/is;
   const match = content.match(notesAndTermsRegex);
   
