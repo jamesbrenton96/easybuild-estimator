@@ -8,56 +8,106 @@ export default function MarkdownContentRenderer({ content }: { content: string }
     <div className="p-0 markdown-content text-gray-800">
       <style>{`
         .markdown-content {
-          font-family: Arial, sans-serif;
-          font-size: 10px;
-          line-height: 1.3;
-          padding: 12px;
-          width: 100%;
+          font-family: Arial, sans-serif !important;
+          font-size: 10px !important;
+          line-height: 1.3 !important;
+          padding: 12px !important;
+          width: 100% !important;
+        }
+        
+        /* SECTION HEADERS */
+        .markdown-content h2, .markdown-content h1 {
+          color: #e58c33 !important;
+          font-size: 14px !important;
+          font-weight: bold !important;
+          text-transform: uppercase !important;
+          margin-top: 22px !important;
+          margin-bottom: 12px !important;
+          padding: 0 0 6px 0 !important;
+          border-bottom: 1px solid #e58c33 !important;
+          letter-spacing: 0.03em !important;
+          width: 100% !important;
+        }
+        
+        /* Table styles */
+        .markdown-content table { 
+          width: 100% !important;
+          margin: 8px 0 !important;
+          border-collapse: collapse !important;
+          table-layout: fixed !important;
+        }
+        
+        .markdown-content td, .markdown-content th { 
+          padding: 5px !important;
+          font-size: 9px !important;
+          line-height: 1.3 !important;
+          border: 1px solid #ddd !important;
+          overflow-wrap: break-word !important;
+          word-wrap: break-word !important;
+        }
+        
+        .markdown-content th {
+          font-size: 9px !important;
+          font-weight: bold !important;
+          background-color: #f5f5f5 !important;
+          color: #333 !important;
+          text-align: left !important;
+        }
+        
+        /* List formatting */
+        .markdown-content ul {
+          margin: 0 0 15px 0 !important;
+          padding-left: 16px !important;
+          width: 100% !important;
+        }
+        
+        .markdown-content ul li {
+          padding: 3px 0 !important;
+          font-size: 10px !important;
+          line-height: 1.3 !important;
+          width: 100% !important;
+        }
+        
+        .markdown-content ul li::marker {
+          color: #e58c33 !important;
         }
         
         /* Project title */
         .markdown-content h1:first-child {
-          font-size: 20px;
-          color: #e58c33;
-          text-align: center;
-          margin: 10px 0 25px 0;
-          font-weight: bold;
+          font-size: 20px !important;
+          color: #e58c33 !important;
+          text-align: center !important;
+          margin: 10px 0 25px 0 !important;
+          font-weight: bold !important;
+          border-bottom: none !important;
+          width: 100% !important;
         }
         
-        /* Section headings */
-        .markdown-content h1, 
-        .markdown-content h2 {
-          font-size: 14px;
-          color: #e58c33;
-          margin: 16px 0 8px 0;
-          padding-bottom: 5px;
-          font-weight: bold;
-          border-bottom: 1px solid #e58c33;
+        /* Correspondence section */
+        .correspondence-item {
+          display: flex !important;
+          margin-bottom: 5px !important;
+          width: 100% !important;
         }
         
-        /* Basic table styling */
-        .markdown-content table { 
-          width: 100%;
-          margin: 8px 0;
-          border-collapse: collapse;
-          table-layout: fixed;
+        .correspondence-label {
+          width: 120px !important;
+          font-weight: bold !important;
         }
         
-        .markdown-content td, .markdown-content th { 
-          padding: 5px;
-          font-size: 9px;
-          line-height: 1.3;
-          border: 1px solid #ddd;
-          overflow-wrap: break-word;
-          word-wrap: break-word;
+        /* Override any orange text with standard color */
+        .markdown-content p {
+          width: 100% !important;
+          margin: 6px 0 !important;
+          padding: 0 !important;
+          font-size: 10px !important;
+          line-height: 1.3 !important;
+          color: #222 !important;
         }
         
-        .markdown-content th {
-          font-size: 9px;
-          font-weight: bold;
-          background-color: #f5f5f5;
-          color: #333;
-          text-align: left;
+        .markdown-content strong, .markdown-content b {
+          color: #333 !important;
+          font-weight: bold !important;
         }
       `}</style>
       <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>

@@ -1,71 +1,78 @@
 
 /**
- * Formats the Notes & Terms section
- * @param content The markdown content
- * @returns The formatted content
+ * Formats the Notes and Terms section to match heading style and standardize bullet points.
+ * Converts numbered items into bullet points and bolds keywords before colons.
  */
 export function formatNotesAndTerms(content: string): string {
   if (!content) return content;
   
-  // Extract all Notes & Terms content from the document
-  // Create our clean Section that we'll inject
-  let notesAndTermsContent = "";
+  const lines = content.split('\n');
+  let formatted = '';
+  let inNotesSection = false;
   
-  // First check if Notes & Terms is in a table
-  if (content.includes("| Notes & Terms") || content.includes("|Notes & Terms")) {
-    // Get everything after this table row - we'll extract the content for our section
-    const afterNotesRow = content.split(/\|[^\|]*Notes\s*&\s*Terms[^\|]*\|/i)[1];
-    if (afterNotesRow) {
-      // Look for any text content after the table row, until the next section heading
-      const contentMatch = afterNotesRow.match(/(?:.*?)(?=\n#|\n\||$)/s);
-      if (contentMatch) {
-        notesAndTermsContent = contentMatch[0].trim();
-      }
+  for (let i = 0; i < lines.length; i++) {
+    let line = lines[i];
+    
+    // Check for section heading
+    if (line.toLowerCase().includes('notes and terms') || line.toLowerCase().includes('notes & terms')) {
+      inNotesSection = true;
+      formatted += '# SECTION 9: NOTES AND TERMS\n\n';
+      continue;
     }
     
-    // Remove the original "Notes & Terms" row and any content from the table
-    // First, find the table containing Notes & Terms
-    const tableRegex = /(\|.*\|(\r?\n\|.*\|)+)/g;
-    let tables = [...content.matchAll(tableRegex)];
+    // Exit notes section if we hit another heading
+    if (inNotesSection && line.startsWith('#')) {
+      inNotesSection = false;
+    }
     
-    // Find and remove specifically the table with Notes & Terms
-    for (let i = 0; i < tables.length; i++) {
-      if (tables[i][0].match(/\|[^\|]*Notes\s*&\s*Terms[^\|]*\|/i)) {
-        const tableStart = tables[i].index || 0;
-        const tableEnd = tableStart + tables[i][0].length;
+    if (inNotesSection && line.trim()) {
+      // Skip if it's the section heading line
+      if (line.toLowerCase().includes('notes and terms') || line.toLowerCase().includes('notes & terms')) {
+        continue;
+      }
+      
+      line = line.trim();
+      
+      // Preserve indentation for sub-bullets
+      const indentation = line.match(/^(\s+)/)?.[1] || '';
+      line = line.trim();
+      
+      // Format numbered items without turning them into headings
+      const numberedItemMatch = line.match(/^(\d+)[\.\)]\s*(.*)/);
+      if (numberedItemMatch) {
+        const number = numberedItemMatch[1];
+        const text = numberedItemMatch[2];
         
-        // Remove the table itself
-        content = content.substring(0, tableStart) + content.substring(tableEnd);
-        break;
+        // Check for keyword: description pattern and bold the keyword
+        const colonIndex = text.indexOf(':');
+        if (colonIndex > 0) {
+          const keyword = text.substring(0, colonIndex).trim();
+          const rest = text.substring(colonIndex);
+          // Add a class for proper styling
+          line = `${number}. **${keyword}**${rest}`;
+        } else {
+          line = `${number}. ${text}`;  
+        }
       }
-    }
-  } else {
-    // If not in a table, look for a Notes & Terms section with a heading
-    const notesHeadingMatch = content.match(/(?:^|\n)#+\s*notes\s*(?:&|and)\s*terms.*?(?=\n#+|\n$|$)/is);
-    if (notesHeadingMatch) {
-      // Found a heading, now get all content that follows until the next heading
-      const headingIndex = notesHeadingMatch.index || 0;
-      const headingText = notesHeadingMatch[0];
-      const contentAfterHeading = content.substring(headingIndex + headingText.length);
-      
-      // Extract content until the next heading or end of content
-      const contentMatch = contentAfterHeading.match(/^(.*?)(?=\n#+\s|\n$|$)/s);
-      if (contentMatch) {
-        notesAndTermsContent = contentMatch[0].trim();
+      // Skip if it's already a bullet point
+      else if (!line.startsWith('-') && !line.startsWith('•')) {
+        // Check for keyword: description pattern and bold the keyword
+        const colonIndex = line.indexOf(':');
+        if (colonIndex > 0) {
+          const keyword = line.substring(0, colonIndex).trim();
+          const rest = line.substring(colonIndex);
+          line = `- **${keyword}**${rest}`;
+        } else {
+          line = `- ${line}`;
+        }
       }
       
-      // Remove the original heading and content
-      content = content.substring(0, headingIndex) + 
-                content.substring(headingIndex + headingText.length + (contentMatch ? contentMatch[0].length : 0));
+      formatted += `${indentation}${line}\n`;
+    } else if (!inNotesSection) {
+      // If we're not in notes section, keep the line as is
+      formatted += `${line}\n`;
     }
   }
   
-  // Create a clean "Notes & Terms" H1 heading with the extracted content
-  let notesAndTermsSection = "\n\n# Notes & Terms\n\n";
-  if (notesAndTermsContent) {
-    notesAndTermsSection += notesAndTermsContent;
-  }
-  
-  // Append the new section to the end of the document
-  return content + notesAndTermsSection;
+  return formatted.trim();
 }
