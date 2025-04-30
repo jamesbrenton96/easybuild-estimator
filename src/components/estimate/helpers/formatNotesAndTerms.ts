@@ -1,6 +1,7 @@
+
 /**
- * Formats the Notes and Terms section to remove styling and standardize formatting.
- * Converts the heading to a simple H1 and ensures the text is standard black (no orange/bold/underline).
+ * Formats the Notes and Terms section to ensure consistent styling with other sections.
+ * Converts the heading to an H1 with standard orange styling like other sections.
  */
 export function formatNotesAndTerms(content: string): string {
   if (!content) return content;

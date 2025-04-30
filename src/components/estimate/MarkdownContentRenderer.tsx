@@ -43,27 +43,6 @@ export default function MarkdownContentRenderer({ content }: { content: string }
           width: 100% !important;
         }
         
-        /* Special styling for Notes and Terms heading */
-        .markdown-content h1:contains("Notes and Terms") {
-          color: #333 !important;
-          font-size: 14px !important;
-          font-weight: bold !important;
-          margin-top: 22px !important;
-          margin-bottom: 12px !important;
-          padding: 0 0 6px 0 !important;
-          border-bottom: 1px solid #333 !important;
-          letter-spacing: 0.03em !important;
-          width: 100% !important;
-          text-transform: none !important;
-        }
-        
-        /* Standard styling for Notes and Terms content */
-        .markdown-content h1:contains("Notes and Terms") + * {
-          color: #333 !important;
-          font-weight: normal !important;
-          text-decoration: none !important;
-        }
-        
         /* Table styles */
         .markdown-content table { 
           width: 100% !important;
@@ -143,16 +122,6 @@ export default function MarkdownContentRenderer({ content }: { content: string }
         .markdown-content strong, .markdown-content b {
           color: #333 !important;
           font-weight: bold !important;
-        }
-        
-        /* Notes and Terms section - override all styling to ensure standard black text */
-        .markdown-content h1:contains("Notes and Terms") ~ p,
-        .markdown-content h1:contains("Notes and Terms") ~ ul,
-        .markdown-content h1:contains("Notes and Terms") ~ li,
-        .markdown-content h1:contains("Notes and Terms") ~ * {
-          color: #333 !important;
-          font-weight: normal !important;
-          text-decoration: none !important;
         }
       `}</style>
       <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
