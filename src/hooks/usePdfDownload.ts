@@ -1,3 +1,4 @@
+
 import html2pdf from "html2pdf.js";
 
 export function usePdfDownload() {
@@ -85,6 +86,21 @@ export function usePdfDownload() {
         letter-spacing: 0.03em !important;
       }
       
+      /* Notes and Terms - black text for all items */
+      h1:contains("NOTES AND TERMS") ~ ol li,
+      h1:contains("NOTES AND TERMS") ~ ul li,
+      h1:contains("NOTES AND TERMS") ~ p {
+        color: #333 !important;
+        font-weight: normal !important;
+      }
+      
+      h1:contains("NOTES AND TERMS") ~ ol li strong,
+      h1:contains("NOTES AND TERMS") ~ ul li strong,
+      h1:contains("NOTES AND TERMS") ~ * strong {
+        color: #333 !important;
+        font-weight: normal !important;
+      }
+      
       /* Table styles */
       table { 
         page-break-inside: avoid !important;
@@ -120,6 +136,11 @@ export function usePdfDownload() {
       }
       
       ul li {
+        padding: 3px 0 !important;
+        font-size: 10px !important;
+      }
+      
+      ol li {
         padding: 3px 0 !important;
         font-size: 10px !important;
       }

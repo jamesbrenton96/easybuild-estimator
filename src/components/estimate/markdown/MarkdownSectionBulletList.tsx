@@ -20,12 +20,19 @@ export default function MarkdownSectionBulletList({
     if (numberMatch) {
       const number = numberMatch[1];
       const text = numberMatch[2];
+      
+      // Check if this is part of Notes and Terms section
+      const isNotesAndTerms = header && (
+        typeof header === 'string' && header.includes('NOTES AND TERMS') ||
+        React.isValidElement(header) && header.props?.children?.includes?.('NOTES AND TERMS')
+      );
+      
       return (
-        <li key={i} className="flex items-start mb-3 list-none -ml-6">
-          <span className="inline-flex items-center justify-center w-7 h-7 bg-construction-orange text-white rounded-full mr-2 font-bold text-sm flex-shrink-0">
+        <li key={i} className={`flex items-start mb-3 list-none -ml-6 ${isNotesAndTerms ? 'text-gray-800' : ''}`}>
+          <span className={`inline-flex items-center justify-center w-7 h-7 ${isNotesAndTerms ? 'bg-gray-700 text-white' : 'bg-construction-orange text-white'} rounded-full mr-2 font-bold text-sm flex-shrink-0`}>
             {number}
           </span>
-          {text}
+          <span className={isNotesAndTerms ? 'text-gray-800 font-normal' : ''}>{text}</span>
         </li>
       );
     }

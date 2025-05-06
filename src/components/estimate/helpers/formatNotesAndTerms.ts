@@ -1,7 +1,6 @@
-
 /**
  * Formats the Notes and Terms section to match heading style and standardize bullet points.
- * Converts numbered items into bullet points and bolds keywords before colons.
+ * Converts numbered items into bullet points and ensures all text is black (not orange).
  */
 export function formatNotesAndTerms(content: string): string {
   if (!content) return content;
@@ -37,31 +36,30 @@ export function formatNotesAndTerms(content: string): string {
       const indentation = line.match(/^(\s+)/)?.[1] || '';
       line = line.trim();
       
-      // Format numbered items without turning them into headings
+      // Format numbered items without turning them into headings and without styling
       const numberedItemMatch = line.match(/^(\d+)[\.\)]\s*(.*)/);
       if (numberedItemMatch) {
         const number = numberedItemMatch[1];
         const text = numberedItemMatch[2];
         
-        // Check for keyword: description pattern and bold the keyword
+        // Check for keyword: description pattern but don't bold the keyword
         const colonIndex = text.indexOf(':');
         if (colonIndex > 0) {
           const keyword = text.substring(0, colonIndex).trim();
           const rest = text.substring(colonIndex);
-          // Add a class for proper styling
-          line = `${number}. **${keyword}**${rest}`;
+          line = `${number}. ${keyword}${rest}`;
         } else {
           line = `${number}. ${text}`;  
         }
       }
       // Skip if it's already a bullet point
       else if (!line.startsWith('-') && !line.startsWith('•')) {
-        // Check for keyword: description pattern and bold the keyword
+        // Don't add special formatting to keyword: description pattern
         const colonIndex = line.indexOf(':');
         if (colonIndex > 0) {
           const keyword = line.substring(0, colonIndex).trim();
           const rest = line.substring(colonIndex);
-          line = `- **${keyword}**${rest}`;
+          line = `- ${keyword}${rest}`;
         } else {
           line = `- ${line}`;
         }

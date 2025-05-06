@@ -1,3 +1,4 @@
+
 import React from "react";
 
 /**
@@ -31,6 +32,20 @@ export default function MarkdownTableStyle() {
         margin-top: 25px !important;
         font-size: 16px !important;
         letter-spacing: 0.03em !important;
+      }
+      
+      /* Notes and Terms black text */
+      .markdown-content h1:contains("NOTES AND TERMS") ~ ol li,
+      .markdown-content h1:contains("NOTES AND TERMS") ~ ul li {
+        color: #333 !important;
+        font-weight: normal !important;
+      }
+      
+      .markdown-content h1:contains("NOTES AND TERMS") ~ ol li strong,
+      .markdown-content h1:contains("NOTES AND TERMS") ~ ul li strong,
+      .markdown-content h1:contains("NOTES AND TERMS") ~ p strong {
+        color: #333 !important;
+        font-weight: normal !important;
       }
       
       /* Table styles matching Brenton template */
