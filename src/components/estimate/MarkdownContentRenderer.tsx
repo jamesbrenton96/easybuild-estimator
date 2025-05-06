@@ -69,6 +69,26 @@ export default function MarkdownContentRenderer({ content }: { content: string }
           color: #222 !important;
         }
         
+        /* Notes and terms specific styling - black text */
+        .markdown-content h1:contains("NOTES AND TERMS") ~ ul li,
+        .markdown-content h1:contains("NOTES AND TERMS") ~ ol li,
+        .markdown-content h1:contains("NOTES AND TERMS") ~ p,
+        .markdown-content h1:contains("NOTES AND TERMS") ~ ul li strong,
+        .markdown-content h1:contains("NOTES AND TERMS") ~ ol li strong {
+          color: #222 !important;
+          font-weight: normal !important;
+        }
+        
+        /* Notes and terms numbered list items - make number circles black instead of orange */
+        .markdown-content h1:contains("NOTES AND TERMS") ~ ul li span {
+          color: #222 !important;
+        }
+        
+        .markdown-content h1:contains("NOTES AND TERMS") ~ ul li span.inline-flex {
+          background-color: #555 !important;
+          color: white !important;
+        }
+        
         .markdown-content ul li::marker {
           color: #e58c33 !important;
         }
@@ -104,26 +124,6 @@ export default function MarkdownContentRenderer({ content }: { content: string }
           font-size: 10px !important;
           line-height: 1.3 !important;
           color: #222 !important;
-        }
-        
-        /* Make all text in Notes and Terms section black */
-        .markdown-content h1:contains("NOTES AND TERMS") ~ ul li,
-        .markdown-content h1:contains("NOTES AND TERMS") ~ ol li,
-        .markdown-content h1:contains("NOTES AND TERMS") ~ p {
-          color: #222 !important;
-        }
-        
-        /* Override any orange text in notes section */
-        .markdown-content h1:contains("NOTES AND TERMS") ~ * strong, 
-        .markdown-content h1:contains("NOTES AND TERMS") ~ * b {
-          color: #222 !important;
-          font-weight: normal !important;
-        }
-        
-        /* Style numbered lists in Notes section to be black */
-        .markdown-content h1:contains("NOTES AND TERMS") ~ ol li {
-          color: #222 !important;
-          font-weight: normal !important;
         }
         
         .markdown-content strong, .markdown-content b {

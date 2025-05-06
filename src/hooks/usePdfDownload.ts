@@ -86,18 +86,28 @@ export function usePdfDownload() {
         letter-spacing: 0.03em !important;
       }
       
-      /* Notes and Terms - black text for all items */
-      h1:contains("NOTES AND TERMS") ~ ol li,
-      h1:contains("NOTES AND TERMS") ~ ul li,
-      h1:contains("NOTES AND TERMS") ~ p {
-        color: #333 !important;
-        font-weight: normal !important;
+      /* NOTES AND TERMS - ensure all text is black */
+      h1:contains("NOTES AND TERMS"),
+      h1:contains("NOTES AND TERMS") ~ h2 {
+        color: #e58c33 !important;
       }
       
-      h1:contains("NOTES AND TERMS") ~ ol li strong,
-      h1:contains("NOTES AND TERMS") ~ ul li strong,
-      h1:contains("NOTES AND TERMS") ~ * strong {
-        color: #333 !important;
+      h1:contains("NOTES AND TERMS") ~ ol li,
+      h1:contains("NOTES AND TERMS") ~ ul li,
+      h1:contains("NOTES AND TERMS") ~ p,
+      h1:contains("NOTES AND TERMS") ~ div,
+      h1:contains("NOTES AND TERMS") ~ * {
+        color: #222 !important;
+      }
+      
+      h1:contains("NOTES AND TERMS") ~ ol li *,
+      h1:contains("NOTES AND TERMS") ~ ul li *,
+      h1:contains("NOTES AND TERMS") ~ p *,
+      h1:contains("NOTES AND TERMS") ~ div *,
+      h1:contains("NOTES AND TERMS") ~ * strong,
+      h1:contains("NOTES AND TERMS") ~ * b,
+      h1:contains("NOTES AND TERMS") ~ * span {
+        color: #222 !important;
         font-weight: normal !important;
       }
       
@@ -138,11 +148,13 @@ export function usePdfDownload() {
       ul li {
         padding: 3px 0 !important;
         font-size: 10px !important;
+        color: #222 !important;
       }
       
       ol li {
         padding: 3px 0 !important;
         font-size: 10px !important;
+        color: #222 !important;
       }
       
       ul li::marker {

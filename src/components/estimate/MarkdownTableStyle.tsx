@@ -34,17 +34,21 @@ export default function MarkdownTableStyle() {
         letter-spacing: 0.03em !important;
       }
       
-      /* Notes and Terms black text */
+      /* Notes and Terms - ensure all text is black, not orange */
       .markdown-content h1:contains("NOTES AND TERMS") ~ ol li,
-      .markdown-content h1:contains("NOTES AND TERMS") ~ ul li {
-        color: #333 !important;
+      .markdown-content h1:contains("NOTES AND TERMS") ~ ul li,
+      .markdown-content h1:contains("NOTES AND TERMS") ~ p {
+        color: #222 !important;
         font-weight: normal !important;
       }
       
-      .markdown-content h1:contains("NOTES AND TERMS") ~ ol li strong,
-      .markdown-content h1:contains("NOTES AND TERMS") ~ ul li strong,
-      .markdown-content h1:contains("NOTES AND TERMS") ~ p strong {
-        color: #333 !important;
+      /* Make sure the entire Notes and Terms content is black */
+      .markdown-content h1:contains("NOTES AND TERMS") ~ ol li *,
+      .markdown-content h1:contains("NOTES AND TERMS") ~ ul li *,
+      .markdown-content h1:contains("NOTES AND TERMS") ~ p *,
+      .markdown-content h1:contains("NOTES AND TERMS") ~ * strong,
+      .markdown-content h1:contains("NOTES AND TERMS") ~ * span {
+        color: #222 !important;
         font-weight: normal !important;
       }
       
