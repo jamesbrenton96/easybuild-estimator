@@ -1,3 +1,4 @@
+
 /**
  * Formats the Notes and Terms section to match heading style and standardize bullet points.
  * Converts numbered items into bullet points and ensures all text is black (not orange).
@@ -15,7 +16,7 @@ export function formatNotesAndTerms(content: string): string {
     // Check for section heading
     if (line.toLowerCase().includes('notes and terms') || line.toLowerCase().includes('notes & terms')) {
       inNotesSection = true;
-      formatted += '# SECTION 9: NOTES AND TERMS\n\n';
+      formatted += '# NOTES AND TERMS\n\n';
       continue;
     }
     

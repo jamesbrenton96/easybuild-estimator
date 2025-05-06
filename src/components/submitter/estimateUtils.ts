@@ -67,7 +67,7 @@ export function createMarkdownDescription(formData: any): string {
   
   // 9. Notes & Terms - Group by section headings if possible
   if (Array.isArray(formData.notes)) {
-    markdown += `# 9. Notes & Terms\n\n`;
+    markdown += `# NOTES AND TERMS\n\n`;
     
     // Try to identify sections based on patterns
     let currentSection = '';
