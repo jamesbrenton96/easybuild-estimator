@@ -173,21 +173,6 @@ export function ReviewTabs({ estimationResults, setEstimationResults }: {
               margin-bottom: 6px;
               line-height: 1.4;
             }
-            
-            /* Notes and terms section */
-            .notes-terms-list li {
-              margin-bottom: 8px;
-              position: relative;
-              padding-left: 20px;
-            }
-            
-            .notes-terms-list li:before {
-              content: '•';
-              color: #e58c33;
-              position: absolute;
-              left: 0;
-              top: 0;
-            }
           `}} />
           {processEstimationResults}
         </div>

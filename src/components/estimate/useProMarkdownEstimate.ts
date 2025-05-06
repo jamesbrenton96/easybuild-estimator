@@ -45,7 +45,7 @@ export function useProMarkdownEstimate(rawMarkdown: string) {
     // 7. Format total estimate section
     content = formatTotals(content);
 
-    // 8. Process the Notes & Terms section (bodyify all under heading)
+    // 8. Process the Notes & Terms section
     content = formatNotesAndTerms(content);
 
     // 9-12: Subtotal cells, subtotal groups, table formats, orange divider, etc.
@@ -95,10 +95,10 @@ export function useProMarkdownEstimate(rawMarkdown: string) {
       '<hr class="orange-divider"/>\n$1'
     );
 
-    // 13. Remove any duplicated "### Notes & Terms" heading if present.
+    // Remove any duplicated "### Notes & Terms" heading if present.
     content = content.replace(/^### (Notes & Terms|NOTES & TERMS)[^\n]*\n?/gim, "");
 
-    // 14. Thank You section
+    // Thank You section
     content = formatThankYou(content);
 
     // Clean up excess blank lines and spacing.

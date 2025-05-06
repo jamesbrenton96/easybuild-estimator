@@ -1,6 +1,5 @@
 /**
- * Formats the Notes and Terms section to match heading style and standardize bullet points.
- * Converts numbered items into bullet points and ensures all text is black (not orange).
+ * Formats the Notes and Terms section.
  */
 export function formatNotesAndTerms(content: string): string {
   if (!content) return content;
@@ -36,13 +35,12 @@ export function formatNotesAndTerms(content: string): string {
       const indentation = line.match(/^(\s+)/)?.[1] || '';
       line = line.trim();
       
-      // Format numbered items without turning them into headings and without styling
+      // Format numbered items
       const numberedItemMatch = line.match(/^(\d+)[\.\)]\s*(.*)/);
       if (numberedItemMatch) {
         const number = numberedItemMatch[1];
         const text = numberedItemMatch[2];
         
-        // Preserve the numbered format without any special styling
         line = `${number}. ${text}`;
       }
       // Skip if it's already a bullet point

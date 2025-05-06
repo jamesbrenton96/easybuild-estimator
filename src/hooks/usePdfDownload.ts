@@ -86,38 +86,6 @@ export function usePdfDownload() {
         letter-spacing: 0.03em !important;
       }
       
-      /* NOTES AND TERMS - ensure all text is black */
-      h1:contains("NOTES AND TERMS"),
-      h1:contains("NOTES AND TERMS") ~ h2 {
-        color: #e58c33 !important;
-      }
-      
-      /* This is important: all content below NOTES AND TERMS heading should be black */
-      h1:contains("NOTES AND TERMS") ~ ol li,
-      h1:contains("NOTES AND TERMS") ~ ul li,
-      h1:contains("NOTES AND TERMS") ~ p,
-      h1:contains("NOTES AND TERMS") ~ div,
-      h1:contains("NOTES AND TERMS") ~ * {
-        color: #222 !important;
-      }
-      
-      h1:contains("NOTES AND TERMS") ~ ol li *,
-      h1:contains("NOTES AND TERMS") ~ ul li *,
-      h1:contains("NOTES AND TERMS") ~ p *,
-      h1:contains("NOTES AND TERMS") ~ div *,
-      h1:contains("NOTES AND TERMS") ~ * strong,
-      h1:contains("NOTES AND TERMS") ~ * b,
-      h1:contains("NOTES AND TERMS") ~ * span {
-        color: #222 !important;
-        font-weight: normal !important;
-      }
-      
-      /* Force numbered text to be black in NOTES AND TERMS section */
-      h1:contains("NOTES AND TERMS") ~ p[id^="notes-term-"],
-      h1:contains("NOTES AND TERMS") ~ * {
-        color: #222 !important;
-      }
-      
       /* Table styles */
       table { 
         page-break-inside: avoid !important;

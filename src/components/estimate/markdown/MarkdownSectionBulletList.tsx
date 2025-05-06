@@ -13,12 +13,6 @@ export default function MarkdownSectionBulletList({
 }) {
   if (!header || !bulletPoints?.length) return null;
   
-  // Check if this is the Notes and Terms section
-  const isNotesAndTerms = header && (
-    typeof header === 'string' && header.toLowerCase().includes('notes and terms') ||
-    React.isValidElement(header) && header.props?.children?.toString().toLowerCase().includes('notes and terms')
-  );
-  
   // Process bullet points - if already has numbered items, don't add bullets
   const processedPoints = bulletPoints.map((item, i) => {
     // Check for numbered list items like "1. Text"
@@ -27,20 +21,19 @@ export default function MarkdownSectionBulletList({
       const number = numberMatch[1];
       const text = numberMatch[2];
       
-      // For Notes and Terms section specifically, apply black styling
       return (
-        <li key={i} className={`flex items-start mb-3 list-none -ml-6 ${isNotesAndTerms ? 'text-gray-800' : ''}`}>
-          <span className={`inline-flex items-center justify-center w-7 h-7 ${isNotesAndTerms ? 'bg-gray-700 text-white' : 'bg-construction-orange text-white'} rounded-full mr-2 font-bold text-sm flex-shrink-0`}>
+        <li key={i} className="flex items-start mb-3 list-none -ml-6">
+          <span className="inline-flex items-center justify-center w-7 h-7 bg-construction-orange text-white rounded-full mr-2 font-bold text-sm flex-shrink-0">
             {number}
           </span>
-          <span className={isNotesAndTerms ? 'text-gray-800' : ''}>{text}</span>
+          <span>{text}</span>
         </li>
       );
     }
     
-    // Regular bullet point with black text for Notes and Terms
+    // Regular bullet point
     return (
-      <li key={i} className={`my-2 ${isNotesAndTerms ? 'text-gray-800' : ''}`}>
+      <li key={i} className="my-2">
         {item}
       </li>
     );
@@ -49,7 +42,7 @@ export default function MarkdownSectionBulletList({
   return (
     <>
       {header}
-      <ul className={`ml-6 list-disc space-y-2 ${isNotesAndTerms ? 'text-gray-800' : ''}`}>
+      <ul className="ml-6 list-disc space-y-2">
         {processedPoints}
       </ul>
     </>
