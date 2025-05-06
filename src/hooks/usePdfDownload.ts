@@ -92,6 +92,7 @@ export function usePdfDownload() {
         color: #e58c33 !important;
       }
       
+      /* This is important: all content below NOTES AND TERMS heading should be black */
       h1:contains("NOTES AND TERMS") ~ ol li,
       h1:contains("NOTES AND TERMS") ~ ul li,
       h1:contains("NOTES AND TERMS") ~ p,
@@ -109,6 +110,12 @@ export function usePdfDownload() {
       h1:contains("NOTES AND TERMS") ~ * span {
         color: #222 !important;
         font-weight: normal !important;
+      }
+      
+      /* Force numbered text to be black in NOTES AND TERMS section */
+      h1:contains("NOTES AND TERMS") ~ p[id^="notes-term-"],
+      h1:contains("NOTES AND TERMS") ~ * {
+        color: #222 !important;
       }
       
       /* Table styles */

@@ -35,9 +35,17 @@ export default function MarkdownTableStyle() {
       }
       
       /* Notes and Terms - ensure all text is black, not orange */
+      .markdown-content h1:contains("NOTES AND TERMS"),
+      .markdown-content h1:contains("notes and terms") {
+        color: #e58c33 !important;
+      }
+      
       .markdown-content h1:contains("NOTES AND TERMS") ~ ol li,
       .markdown-content h1:contains("NOTES AND TERMS") ~ ul li,
-      .markdown-content h1:contains("NOTES AND TERMS") ~ p {
+      .markdown-content h1:contains("NOTES AND TERMS") ~ p,
+      .markdown-content h1:contains("notes and terms") ~ ol li,
+      .markdown-content h1:contains("notes and terms") ~ ul li,
+      .markdown-content h1:contains("notes and terms") ~ p {
         color: #222 !important;
         font-weight: normal !important;
       }
@@ -47,9 +55,20 @@ export default function MarkdownTableStyle() {
       .markdown-content h1:contains("NOTES AND TERMS") ~ ul li *,
       .markdown-content h1:contains("NOTES AND TERMS") ~ p *,
       .markdown-content h1:contains("NOTES AND TERMS") ~ * strong,
-      .markdown-content h1:contains("NOTES AND TERMS") ~ * span {
+      .markdown-content h1:contains("NOTES AND TERMS") ~ * span,
+      .markdown-content h1:contains("notes and terms") ~ ol li *,
+      .markdown-content h1:contains("notes and terms") ~ ul li *,
+      .markdown-content h1:contains("notes and terms") ~ p *,
+      .markdown-content h1:contains("notes and terms") ~ * strong,
+      .markdown-content h1:contains("notes and terms") ~ * span {
         color: #222 !important;
         font-weight: normal !important;
+      }
+      
+      /* Special case for the numbered items in Notes and Terms */
+      .markdown-content h1:contains("NOTES AND TERMS") ~ p,
+      .markdown-content h1:contains("notes and terms") ~ p {
+        color: #222 !important;
       }
       
       /* Table styles matching Brenton template */

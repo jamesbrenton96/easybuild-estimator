@@ -15,8 +15,8 @@ export default function MarkdownSectionBulletList({
   
   // Check if this is the Notes and Terms section
   const isNotesAndTerms = header && (
-    typeof header === 'string' && header.includes('NOTES AND TERMS') ||
-    React.isValidElement(header) && header.props?.children?.includes?.('NOTES AND TERMS')
+    typeof header === 'string' && header.toLowerCase().includes('notes and terms') ||
+    React.isValidElement(header) && header.props?.children?.toString().toLowerCase().includes('notes and terms')
   );
   
   // Process bullet points - if already has numbered items, don't add bullets
@@ -27,7 +27,7 @@ export default function MarkdownSectionBulletList({
       const number = numberMatch[1];
       const text = numberMatch[2];
       
-      // Apply black text styling for Notes and Terms section
+      // For Notes and Terms section specifically, apply black styling
       return (
         <li key={i} className={`flex items-start mb-3 list-none -ml-6 ${isNotesAndTerms ? 'text-gray-800' : ''}`}>
           <span className={`inline-flex items-center justify-center w-7 h-7 ${isNotesAndTerms ? 'bg-gray-700 text-white' : 'bg-construction-orange text-white'} rounded-full mr-2 font-bold text-sm flex-shrink-0`}>
@@ -49,7 +49,7 @@ export default function MarkdownSectionBulletList({
   return (
     <>
       {header}
-      <ul className="ml-6 list-disc space-y-2">
+      <ul className={`ml-6 list-disc space-y-2 ${isNotesAndTerms ? 'text-gray-800' : ''}`}>
         {processedPoints}
       </ul>
     </>

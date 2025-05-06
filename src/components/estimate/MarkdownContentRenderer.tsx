@@ -73,24 +73,32 @@ export default function MarkdownContentRenderer({ content }: { content: string }
         .markdown-content h1:contains("NOTES AND TERMS") ~ ul li,
         .markdown-content h1:contains("NOTES AND TERMS") ~ ol li,
         .markdown-content h1:contains("NOTES AND TERMS") ~ p,
-        .markdown-content h1:contains("NOTES AND TERMS") ~ ul li strong,
-        .markdown-content h1:contains("NOTES AND TERMS") ~ ol li strong {
+        .markdown-content h1:contains("NOTES AND TERMS") ~ * {
+          color: #222 !important;
+        }
+        
+        .markdown-content h1:contains("NOTES AND TERMS") ~ ul li *,
+        .markdown-content h1:contains("NOTES AND TERMS") ~ ol li *,
+        .markdown-content h1:contains("NOTES AND TERMS") ~ p *,
+        .markdown-content h1:contains("NOTES AND TERMS") ~ div *,
+        .markdown-content h1:contains("NOTES AND TERMS") ~ * strong,
+        .markdown-content h1:contains("NOTES AND TERMS") ~ * b,
+        .markdown-content h1:contains("NOTES AND TERMS") ~ * span {
           color: #222 !important;
           font-weight: normal !important;
         }
         
-        /* Notes and terms numbered list items - make number circles black instead of orange */
-        .markdown-content h1:contains("NOTES AND TERMS") ~ ul li span {
+        /* IMPORTANT: Fix for numbered items in Notes and Terms section */
+        .markdown-content h1:contains("NOTES AND TERMS") ~ p,
+        .markdown-content h1:contains("NOTES AND TERMS") ~ ul li,
+        .markdown-content h1:contains("NOTES AND TERMS") ~ ol li,
+        .markdown-content h1:contains("NOTES AND TERMS") ~ p strong,
+        .markdown-content h1:contains("NOTES AND TERMS") ~ p b,
+        .markdown-content h1:contains("NOTES AND TERMS") ~ p span,
+        .markdown-content h1:contains("NOTES AND TERMS") ~ li strong,
+        .markdown-content h1:contains("NOTES AND TERMS") ~ li b,
+        .markdown-content h1:contains("NOTES AND TERMS") ~ li span {
           color: #222 !important;
-        }
-        
-        .markdown-content h1:contains("NOTES AND TERMS") ~ ul li span.inline-flex {
-          background-color: #555 !important;
-          color: white !important;
-        }
-        
-        .markdown-content ul li::marker {
-          color: #e58c33 !important;
         }
         
         /* Project title */
@@ -129,6 +137,11 @@ export default function MarkdownContentRenderer({ content }: { content: string }
         .markdown-content strong, .markdown-content b {
           color: #333 !important;
           font-weight: bold !important;
+        }
+        
+        /* Force numbered list items to be black in Notes and Terms section */
+        .markdown-content h1:contains("NOTES AND TERMS") ~ * {
+          color: #222 !important;
         }
       `}</style>
       <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
