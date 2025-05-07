@@ -1,6 +1,7 @@
 
 import { useState } from "react";
 import { useWebhookEstimate } from "./useWebhookEstimate";
+import { toast } from "@/hooks/use-toast";
 
 interface UseFormSubmissionProps {
   formData: any;
@@ -22,6 +23,38 @@ const useFormSubmission = ({
 
   const { getEstimate } = useWebhookEstimate();
 
+  const validateFiles = (files: File[]): { valid: boolean; message?: string } => {
+    // Check for empty files array
+    if (!Array.isArray(files) || files.length === 0) {
+      return { valid: true }; // Files are optional
+    }
+
+    const isFilePDF = (file: File) => file.type === "application/pdf";
+    const isFileJPEG = (file: File) => ["image/jpeg", "image/jpg"].includes(file.type);
+    
+    const pdfFiles = files.filter(isFilePDF);
+    const jpegFiles = files.filter(isFileJPEG);
+    const otherFiles = files.filter(file => !isFilePDF(file) && !isFileJPEG(file));
+    
+    if (otherFiles.length > 0) {
+      return { valid: false, message: "Only JPEG and PDF files are allowed." };
+    }
+    
+    if (pdfFiles.length > 0 && jpegFiles.length > 0) {
+      return { valid: false, message: "You can upload either JPEG files OR a PDF file, not both." };
+    }
+    
+    if (pdfFiles.length > 1) {
+      return { valid: false, message: "You can upload a maximum of 1 PDF file." };
+    }
+    
+    if (jpegFiles.length > 4) {
+      return { valid: false, message: "You can upload a maximum of 4 JPEG files." };
+    }
+    
+    return { valid: true };
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -34,8 +67,13 @@ const useFormSubmission = ({
       // Create a copy of the form data
       const submissionData = { ...formData };
       
-      // Validate files - no need to convert to base64 anymore
+      // Validate files
       if (Array.isArray(submissionData.files) && submissionData.files.length > 0) {
+        const fileValidation = validateFiles(submissionData.files);
+        if (!fileValidation.valid) {
+          throw new Error(fileValidation.message);
+        }
+        
         setUploadProgress(30);
         
         // Log file information for debugging
@@ -59,6 +97,11 @@ const useFormSubmission = ({
       setError(err?.message || "An unknown error occurred.");
       setStatus("fail");
       setIsLoading(false);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: err?.message || "An unknown error occurred while submitting your estimate."
+      });
     } finally {
       setIsSubmitting(false);
     }
