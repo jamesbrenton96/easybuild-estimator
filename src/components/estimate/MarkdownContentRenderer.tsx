@@ -106,20 +106,6 @@ export default function MarkdownContentRenderer({ content }: { content: string }
           color: #333 !important;
           font-weight: bold !important;
         }
-        
-        /* Notes and Terms section - specific styling */
-        .markdown-content h1:contains("NOTES AND TERMS"), 
-        .markdown-content h2:contains("NOTES AND TERMS") {
-          color: #e58c33 !important;
-          border-bottom: 1px solid #e58c33 !important;
-        }
-        
-        /* Remove numbering from notes section headings */
-        .markdown-content h1:contains("NOTES AND TERMS") + p,
-        .markdown-content h2:contains("NOTES AND TERMS") + p {
-          margin-left: 0 !important;
-          text-indent: 0 !important;
-        }
       `}</style>
       <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
     </div>
