@@ -65,42 +65,18 @@ export function createMarkdownDescription(formData: any): string {
     markdown += createTimelineTable(formData.timeline) + '\n\n';
   }
   
-  // 9. Notes & Terms - Group by section headings if possible
+  // 9. Notes & Terms - Format with double line breaks and no numbers
   if (Array.isArray(formData.notes)) {
     markdown += `# NOTES AND TERMS\n\n`;
     
-    // Try to identify sections based on patterns
-    let currentSection = '';
-    let sectionNotes: string[] = [];
-    let sections: Record<string, string[]> = {};
-    
-    // First pass: try to identify section headings
-    formData.notes.forEach((note: string) => {
-      // Check if this could be a heading (ends with colon, short text)
-      if (note.endsWith(':') && note.length < 30) {
-        currentSection = note;
-        sections[currentSection] = [];
-      }
-      // If we have a section, add this note to it
-      else if (currentSection) {
-        sections[currentSection].push(note);
-      }
-      // Otherwise it's a standalone note
-      else {
-        sectionNotes.push(note);
-      }
+    // Process notes without numbers and with extra spacing
+    const processedNotes = formData.notes.map((note: string) => {
+      // Remove any existing list formatting
+      return note.replace(/^\s*(\d+[\.\)]\s*)+/, '').trim();
     });
     
-    // Output sections with their notes
-    for (const [heading, notes] of Object.entries(sections)) {
-      markdown += `${heading}\n\n`;
-      markdown += notes.map((note: string) => `• ${note}`).join('\n') + '\n\n';
-    }
-    
-    // Output remaining standalone notes
-    if (sectionNotes.length > 0) {
-      markdown += sectionNotes.map((note: string) => `• ${note}`).join('\n') + '\n\n';
-    }
+    // Join with double line breaks for extra spacing
+    markdown += processedNotes.join('\n\n') + '\n\n';
   }
   
   return markdown.trim();

@@ -7,10 +7,11 @@ import { bulletSection } from "./helpers/bulletSection";
 import { formatTableSection } from "./helpers/formatTableSection";
 import { formatTotals } from "./helpers/formatTotals";
 import { formatThankYou } from "./helpers/formatThankYou";
+import { formatNotesAndTerms } from "./helpers/formatNotesAndTerms";
 
 /**
  * useProMarkdownEstimate - Enhanced markdown formatter for construction estimates (refactored).
- * "Notes & Terms" remains as plain text; no bullets/headings/styling for that section.
+ * Notes & Terms section is specially formatted with extra spacing between items and no numbers.
  */
 export function useProMarkdownEstimate(rawMarkdown: string) {
   return useMemo(() => {
@@ -32,7 +33,16 @@ export function useProMarkdownEstimate(rawMarkdown: string) {
       content = bulletSection(section, content);
     });
 
-    // 6. Table formatting for tabbed sections
+    // 6. Format Notes and Terms section
+    const notesTermsPattern = /(?:^|\n)(#+\s*NOTES\s+AND\s+TERMS\s*(?:\n|$))([\s\S]*?)(?=\n#+\s*|$)/i;
+    const notesTermsMatch = content.match(notesTermsPattern);
+    
+    if (notesTermsMatch && notesTermsMatch[2]) {
+      const formattedNotesTerms = formatNotesAndTerms(notesTermsMatch[2]);
+      content = content.replace(notesTermsMatch[2], formattedNotesTerms);
+    }
+
+    // 7. Table formatting for tabbed sections
     [
       "Labor Costs", "Labour Costs", "Labor Cost Breakdown",
       "Materials & Cost Breakdown", "Material Cost Breakdown",
@@ -41,13 +51,13 @@ export function useProMarkdownEstimate(rawMarkdown: string) {
       content = formatTableSection(section, content);
     });
 
-    // 7. Format total estimate section
+    // 8. Format total estimate section
     content = formatTotals(content);
 
-    // 8. Process the Thank You section
+    // 9. Process the Thank You section
     content = formatThankYou(content);
 
-    // 9-12: Subtotal cells, subtotal groups, table formats, orange divider, etc.
+    // 10-13: Subtotal cells, subtotal groups, table formats, orange divider, etc.
     content = content.replace(
       /(<span class="subtotal-cell">[^<]*<\/span>[\s\t]*<span class="subtotal-cell">[^<]*<\/span>)/gm,
       (match) => {

@@ -106,6 +106,20 @@ export default function MarkdownContentRenderer({ content }: { content: string }
           color: #333 !important;
           font-weight: bold !important;
         }
+        
+        /* Notes and Terms specific styling */
+        .markdown-content h2:contains("NOTES AND TERMS"), 
+        .markdown-content h1:contains("NOTES AND TERMS") {
+          font-size: 14px !important;
+          margin-top: 25px !important;
+        }
+        
+        /* Add more space between paragraphs in the Notes and Terms section */
+        .markdown-content h2:contains("NOTES AND TERMS") ~ p,
+        .markdown-content h1:contains("NOTES AND TERMS") ~ p {
+          margin: 12px 0 !important;
+          line-height: 1.5 !important;
+        }
       `}</style>
       <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
     </div>
