@@ -7,7 +7,6 @@ import { bulletSection } from "./helpers/bulletSection";
 import { formatTableSection } from "./helpers/formatTableSection";
 import { formatTotals } from "./helpers/formatTotals";
 import { formatThankYou } from "./helpers/formatThankYou";
-import { formatNotesAndTerms } from "./helpers/formatNotesAndTerms";
 
 /**
  * useProMarkdownEstimate - Enhanced markdown formatter for construction estimates (refactored).
@@ -45,8 +44,8 @@ export function useProMarkdownEstimate(rawMarkdown: string) {
     // 7. Format total estimate section
     content = formatTotals(content);
 
-    // 8. Process the Notes & Terms section
-    content = formatNotesAndTerms(content);
+    // 8. Process the Thank You section
+    content = formatThankYou(content);
 
     // 9-12: Subtotal cells, subtotal groups, table formats, orange divider, etc.
     content = content.replace(
@@ -94,12 +93,6 @@ export function useProMarkdownEstimate(rawMarkdown: string) {
       /(### Total (Estimate|Project Cost)|<span class="section-number">[0-9]+<\/span>Total (Estimate|Project Cost))/i,
       '<hr class="orange-divider"/>\n$1'
     );
-
-    // Remove any duplicated "### Notes & Terms" heading if present.
-    content = content.replace(/^### (Notes & Terms|NOTES & TERMS)[^\n]*\n?/gim, "");
-
-    // Thank You section
-    content = formatThankYou(content);
 
     // Clean up excess blank lines and spacing.
     content = content.replace(/\n{3,}/g, "\n\n").trim();
