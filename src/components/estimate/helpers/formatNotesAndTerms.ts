@@ -11,8 +11,11 @@ export function formatNotesAndTerms(content: string): string {
   
   // Process each line
   const processedLines = lines.map(line => {
-    // Remove any numbered list formatting (e.g., "1. ", "1) ", etc.)
-    line = line.replace(/^\s*(\d+[\.\)]\s*)+/, '');
+    // Remove any numbered list formatting (e.g., "1. ", "1) ", "#. ", etc.)
+    line = line.replace(/^\s*(\d+[\.\)]\s*|\d+\.\s*|\#\.\s*)/, '');
+    
+    // Also remove any leading numbers with a period, dash, or parenthesis
+    line = line.replace(/^\s*\d+[\.\-\)]+\s*/, '');
     
     // Remove any bullet points if they exist
     line = line.replace(/^\s*[\-\*•]\s*/, '');

@@ -25,7 +25,7 @@ export default function DocumentsStep() {
   }, [formData.files, updateFormData]); // Only runs when files change
 
   const isFilePDF = (file: File) => file.type === "application/pdf";
-  const isFileJPEG = (file: File) => ["image/jpeg", "image/jpg"].includes(file.type);
+  const isFileImage = (file: File) => ["image/jpeg", "image/jpg", "image/png"].includes(file.type);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFiles = Array.from(e.target.files || []);
@@ -39,26 +39,26 @@ export default function DocumentsStep() {
     const combinedFiles = [...existingValidFiles, ...validFiles];
     
     const pdfFiles = combinedFiles.filter(isFilePDF);
-    const jpegFiles = combinedFiles.filter(isFileJPEG);
-    const otherFiles = combinedFiles.filter(file => !isFilePDF(file) && !isFileJPEG(file));
+    const imageFiles = combinedFiles.filter(isFileImage);
+    const otherFiles = combinedFiles.filter(file => !isFilePDF(file) && !isFileImage(file));
     
     // Validate file restrictions
     if (otherFiles.length > 0) {
-      setFileError("Only JPEG and PDF files are allowed.");
+      setFileError("Only JPEG, PNG, and PDF files are allowed.");
       toast({
         variant: "destructive",
         title: "File type not allowed",
-        description: "Only JPEG and PDF files are allowed."
+        description: "Only JPEG, PNG, and PDF files are allowed."
       });
       return;
     }
     
-    if (pdfFiles.length > 0 && jpegFiles.length > 0) {
-      setFileError("You can upload either JPEG files OR a PDF file, not both.");
+    if (pdfFiles.length > 0 && imageFiles.length > 0) {
+      setFileError("You can upload either image files OR a PDF file, not both.");
       toast({
         variant: "destructive",
         title: "Invalid file combination",
-        description: "You can upload either JPEG files OR a PDF file, not both."
+        description: "You can upload either image files OR a PDF file, not both."
       });
       return;
     }
@@ -73,12 +73,12 @@ export default function DocumentsStep() {
       return;
     }
     
-    if (jpegFiles.length > 4) {
-      setFileError("You can upload a maximum of 4 JPEG files.");
+    if (imageFiles.length > 4) {
+      setFileError("You can upload a maximum of 4 image files.");
       toast({
         variant: "destructive",
-        title: "Too many JPEGs",
-        description: "You can upload a maximum of 4 JPEG files."
+        title: "Too many images",
+        description: "You can upload a maximum of 4 image files."
       });
       return;
     }
@@ -109,7 +109,7 @@ export default function DocumentsStep() {
           Please add only relevant documents for your project. You can upload either:
         </p>
         <ul className="text-white/80 list-disc list-inside max-w-md mx-auto mt-2 text-left">
-          <li>Up to 4 JPEG files, OR</li>
+          <li>Up to 4 image files (JPEG or PNG), OR</li>
           <li>1 PDF document</li>
         </ul>
       </div>
@@ -121,7 +121,7 @@ export default function DocumentsStep() {
               multiple
               onChange={handleFileChange}
               className="block w-full bg-white rounded p-2 mb-4"
-              accept=".pdf,.jpg,.jpeg"
+              accept=".pdf,.jpg,.jpeg,.png"
             />
             
             {fileError && (

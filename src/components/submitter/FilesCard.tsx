@@ -8,7 +8,7 @@ const getFileIcon = (file: File) => {
   if (file.type === "application/pdf") {
     return <FileText className="h-4 w-4 text-red-500" />;
   }
-  if (file.type === "image/jpeg" || file.type === "image/jpg") {
+  if (file.type === "image/jpeg" || file.type === "image/jpg" || file.type === "image/png") {
     return <Image className="h-4 w-4 text-construction-orange" />;
   }
   return <File className="h-4 w-4 text-blue-500" />;
@@ -17,17 +17,17 @@ const getFileIcon = (file: File) => {
 export const FilesCard: React.FC<{ files: File[] }> = ({ files }) => {
   // Validate file restrictions at review time
   const isPDF = (file: File) => file.type === "application/pdf";
-  const isJPEG = (file: File) => file.type === "image/jpeg" || file.type === "image/jpg";
+  const isImage = (file: File) => ["image/jpeg", "image/jpg", "image/png"].includes(file.type);
   
   const pdfFiles = files.filter(isPDF);
-  const jpegFiles = files.filter(isJPEG);
-  const otherFiles = files.filter(file => !isPDF(file) && !isJPEG(file));
+  const imageFiles = files.filter(isImage);
+  const otherFiles = files.filter(file => !isPDF(file) && !isImage(file));
   
   let errorMessage = null;
-  if (otherFiles.length > 0) errorMessage = "Only JPEG and PDF files are allowed.";
-  else if (pdfFiles.length > 0 && jpegFiles.length > 0) errorMessage = "Mixed file types are not allowed.";
+  if (otherFiles.length > 0) errorMessage = "Only JPEG, PNG, and PDF files are allowed.";
+  else if (pdfFiles.length > 0 && imageFiles.length > 0) errorMessage = "Mixed file types are not allowed.";
   else if (pdfFiles.length > 1) errorMessage = "Maximum of 1 PDF file allowed.";
-  else if (jpegFiles.length > 4) errorMessage = "Maximum of 4 JPEG files allowed.";
+  else if (imageFiles.length > 4) errorMessage = "Maximum of 4 image files allowed.";
 
   return (
     <Card className="mb-8 bg-white/5 border-white/20">

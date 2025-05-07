@@ -71,8 +71,8 @@ export function createMarkdownDescription(formData: any): string {
     
     // Process notes without numbers and with extra spacing
     const processedNotes = formData.notes.map((note: string) => {
-      // Remove any existing list formatting
-      return note.replace(/^\s*(\d+[\.\)]\s*)+/, '').trim();
+      // Remove any existing list formatting or numbers
+      return note.replace(/^\s*(\d+[\.\)\-]\s*)+/, '').replace(/^\s*\d+[\.\-\)]+\s*/, '').trim();
     });
     
     // Join with double line breaks for extra spacing

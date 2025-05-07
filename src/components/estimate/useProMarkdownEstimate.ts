@@ -33,13 +33,13 @@ export function useProMarkdownEstimate(rawMarkdown: string) {
       content = bulletSection(section, content);
     });
 
-    // 6. Format Notes and Terms section
+    // 6. Format Notes and Terms section - enhanced to aggressively remove numbering
     const notesTermsPattern = /(?:^|\n)(#+\s*NOTES\s+AND\s+TERMS\s*(?:\n|$))([\s\S]*?)(?=\n#+\s*|$)/i;
     const notesTermsMatch = content.match(notesTermsPattern);
     
     if (notesTermsMatch && notesTermsMatch[2]) {
       const formattedNotesTerms = formatNotesAndTerms(notesTermsMatch[2]);
-      content = content.replace(notesTermsMatch[2], formattedNotesTerms);
+      content = content.replace(notesTermsMatch[0], notesTermsMatch[1] + formattedNotesTerms);
     }
 
     // 7. Table formatting for tabbed sections
@@ -71,10 +71,12 @@ export function useProMarkdownEstimate(rawMarkdown: string) {
         return match;
       }
     );
+    
     content = content.replace(
       /^(\d+)\.\s+(<span class="subtotal-cell">.*$)/gm,
       (_, num, line) => `\n## <span class="section-number">${num}</span>Cost Breakdown\n\n${line}`
     );
+    
     content = content.replace(
       /(<span class="subtotal-cell">.*<\/span>.*<span class="subtotal-cell">.*<\/span>)/gm,
       (match) => {
@@ -99,6 +101,7 @@ export function useProMarkdownEstimate(rawMarkdown: string) {
         return match;
       }
     );
+    
     content = content.replace(
       /(### Total (Estimate|Project Cost)|<span class="section-number">[0-9]+<\/span>Total (Estimate|Project Cost))/i,
       '<hr class="orange-divider"/>\n$1'

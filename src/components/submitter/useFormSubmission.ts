@@ -29,27 +29,27 @@ const useFormSubmission = ({
       return { valid: true }; // Files are optional
     }
 
-    const isFilePDF = (file: File) => file.type === "application/pdf";
-    const isFileJPEG = (file: File) => ["image/jpeg", "image/jpg"].includes(file.type);
+    const isPDF = (file: File) => file.type === "application/pdf";
+    const isImage = (file: File) => ["image/jpeg", "image/jpg", "image/png"].includes(file.type);
     
-    const pdfFiles = files.filter(isFilePDF);
-    const jpegFiles = files.filter(isFileJPEG);
-    const otherFiles = files.filter(file => !isFilePDF(file) && !isFileJPEG(file));
+    const pdfFiles = files.filter(isPDF);
+    const imageFiles = files.filter(isImage);
+    const otherFiles = files.filter(file => !isPDF(file) && !isImage(file));
     
     if (otherFiles.length > 0) {
-      return { valid: false, message: "Only JPEG and PDF files are allowed." };
+      return { valid: false, message: "Only JPEG, PNG, and PDF files are allowed." };
     }
     
-    if (pdfFiles.length > 0 && jpegFiles.length > 0) {
-      return { valid: false, message: "You can upload either JPEG files OR a PDF file, not both." };
+    if (pdfFiles.length > 0 && imageFiles.length > 0) {
+      return { valid: false, message: "You can upload either image files OR a PDF file, not both." };
     }
     
     if (pdfFiles.length > 1) {
       return { valid: false, message: "You can upload a maximum of 1 PDF file." };
     }
     
-    if (jpegFiles.length > 4) {
-      return { valid: false, message: "You can upload a maximum of 4 JPEG files." };
+    if (imageFiles.length > 4) {
+      return { valid: false, message: "You can upload a maximum of 4 image files." };
     }
     
     return { valid: true };

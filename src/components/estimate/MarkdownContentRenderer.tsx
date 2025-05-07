@@ -120,6 +120,14 @@ export default function MarkdownContentRenderer({ content }: { content: string }
           margin: 12px 0 !important;
           line-height: 1.5 !important;
         }
+        
+        /* Hide any remaining numbers in Notes and Terms section */
+        .markdown-content h2:contains("NOTES AND TERMS") ~ p > span:first-child:matches(/^\d+[\.\)]/),
+        .markdown-content h1:contains("NOTES AND TERMS") ~ p > span:first-child:matches(/^\d+[\.\)]/),
+        .markdown-content h2:contains("NOTES AND TERMS") ~ p:matches(/^\d+[\.\)]/),
+        .markdown-content h1:contains("NOTES AND TERMS") ~ p:matches(/^\d+[\.\)]/) {
+          color: transparent !important;
+        }
       `}</style>
       <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
     </div>
