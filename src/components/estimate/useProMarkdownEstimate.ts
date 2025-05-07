@@ -7,6 +7,7 @@ import { bulletSection } from "./helpers/bulletSection";
 import { formatTableSection } from "./helpers/formatTableSection";
 import { formatTotals } from "./helpers/formatTotals";
 import { formatThankYou } from "./helpers/formatThankYou";
+import { formatNotesAndTerms } from "./helpers/formatNotesAndTerms";
 
 /**
  * useProMarkdownEstimate - Enhanced markdown formatter for construction estimates (refactored).
@@ -44,10 +45,13 @@ export function useProMarkdownEstimate(rawMarkdown: string) {
     // 7. Format total estimate section
     content = formatTotals(content);
 
-    // 8. Process the Thank You section
+    // 8. Process the Notes & Terms section (remove numbers)
+    content = formatNotesAndTerms(content);
+
+    // 9. Process the Thank You section
     content = formatThankYou(content);
 
-    // 9-12: Subtotal cells, subtotal groups, table formats, orange divider, etc.
+    // 10-12: Subtotal cells, subtotal groups, table formats, orange divider, etc.
     content = content.replace(
       /(<span class="subtotal-cell">[^<]*<\/span>[\s\t]*<span class="subtotal-cell">[^<]*<\/span>)/gm,
       (match) => {
