@@ -1,4 +1,3 @@
-
 import { useCallback } from "react";
 
 export interface WebhookResponse {
@@ -25,12 +24,10 @@ export function useWebhookEstimate() {
         const formData = new FormData();
         
         // Add all files to the form data with array syntax (files[])
-        payload.files.forEach((file: File, index: number) => {
+        payload.files.forEach((file: File) => {
           if (file instanceof File) {
-            console.log(`Uploading file ${index + 1}: ${file.name}, Type: ${file.type}, Size: ${file.size} bytes`);
-            
-            // Append each file to the "files[]" field to create an array on the server
-            formData.append("files[]", file, file.name);
+            console.log(`Uploading file: ${file.name}, Type: ${file.type}, Size: ${file.size} bytes`);
+            formData.append("files", file);
           }
         });
         
@@ -44,7 +41,7 @@ export function useWebhookEstimate() {
         // Add the rest of the form data as a JSON string in the 'meta' field
         formData.append('meta', JSON.stringify(metaData));
         
-        console.log("Sending multipart/form-data to webhook with files[]");
+        console.log("Sending multipart/form-data to webhook with files array");
         
         // Send the form data without setting Content-Type (browser will set it correctly with boundary)
         const response = await fetch(webhookUrl, {
