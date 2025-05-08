@@ -33,21 +33,27 @@ export function useProMarkdownEstimate(rawMarkdown: string) {
       content = bulletSection(section, content);
     });
 
-    // 6. Format Notes and Terms section - enhanced to aggressively remove numbering
+    // 6. Format Notes and Terms section - enhanced to completely remove numbering
     const notesTermsPattern = /(?:^|\n)(#+\s*NOTES\s+AND\s+TERMS\s*(?:\n|$))([\s\S]*?)(?=\n#+\s*|$)/i;
     const notesTermsMatch = content.match(notesTermsPattern);
     
     if (notesTermsMatch && notesTermsMatch[2]) {
-      const formattedNotesTerms = formatNotesAndTerms(notesTermsMatch[2]);
+      // Apply more aggressive formatting to completely remove all numbers
+      let formattedNotesTerms = formatNotesAndTerms(notesTermsMatch[2]);
       
-      // Replace numbers from the beginning of each line
-      let cleanedTerms = formattedNotesTerms.replace(/^\d+[\.\:\)\s]+\s*/gm, '');
+      // Additional cleanup to ensure all number patterns are removed
+      formattedNotesTerms = formattedNotesTerms
+        // Remove all number + punctuation patterns at line starts
+        .replace(/^\d+[\.\:\)\s]+\s*/gm, '')
+        // Remove formats like "2. PAYMENT TERMS:" at line starts
+        .replace(/^\d+\.\s+([A-Z]+\s+[A-Z]+\:)/gm, '$1')
+        // Remove remnant numbers that might be at the start of lines
+        .replace(/^(\d+)[\.:\)\s]+/gm, '')
+        // Final cleanup of any stragglers
+        .replace(/^\s*\d+[\.\:\)\-\s]/gm, '');
       
-      // Replace the section with cleaned up version
-      content = content.replace(notesTermsMatch[0], notesTermsMatch[1] + cleanedTerms);
-      
-      // Additional cleanup for any leftover numbered items
-      content = content.replace(/(#+\s*NOTES\s+AND\s+TERMS\s*(?:\n|$)[\s\S]*?)(?:\d+[\.\:\)\s]+)/gi, '$1');
+      // Replace the section with fully cleaned version
+      content = content.replace(notesTermsMatch[0], notesTermsMatch[1] + formattedNotesTerms);
     }
 
     // 7. Table formatting for tabbed sections

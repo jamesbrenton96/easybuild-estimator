@@ -65,17 +65,31 @@ export function createMarkdownDescription(formData: any): string {
     markdown += createTimelineTable(formData.timeline) + '\n\n';
   }
   
-  // 9. Notes & Terms - Format with no numbers, just clean text with double line breaks
+  // 9. Notes & Terms - Format without numbers, just clean text with double line breaks
   if (Array.isArray(formData.notes)) {
     markdown += `# NOTES AND TERMS\n\n`;
     
-    // Process notes without numbers and with extra spacing
+    // Process notes to ensure absolutely no numbers appear before the terms
     const processedNotes = formData.notes.map((note: string) => {
-      // Aggressively remove any numbering, bullets or formatting
-      return note.replace(/^\s*(\d+[\.\)\-]\s*|\d+[\.\)\-]|\d+[\.\s]|\d+\s|\d+\.|\d+\)|\d+\-|\d+\:|\-|\•|\*)/g, '').trim();
+      // Remove any numbers, bullets or formatting at the beginning
+      let cleanedNote = note.toString().trim();
+      
+      // Aggressively remove any numbering patterns including "X. TERM:"
+      cleanedNote = cleanedNote.replace(/^\d+[\.\)\-:\s]+\s*/g, '');
+      
+      // Remove any "N. " prefix where N is any digit
+      cleanedNote = cleanedNote.replace(/^\d+\.\s+/g, '');
+      
+      // Remove formats like "1:" at start
+      cleanedNote = cleanedNote.replace(/^\d+:\s*/g, '');
+      
+      // Remove just numbers at start
+      cleanedNote = cleanedNote.replace(/^\d+\s+/g, '');
+      
+      return cleanedNote.trim();
     });
     
-    // Join with double line breaks for extra spacing
+    // Join with double line breaks for extra spacing and no numbers
     markdown += processedNotes.join('\n\n') + '\n\n';
   }
   

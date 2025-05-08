@@ -12,19 +12,21 @@ export function formatNotesAndTerms(content: string): string {
   // Process each line
   const processedLines = lines.map(line => {
     // Remove any numbered list formatting (e.g., "1. ", "1) ", "#. ", etc.)
-    line = line.replace(/^\s*(\d+[\.\)]\s*|\#\.\s*|^\d+[\.\-\)]|\d+\.|\d+\s)/, '');
+    line = line.replace(/^\s*(\d+[\.\)\:]\s*|\#\.\s*|^\d+[\.\-\)\:]|\d+\.|\d+\s|\d+\:)/, '');
     
-    // Strip any remaining leading numbers with or without punctuation
-    line = line.replace(/^\s*\d+[\.\-\)\:]\s*/, '');
+    // Remove any line-starting patterns like "2." or "3:" or "4)" without a space
+    line = line.replace(/^\s*\d+[\.\:\)\-]/, '');
     
-    // Also match patterns like "1. " at the start of a line
-    line = line.replace(/^\s*\d+\.\s+/, '');
+    // Remove more formats like "2. PAYMENT TERMS:" where the number is at the start
+    line = line.replace(/^\s*\d+\.\s+([A-Z]+\s+[A-Z]+\:)/, '$1');
     
-    // Also match patterns like "1: " at the start of a line
-    line = line.replace(/^\s*\d+\:\s+/, '');
+    // Remove patterns where the number is the very first character
+    line = line.replace(/^(\d+)[\.\:\)\-]\s*/, '');
     
-    // Also match patterns like "1 " at the start of a line (number followed by space)
-    line = line.replace(/^\s*\d+\s+/, '');
+    // Remove any text that starts with just a number 
+    line = line.replace(/^(\d+)\.\s+/, '');
+    line = line.replace(/^(\d+)\:\s+/, '');
+    line = line.replace(/^(\d+)\s+/, '');
     
     // Remove any bullet points if they exist
     line = line.replace(/^\s*[\-\*•]\s*/, '');
