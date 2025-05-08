@@ -76,8 +76,8 @@ const useFormSubmission = ({
         
         setUploadProgress(30);
         
-        // Log file information for debugging
-        console.log(`Processing ${submissionData.files.length} files`);
+        // Ensure files are properly formatted as an array for webhook submission
+        console.log(`Processing ${submissionData.files.length} files for webhook submission`);
         submissionData.files.forEach((file: File, index: number) => {
           console.log(`File ${index + 1}: ${file.name}, Type: ${file.type}, Size: ${file.size} bytes`);
         });

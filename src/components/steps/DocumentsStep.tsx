@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useEstimator } from "@/context/EstimatorContext";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -83,7 +82,7 @@ export default function DocumentsStep() {
       return;
     }
     
-    // Update form data with valid files
+    // Update form data with valid files - ensure we maintain an array format
     updateFormData({
       files: combinedFiles
     });
