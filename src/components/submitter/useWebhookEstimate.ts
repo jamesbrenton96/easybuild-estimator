@@ -1,4 +1,3 @@
-
 import { useCallback } from "react";
 
 export interface WebhookResponse {
@@ -24,13 +23,13 @@ export function useWebhookEstimate() {
         // Create FormData for multipart/form-data submission
         const formData = new FormData();
         
-        // Add all files to the form data (not just the first one)
+        // Add all files to the form data with simple sequential naming
         payload.files.forEach((file: File, index: number) => {
           if (file instanceof File) {
             console.log(`Uploading file ${index + 1}: ${file.name}, Type: ${file.type}, Size: ${file.size} bytes`);
             
-            // Append each file with a unique field name
-            formData.append(`file${index}`, file, file.name);
+            // Append each file with a simple sequential name: file1, file2, etc.
+            formData.append(`file${index + 1}`, file, file.name);
           }
         });
         
@@ -41,18 +40,10 @@ export function useWebhookEstimate() {
         const metaData = { ...payload };
         delete metaData.files;
         
-        // Add file information to metadata
-        metaData.fileInfo = payload.files.map((file: File, index: number) => ({
-          index,
-          name: file.name,
-          type: file.type,
-          size: file.size
-        }));
-        
         // Add the rest of the form data as a JSON string in the 'meta' field
         formData.append('meta', JSON.stringify(metaData));
         
-        console.log("Sending multipart/form-data to webhook with multiple files");
+        console.log("Sending multipart/form-data to webhook with files");
         
         // Send the form data without setting Content-Type (browser will set it correctly with boundary)
         const response = await fetch(webhookUrl, {
