@@ -1,4 +1,3 @@
-
 import { useCallback } from "react";
 
 export interface WebhookResponse {
@@ -24,17 +23,17 @@ export function useWebhookEstimate() {
         // Create FormData for multipart/form-data submission
         const formData = new FormData();
         
-        // Important: Use the exact format Make.com expects for files
-        payload.files.forEach((file: File, index: number) => {
-          if (file instanceof File) {
-            console.log(`Uploading file: ${file.name}, Type: ${file.type}, Size: ${file.size} bytes`);
-            // This is the key format that Make.com expects for parsing files as array
-            formData.append(`files`, file);
-          }
-        });
-        
-        // Add a files count field
-        formData.append('filesCount', String(payload.files.length));
+        // Get the first file (assuming it's the PDF we want to send)
+        const fileToUpload = payload.files[0];
+        if (fileToUpload instanceof File) {
+          console.log(`Uploading file: ${fileToUpload.name}, Type: ${fileToUpload.type}, Size: ${fileToUpload.size} bytes`);
+          
+          // Append the file as 'file' - this will be the binary data
+          formData.append('file', fileToUpload, fileToUpload.name);
+          
+          // Optional: Add filename as a separate field
+          formData.append('fileName', fileToUpload.name);
+        }
         
         // Create a copy of the payload without the files for the meta field
         const metaData = { ...payload };
@@ -43,7 +42,7 @@ export function useWebhookEstimate() {
         // Add the rest of the form data as a JSON string in the 'meta' field
         formData.append('meta', JSON.stringify(metaData));
         
-        console.log("Sending multipart/form-data to webhook with proper file format for Make.com");
+        console.log("Sending multipart/form-data to webhook");
         
         // Send the form data without setting Content-Type (browser will set it correctly with boundary)
         const response = await fetch(webhookUrl, {

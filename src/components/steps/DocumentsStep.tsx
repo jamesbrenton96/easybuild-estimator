@@ -1,15 +1,14 @@
-import React, { useState } from "react";
+
+import React from "react";
 import { useEstimator } from "@/context/EstimatorContext";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Card, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { File, Image, X, AlertCircle } from "lucide-react";
-import { toast } from "@/hooks/use-toast";
+import { File, Image } from "lucide-react";
 
 export default function DocumentsStep() {
   const { formData, updateFormData, prevStep, nextStep } = useEstimator();
   const isMobile = useIsMobile();
-  const [fileError, setFileError] = useState<string | null>(null);
 
   // Remove empty files on mount or field change
   React.useEffect(() => {
@@ -23,77 +22,13 @@ export default function DocumentsStep() {
     }
   }, [formData.files, updateFormData]); // Only runs when files change
 
-  const isFilePDF = (file: File) => file.type === "application/pdf";
-  const isFileImage = (file: File) => ["image/jpeg", "image/jpg", "image/png"].includes(file.type);
-
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedFiles = Array.from(e.target.files || []);
-    setFileError(null);
-
+    const files = Array.from(e.target.files || []);
     // Filter blank/empty files
-    const validFiles = selectedFiles.filter(file => file && file.name && file.size > 0);
-    
-    // Check current files plus new additions
-    const existingValidFiles = Array.isArray(formData.files) ? formData.files : [];
-    const combinedFiles = [...existingValidFiles, ...validFiles];
-    
-    const pdfFiles = combinedFiles.filter(isFilePDF);
-    const imageFiles = combinedFiles.filter(isFileImage);
-    const otherFiles = combinedFiles.filter(file => !isFilePDF(file) && !isFileImage(file));
-    
-    // Validate file restrictions
-    if (otherFiles.length > 0) {
-      setFileError("Only JPEG, PNG, and PDF files are allowed.");
-      toast({
-        variant: "destructive",
-        title: "File type not allowed",
-        description: "Only JPEG, PNG, and PDF files are allowed."
-      });
-      return;
-    }
-    
-    if (pdfFiles.length > 0 && imageFiles.length > 0) {
-      setFileError("You can upload either image files OR a PDF file, not both.");
-      toast({
-        variant: "destructive",
-        title: "Invalid file combination",
-        description: "You can upload either image files OR a PDF file, not both."
-      });
-      return;
-    }
-    
-    if (pdfFiles.length > 1) {
-      setFileError("You can upload a maximum of 1 PDF file.");
-      toast({
-        variant: "destructive",
-        title: "Too many PDFs",
-        description: "You can upload a maximum of 1 PDF file."
-      });
-      return;
-    }
-    
-    if (imageFiles.length > 4) {
-      setFileError("You can upload a maximum of 4 image files.");
-      toast({
-        variant: "destructive",
-        title: "Too many images",
-        description: "You can upload a maximum of 4 image files."
-      });
-      return;
-    }
-    
-    // Update form data with valid files - ensure we maintain an array format
+    const cleanedFiles = files.filter(file => file && file.name && file.size > 0);
     updateFormData({
-      files: combinedFiles
+      files: cleanedFiles
     });
-  };
-
-  const handleRemoveFile = (indexToRemove: number) => {
-    if (formData.files && Array.isArray(formData.files)) {
-      const updatedFiles = formData.files.filter((_, idx) => idx !== indexToRemove);
-      updateFormData({ files: updatedFiles });
-      setFileError(null);
-    }
   };
 
   const files = (formData.files && Array.isArray(formData.files))
@@ -105,12 +40,8 @@ export default function DocumentsStep() {
       <div className="text-center mb-8">
         <h1 className="text-2xl sm:text-3xl font-bold text-white mb-3">Attach Documents</h1>
         <p className="text-white/80 max-w-2xl mx-auto">
-          Please add only relevant documents for your project. You can upload either:
+          Please add only relevant documents for your project. Accepted formats are PDF, images, etc.
         </p>
-        <ul className="text-white/80 list-disc list-inside max-w-md mx-auto mt-2 text-left">
-          <li>Up to 4 image files (JPEG or PNG), OR</li>
-          <li>1 PDF document</li>
-        </ul>
       </div>
       <div className="max-w-2xl mx-auto">
         <Card className="mb-8 bg-white/5 border-white/20">
@@ -120,16 +51,8 @@ export default function DocumentsStep() {
               multiple
               onChange={handleFileChange}
               className="block w-full bg-white rounded p-2 mb-4"
-              accept=".pdf,.jpg,.jpeg,.png"
+              accept=".pdf,image/*"
             />
-            
-            {fileError && (
-              <div className="mb-4 p-3 bg-red-500/20 border border-red-500/30 rounded-md flex items-center gap-2">
-                <AlertCircle className="h-5 w-5 text-red-400" />
-                <span className="text-white text-sm">{fileError}</span>
-              </div>
-            )}
-            
             <ScrollArea className="h-[200px] rounded-md border border-white/20 bg-white/10 p-4">
               {files.length > 0 ? (
                 <ul className="space-y-2">
@@ -144,18 +67,9 @@ export default function DocumentsStep() {
                           : <File className="h-4 w-4 text-blue-500" />}
                         <span className="text-white text-sm truncate">{file.name}</span>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-white/60 text-xs">
-                          {Math.round(file.size / 1024)} KB
-                        </span>
-                        <button 
-                          onClick={() => handleRemoveFile(idx)} 
-                          className="p-1 hover:bg-white/10 rounded-full"
-                          aria-label="Remove file"
-                        >
-                          <X className="h-4 w-4 text-white/70" />
-                        </button>
-                      </div>
+                      <span className="text-white/60 text-xs">
+                        {Math.round(file.size / 1024)} KB
+                      </span>
                     </li>
                   ))}
                 </ul>

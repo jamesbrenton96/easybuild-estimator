@@ -7,11 +7,10 @@ import { bulletSection } from "./helpers/bulletSection";
 import { formatTableSection } from "./helpers/formatTableSection";
 import { formatTotals } from "./helpers/formatTotals";
 import { formatThankYou } from "./helpers/formatThankYou";
-import { formatNotesAndTerms } from "./helpers/formatNotesAndTerms";
 
 /**
  * useProMarkdownEstimate - Enhanced markdown formatter for construction estimates (refactored).
- * Notes & Terms section is specially formatted with extra spacing between items and no numbers.
+ * "Notes & Terms" remains as plain text; no bullets/headings/styling for that section.
  */
 export function useProMarkdownEstimate(rawMarkdown: string) {
   return useMemo(() => {
@@ -33,32 +32,7 @@ export function useProMarkdownEstimate(rawMarkdown: string) {
       content = bulletSection(section, content);
     });
 
-    // 6. Format Notes and Terms section - enhanced aggressive number removal
-    const notesTermsPattern = /(?:^|\n)(#+\s*NOTES\s+AND\s+TERMS\s*(?:\n|$))([\s\S]*?)(?=\n#+\s*|$)/i;
-    const notesTermsMatch = content.match(notesTermsPattern);
-    
-    if (notesTermsMatch && notesTermsMatch[2]) {
-      // Apply more aggressive formatting to completely remove all numbers
-      let formattedNotesTerms = formatNotesAndTerms(notesTermsMatch[2]);
-      
-      // Super aggressive number pattern removal
-      formattedNotesTerms = formattedNotesTerms
-        .replace(/^(\d+[\.\:\)\-])\s*/gm, '')
-        .replace(/^\d+\.\s+/gm, '')
-        .replace(/^\d+\:\s*/gm, '')
-        .replace(/^\d+\s+/gm, '')
-        .replace(/^\s*\d+[\.\:\)\-]/gm, '')
-        .replace(/^(\d+)\.\s+(.*?)$/gm, '$2')
-        .replace(/^(\d+)\.\s+([\w\s]+)\:/gm, '$2:')
-        .replace(/^(\d+)\.\s+([A-Z]+\s+[A-Z]+\:)/gm, '$2')
-        .replace(/^(\d+\.\s+)/gm, '')
-        .replace(/^\s*\d+\.\s*/gm, '');
-      
-      // Replace the section with fully cleaned version
-      content = content.replace(notesTermsMatch[0], notesTermsMatch[1] + formattedNotesTerms);
-    }
-
-    // 7. Table formatting for tabbed sections
+    // 6. Table formatting for tabbed sections
     [
       "Labor Costs", "Labour Costs", "Labor Cost Breakdown",
       "Materials & Cost Breakdown", "Material Cost Breakdown",
@@ -67,13 +41,13 @@ export function useProMarkdownEstimate(rawMarkdown: string) {
       content = formatTableSection(section, content);
     });
 
-    // 8. Format total estimate section
+    // 7. Format total estimate section
     content = formatTotals(content);
 
-    // 9. Process the Thank You section
+    // 8. Process the Thank You section
     content = formatThankYou(content);
 
-    // 10-13: Subtotal cells, subtotal groups, table formats, orange divider, etc.
+    // 9-12: Subtotal cells, subtotal groups, table formats, orange divider, etc.
     content = content.replace(
       /(<span class="subtotal-cell">[^<]*<\/span>[\s\t]*<span class="subtotal-cell">[^<]*<\/span>)/gm,
       (match) => {
@@ -87,12 +61,10 @@ export function useProMarkdownEstimate(rawMarkdown: string) {
         return match;
       }
     );
-    
     content = content.replace(
       /^(\d+)\.\s+(<span class="subtotal-cell">.*$)/gm,
       (_, num, line) => `\n## <span class="section-number">${num}</span>Cost Breakdown\n\n${line}`
     );
-    
     content = content.replace(
       /(<span class="subtotal-cell">.*<\/span>.*<span class="subtotal-cell">.*<\/span>)/gm,
       (match) => {
@@ -117,7 +89,6 @@ export function useProMarkdownEstimate(rawMarkdown: string) {
         return match;
       }
     );
-    
     content = content.replace(
       /(### Total (Estimate|Project Cost)|<span class="section-number">[0-9]+<\/span>Total (Estimate|Project Cost))/i,
       '<hr class="orange-divider"/>\n$1'

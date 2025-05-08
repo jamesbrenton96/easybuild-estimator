@@ -1,7 +1,6 @@
 
 import { useState } from "react";
 import { useWebhookEstimate } from "./useWebhookEstimate";
-import { toast } from "@/hooks/use-toast";
 
 interface UseFormSubmissionProps {
   formData: any;
@@ -23,38 +22,6 @@ const useFormSubmission = ({
 
   const { getEstimate } = useWebhookEstimate();
 
-  const validateFiles = (files: File[]): { valid: boolean; message?: string } => {
-    // Check for empty files array
-    if (!Array.isArray(files) || files.length === 0) {
-      return { valid: true }; // Files are optional
-    }
-
-    const isPDF = (file: File) => file.type === "application/pdf";
-    const isImage = (file: File) => ["image/jpeg", "image/jpg", "image/png"].includes(file.type);
-    
-    const pdfFiles = files.filter(isPDF);
-    const imageFiles = files.filter(isImage);
-    const otherFiles = files.filter(file => !isPDF(file) && !isImage(file));
-    
-    if (otherFiles.length > 0) {
-      return { valid: false, message: "Only JPEG, PNG, and PDF files are allowed." };
-    }
-    
-    if (pdfFiles.length > 0 && imageFiles.length > 0) {
-      return { valid: false, message: "You can upload either image files OR a PDF file, not both." };
-    }
-    
-    if (pdfFiles.length > 1) {
-      return { valid: false, message: "You can upload a maximum of 1 PDF file." };
-    }
-    
-    if (imageFiles.length > 4) {
-      return { valid: false, message: "You can upload a maximum of 4 image files." };
-    }
-    
-    return { valid: true };
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -67,17 +34,12 @@ const useFormSubmission = ({
       // Create a copy of the form data
       const submissionData = { ...formData };
       
-      // Validate files
+      // Validate files - no need to convert to base64 anymore
       if (Array.isArray(submissionData.files) && submissionData.files.length > 0) {
-        const fileValidation = validateFiles(submissionData.files);
-        if (!fileValidation.valid) {
-          throw new Error(fileValidation.message);
-        }
-        
         setUploadProgress(30);
         
-        // Ensure files are properly formatted as an array for webhook submission
-        console.log(`Processing ${submissionData.files.length} files for webhook submission`);
+        // Log file information for debugging
+        console.log(`Processing ${submissionData.files.length} files`);
         submissionData.files.forEach((file: File, index: number) => {
           console.log(`File ${index + 1}: ${file.name}, Type: ${file.type}, Size: ${file.size} bytes`);
         });
@@ -97,11 +59,6 @@ const useFormSubmission = ({
       setError(err?.message || "An unknown error occurred.");
       setStatus("fail");
       setIsLoading(false);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: err?.message || "An unknown error occurred while submitting your estimate."
-      });
     } finally {
       setIsSubmitting(false);
     }
