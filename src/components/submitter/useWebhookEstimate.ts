@@ -24,11 +24,12 @@ export function useWebhookEstimate() {
         // Create FormData for multipart/form-data submission
         const formData = new FormData();
         
-        // Add files using array notation in field name to make them mappable in Make.com
+        // Important: Use the exact format Make.com expects for files
         payload.files.forEach((file: File, index: number) => {
           if (file instanceof File) {
             console.log(`Uploading file: ${file.name}, Type: ${file.type}, Size: ${file.size} bytes`);
-            formData.append(`files[${index}]`, file);
+            // This is the key format that Make.com expects for parsing files as array
+            formData.append(`files`, file);
           }
         });
         
@@ -42,7 +43,7 @@ export function useWebhookEstimate() {
         // Add the rest of the form data as a JSON string in the 'meta' field
         formData.append('meta', JSON.stringify(metaData));
         
-        console.log("Sending multipart/form-data to webhook with array-indexed files");
+        console.log("Sending multipart/form-data to webhook with proper file format for Make.com");
         
         // Send the form data without setting Content-Type (browser will set it correctly with boundary)
         const response = await fetch(webhookUrl, {

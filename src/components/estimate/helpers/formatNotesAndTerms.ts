@@ -33,6 +33,11 @@ export function formatNotesAndTerms(content: string): string {
     // Specifically handle formats like "1. VALIDITY:" or "2. PAYMENT TERMS:"
     line = line.replace(/^\d+\.\s+(([A-Z]+\s*)+\:)/, '$1');
     
+    // Extra aggressive number removal for any remaining numbered formats
+    line = line.replace(/^[0-9]+[\.:\)\s\-]+/, '');
+    line = line.replace(/^\d+[\.:\)\s\-]*\s*/, '');
+    line = line.replace(/^[0-9]+\.?\s+/, '');
+    
     // Clean up the line
     return line.trim();
   });
