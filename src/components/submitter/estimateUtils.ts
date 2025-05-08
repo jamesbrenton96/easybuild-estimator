@@ -65,32 +65,32 @@ export function createMarkdownDescription(formData: any): string {
     markdown += createTimelineTable(formData.timeline) + '\n\n';
   }
   
-  // 9. Notes & Terms - Format without numbers, just clean text with double line breaks
+  // 9. Notes & Terms - SPECIAL HANDLING WITH NO NUMBERS
   if (Array.isArray(formData.notes)) {
     markdown += `# NOTES AND TERMS\n\n`;
     
-    // Process notes to ensure absolutely no numbers appear before the terms
-    const processedNotes = formData.notes.map((note: string) => {
-      // Remove any numbers, bullets or formatting at the beginning
-      let cleanedNote = note.toString().trim();
+    // Process notes to absolutely remove all numbering
+    const cleanedNotes = formData.notes.map((note: string) => {
+      if (!note) return '';
       
-      // Aggressively remove any numbering patterns including "X. TERM:"
-      cleanedNote = cleanedNote.replace(/^\d+[\.\)\-:\s]+\s*/g, '');
+      // Convert to string if not already
+      let text = note.toString().trim();
       
-      // Remove any "N. " prefix where N is any digit
-      cleanedNote = cleanedNote.replace(/^\d+\.\s+/g, '');
+      // Complete removal of all number patterns at beginning of lines
+      text = text
+        .replace(/^\d+[\.\)\-:\s]+\s*/g, '')     // Remove "1. ", "2)", "3:", etc.
+        .replace(/^\d+\.\s+/g, '')               // Remove "1. "
+        .replace(/^\d+:\s*/g, '')                // Remove "2:"
+        .replace(/^\d+\s+/g, '')                 // Remove "3 "
+        .replace(/^\d+[\.\:\)\-]/g, '')          // Remove "4.", "5:", "6)", "7-"
+        .replace(/^\d+\.\s+(.*?)$/g, '$1')       // Remove "8. TEXT" -> "TEXT"
+        .replace(/^\d+\.\s+([A-Z]+\s+[A-Z]+\:)/g, '$1'); // Remove "9. PAYMENT TERMS:" -> "PAYMENT TERMS:"
       
-      // Remove formats like "1:" at start
-      cleanedNote = cleanedNote.replace(/^\d+:\s*/g, '');
-      
-      // Remove just numbers at start
-      cleanedNote = cleanedNote.replace(/^\d+\s+/g, '');
-      
-      return cleanedNote.trim();
+      return text.trim();
     });
     
-    // Join with double line breaks for extra spacing and no numbers
-    markdown += processedNotes.join('\n\n') + '\n\n';
+    // Join with double line breaks for extra spacing between terms
+    markdown += cleanedNotes.filter(note => note).join('\n\n') + '\n\n';
   }
   
   return markdown.trim();

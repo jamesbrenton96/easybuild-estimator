@@ -107,54 +107,47 @@ export default function MarkdownContentRenderer({ content }: { content: string }
           font-weight: bold !important;
         }
         
-        /* Notes and Terms specific styling */
+        /* Notes and Terms enhanced styling */
         .markdown-content h1:contains("NOTES AND TERMS"),
         .markdown-content h2:contains("NOTES AND TERMS") {
           font-size: 14px !important;
           margin-top: 25px !important;
         }
         
-        /* Hide numeric prefixes in the Notes and Terms section */
+        /* CRITICAL: Completely hide all numbers in the Notes and Terms section */
         .markdown-content h1:contains("NOTES AND TERMS") ~ p,
         .markdown-content h2:contains("NOTES AND TERMS") ~ p {
           margin: 12px 0 !important;
           line-height: 1.5 !important;
+          counter-reset: notes-item !important;
+          position: relative !important;
         }
         
-        /* Remove all numbers in Notes and Terms section */
-        .markdown-content h1:contains("NOTES AND TERMS") ~ p > strong:first-child,
-        .markdown-content h2:contains("NOTES AND TERMS") ~ p > strong:first-child {
-          color: inherit !important;
-        }
-        
-        /* Hide all numbers at the beginning of paragraphs in the Notes and Terms section */
+        /* Hide numbered prefixes in the Notes and Terms section */
         .markdown-content h1:contains("NOTES AND TERMS") ~ p::before,
         .markdown-content h2:contains("NOTES AND TERMS") ~ p::before {
           content: "" !important;
+          display: none !important;
         }
         
-        /* Hide numbered prefixes in Notes and Terms section */
-        .markdown-content h1:contains("NOTES AND TERMS") ~ p,
-        .markdown-content h2:contains("NOTES AND TERMS") ~ p {
-          counter-reset: notes-item !important;
-        }
-        
+        /* Hide any anchor links that might be auto-generated */
         .markdown-content [id^="user-content-"] {
           visibility: hidden !important;
           display: none !important;
         }
         
-        /* Additional specific rule to hide numbers in front of terms */
-        .markdown-content h1:contains("NOTES AND TERMS") ~ p strong:first-of-type,
-        .markdown-content h2:contains("NOTES AND TERMS") ~ p strong:first-of-type {
+        /* Additional specific rules for notes and terms section */
+        .markdown-content h1:contains("NOTES AND TERMS") ~ p,
+        .markdown-content h2:contains("NOTES AND TERMS") ~ p {
+          display: block !important;
           position: relative !important;
         }
         
-        .markdown-content h1:contains("NOTES AND TERMS") ~ p strong:first-of-type::before,
-        .markdown-content h2:contains("NOTES AND TERMS") ~ p strong:first-of-type::before {
+        /* Override and remove any number styling in the Notes section */
+        .markdown-content h1:contains("NOTES AND TERMS") ~ p:before,
+        .markdown-content h2:contains("NOTES AND TERMS") ~ p:before {
+          display: none !important;
           content: "" !important;
-          display: inline-block !important;
-          width: 0 !important;
         }
       `}</style>
       <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
