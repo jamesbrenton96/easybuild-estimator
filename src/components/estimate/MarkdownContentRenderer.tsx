@@ -29,6 +29,33 @@ export default function MarkdownContentRenderer({ content }: { content: string }
           width: 100% !important;
         }
         
+        /* Special styling for Notes and Terms section */
+        .markdown-content h2:contains("NOTES AND TERMS"), 
+        .markdown-content h1:contains("NOTES AND TERMS") {
+          color: #222 !important;
+          border-bottom: 1px solid #222 !important;
+        }
+        
+        /* Make numbered titles in Notes and Terms section black */
+        .markdown-content p strong:first-child,
+        .markdown-content p:has(strong:first-child) {
+          color: #222 !important;
+        }
+        
+        /* Notes & Terms numbered titles specifically */
+        .markdown-content p strong:first-child:contains("VALIDITY"),
+        .markdown-content p strong:first-child:contains("PAYMENT TERMS"),
+        .markdown-content p strong:first-child:contains("EXCLUSIONS"),
+        .markdown-content p strong:first-child:contains("VARIATIONS"),
+        .markdown-content p strong:first-child:contains("ACCESS CONSIDERATIONS"),
+        .markdown-content p strong:first-child:contains("WEATHER CONDITIONS"),
+        .markdown-content p strong:first-child:contains("WARRANTY"),
+        .markdown-content p strong:first-child:contains("GST"),
+        .markdown-content p strong:first-child:contains("SITE CONDITIONS"),
+        .markdown-content p strong:first-child:contains("MATERIAL AVAILABILITY") {
+          color: #222 !important;
+        }
+        
         /* Table styles */
         .markdown-content table { 
           width: 100% !important;
@@ -105,6 +132,20 @@ export default function MarkdownContentRenderer({ content }: { content: string }
         .markdown-content strong, .markdown-content b {
           color: #333 !important;
           font-weight: bold !important;
+        }
+        
+        /* Make all numbered titles in the Notes section black */
+        .markdown-content p:has(strong:contains("1. VALIDITY")),
+        .markdown-content p:has(strong:contains("2. PAYMENT TERMS")),
+        .markdown-content p:has(strong:contains("3. EXCLUSIONS")),
+        .markdown-content p:has(strong:contains("4. VARIATIONS")),
+        .markdown-content p:has(strong:contains("5. ACCESS CONSIDERATIONS")),
+        .markdown-content p:has(strong:contains("6. WEATHER CONDITIONS")),
+        .markdown-content p:has(strong:contains("7. WARRANTY")),
+        .markdown-content p:has(strong:contains("8. GST")),
+        .markdown-content p:has(strong:contains("9. SITE CONDITIONS")),
+        .markdown-content p:has(strong:contains("10. MATERIAL AVAILABILITY")) {
+          color: #222 !important;
         }
       `}</style>
       <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
