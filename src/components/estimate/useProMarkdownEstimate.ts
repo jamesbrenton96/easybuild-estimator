@@ -39,7 +39,15 @@ export function useProMarkdownEstimate(rawMarkdown: string) {
     
     if (notesTermsMatch && notesTermsMatch[2]) {
       const formattedNotesTerms = formatNotesAndTerms(notesTermsMatch[2]);
-      content = content.replace(notesTermsMatch[0], notesTermsMatch[1] + formattedNotesTerms);
+      
+      // Replace numbers from the beginning of each line
+      let cleanedTerms = formattedNotesTerms.replace(/^\d+[\.\:\)\s]+\s*/gm, '');
+      
+      // Replace the section with cleaned up version
+      content = content.replace(notesTermsMatch[0], notesTermsMatch[1] + cleanedTerms);
+      
+      // Additional cleanup for any leftover numbered items
+      content = content.replace(/(#+\s*NOTES\s+AND\s+TERMS\s*(?:\n|$)[\s\S]*?)(?:\d+[\.\:\)\s]+)/gi, '$1');
     }
 
     // 7. Table formatting for tabbed sections

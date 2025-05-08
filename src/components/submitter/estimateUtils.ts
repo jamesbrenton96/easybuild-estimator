@@ -65,14 +65,14 @@ export function createMarkdownDescription(formData: any): string {
     markdown += createTimelineTable(formData.timeline) + '\n\n';
   }
   
-  // 9. Notes & Terms - Format with double line breaks and no numbers
+  // 9. Notes & Terms - Format with no numbers, just clean text with double line breaks
   if (Array.isArray(formData.notes)) {
     markdown += `# NOTES AND TERMS\n\n`;
     
     // Process notes without numbers and with extra spacing
     const processedNotes = formData.notes.map((note: string) => {
-      // Remove any existing list formatting or numbers
-      return note.replace(/^\s*(\d+[\.\)\-]\s*)+/, '').replace(/^\s*\d+[\.\-\)]+\s*/, '').trim();
+      // Aggressively remove any numbering, bullets or formatting
+      return note.replace(/^\s*(\d+[\.\)\-]\s*|\d+[\.\)\-]|\d+[\.\s]|\d+\s|\d+\.|\d+\)|\d+\-|\d+\:|\-|\•|\*)/g, '').trim();
     });
     
     // Join with double line breaks for extra spacing

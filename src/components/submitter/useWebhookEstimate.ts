@@ -1,3 +1,4 @@
+
 import { useCallback } from "react";
 
 export interface WebhookResponse {
@@ -23,26 +24,35 @@ export function useWebhookEstimate() {
         // Create FormData for multipart/form-data submission
         const formData = new FormData();
         
-        // Get the first file (assuming it's the PDF we want to send)
-        const fileToUpload = payload.files[0];
-        if (fileToUpload instanceof File) {
-          console.log(`Uploading file: ${fileToUpload.name}, Type: ${fileToUpload.type}, Size: ${fileToUpload.size} bytes`);
-          
-          // Append the file as 'file' - this will be the binary data
-          formData.append('file', fileToUpload, fileToUpload.name);
-          
-          // Optional: Add filename as a separate field
-          formData.append('fileName', fileToUpload.name);
-        }
+        // Add all files to the form data (not just the first one)
+        payload.files.forEach((file: File, index: number) => {
+          if (file instanceof File) {
+            console.log(`Uploading file ${index + 1}: ${file.name}, Type: ${file.type}, Size: ${file.size} bytes`);
+            
+            // Append each file with a unique field name
+            formData.append(`file${index}`, file, file.name);
+          }
+        });
+        
+        // Add a files count field
+        formData.append('filesCount', String(payload.files.length));
         
         // Create a copy of the payload without the files for the meta field
         const metaData = { ...payload };
         delete metaData.files;
         
+        // Add file information to metadata
+        metaData.fileInfo = payload.files.map((file: File, index: number) => ({
+          index,
+          name: file.name,
+          type: file.type,
+          size: file.size
+        }));
+        
         // Add the rest of the form data as a JSON string in the 'meta' field
         formData.append('meta', JSON.stringify(metaData));
         
-        console.log("Sending multipart/form-data to webhook");
+        console.log("Sending multipart/form-data to webhook with multiple files");
         
         // Send the form data without setting Content-Type (browser will set it correctly with boundary)
         const response = await fetch(webhookUrl, {

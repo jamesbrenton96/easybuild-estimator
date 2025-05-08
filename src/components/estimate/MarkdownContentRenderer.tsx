@@ -122,11 +122,25 @@ export default function MarkdownContentRenderer({ content }: { content: string }
         }
         
         /* Hide any remaining numbers in Notes and Terms section */
-        .markdown-content h2:contains("NOTES AND TERMS") ~ p > span:first-child:matches(/^\d+[\.\)]/),
-        .markdown-content h1:contains("NOTES AND TERMS") ~ p > span:first-child:matches(/^\d+[\.\)]/),
-        .markdown-content h2:contains("NOTES AND TERMS") ~ p:matches(/^\d+[\.\)]/),
-        .markdown-content h1:contains("NOTES AND TERMS") ~ p:matches(/^\d+[\.\)]/) {
+        .markdown-content h1:contains("NOTES AND TERMS") ~ p {
+          text-indent: -9999px !important;
+          text-indent: 0 !important;
+        }
+        
+        /* Hide only the numbering at the start of paragraphs in Notes and Terms */
+        .markdown-content h1:contains("NOTES AND TERMS") ~ p > strong:first-child,
+        .markdown-content h2:contains("NOTES AND TERMS") ~ p > strong:first-child {
+          font-size: 0 !important;
           color: transparent !important;
+        }
+        
+        /* This targets number patterns at the start of paragraphs */
+        .markdown-content h1:contains("NOTES AND TERMS") ~ p::before,
+        .markdown-content h2:contains("NOTES AND TERMS") ~ p::before {
+          content: "" !important;
+          display: block !important;
+          height: 0 !important;
+          visibility: hidden !important;
         }
       `}</style>
       <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
