@@ -33,13 +33,13 @@ export function usePdfDownload() {
     
     const header = document.createElement('div');
     header.style.textAlign = 'center';
-    header.style.marginBottom = '20px';
-    header.style.padding = '15px';
+    header.style.marginBottom = '10px'; // Reduced from 20px
+    header.style.padding = '10px'; // Reduced from 15px
     
     const logo = document.createElement('img');
     logo.src = "/lovable-uploads/54be63ea-83fd-4f4a-8c94-dba12936b674.png";
-    logo.style.height = '100px'; // Keeping the larger size (100px)
-    logo.style.margin = '0 auto 5px auto'; // Reduced bottom margin from 15px to 5px
+    logo.style.height = '100px';
+    logo.style.margin = '0 auto 0 auto'; // Removed bottom margin completely
     
     header.appendChild(logo);
     clone.insertBefore(header, clone.firstChild);
