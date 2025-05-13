@@ -38,7 +38,7 @@ export function usePdfDownload() {
     
     const logo = document.createElement('img');
     logo.src = "/lovable-uploads/54be63ea-83fd-4f4a-8c94-dba12936b674.png";
-    logo.style.height = '60px';
+    logo.style.height = '100px'; // Increased from 60px to 100px
     logo.style.margin = '0 auto 15px auto';
     
     header.appendChild(logo);
