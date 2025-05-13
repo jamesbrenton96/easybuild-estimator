@@ -49,7 +49,7 @@ export default function CorrespondenceAccordion({
             <SelectValue placeholder="Select type" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="quotation">Fixed Price Quotation</SelectItem>
+            <SelectItem value="quote">Quote</SelectItem>
             <SelectItem value="accurate">Accurate Estimate</SelectItem>
             <SelectItem value="preliminary">Preliminary Estimate</SelectItem>
             <SelectItem value="proposal">Proposal</SelectItem>

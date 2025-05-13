@@ -1,3 +1,4 @@
+
 import React from "react";
 import { FileText, Image, File } from "lucide-react";
 
@@ -11,10 +12,14 @@ export default function ReviewDetails({ formData }: ReviewDetailsProps) {
     switch (type?.toLowerCase()) {
       case "accurate":
         return "Accurate Estimate";
-      case "preliminary":
-        return "Preliminary Estimate";
+      case "ballpark":
+        return "Ballpark Estimate";
       case "quotation":
         return "Fixed Price Quotation";
+      case "quote":
+        return "Quotation";
+      case "preliminary":
+        return "Preliminary Estimate";
       case "proposal":
         return "Proposal";
       default:
