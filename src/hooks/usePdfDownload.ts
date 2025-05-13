@@ -1,4 +1,3 @@
-
 import html2pdf from "html2pdf.js";
 
 export function usePdfDownload() {
@@ -86,35 +85,34 @@ export function usePdfDownload() {
         letter-spacing: 0.03em !important;
       }
       
-      /* NOTES AND TERMS styling - different from H1/H2 */
+      /* NOTES AND TERMS styling - less prominent */
       .markdown-content h1:contains("NOTES AND TERMS"), h1:contains("Notes and Terms") {
-        color: #333333 !important;
-        font-size: 16px !important;
+        color: #555555 !important;
+        font-size: 15px !important;
         font-weight: bold !important;
         text-transform: uppercase !important;
-        margin-top: 30px !important;
-        margin-bottom: 15px !important;
-        padding: 8px 0 !important;
-        border-top: 2px solid #e58c33 !important;
-        border-bottom: 2px solid #e58c33 !important;
-        letter-spacing: 0.05em !important;
+        margin-top: 25px !important;
+        margin-bottom: 12px !important;
+        padding: 6px 0 !important;
+        border-top: 1px solid #e58c33 !important;
+        border-bottom: 1px solid #e58c33 !important;
+        letter-spacing: 0.03em !important;
         text-align: center !important;
-        background-color: #f9f9f9 !important;
       }
       
-      /* Notes and Terms numbered items */
+      /* Notes and Terms numbered items - less prominent */
       .markdown-content h3:contains("."), h3[id^="validity"], h3[id^="payment"], 
       h3[id^="exclusions"], h3[id^="variations"], h3[id^="access"], 
       h3[id^="weather"], h3[id^="warranty"], h3[id^="gst"],
       h3[id^="site"], h3[id^="material"] {
-        color: #e58c33 !important;
-        font-size: 12px !important;
+        color: #666666 !important;
+        font-size: 11px !important;
         font-weight: bold !important;
         text-transform: uppercase !important;
-        margin-top: 18px !important;
-        margin-bottom: 8px !important;
-        padding-bottom: 4px !important;
-        border-bottom: 1px dotted #e58c33 !important;
+        margin-top: 15px !important;
+        margin-bottom: 6px !important;
+        padding-bottom: 3px !important;
+        border-bottom: 1px dotted #999999 !important;
       }
       
       /* Table styles */
