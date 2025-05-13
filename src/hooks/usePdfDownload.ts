@@ -38,8 +38,8 @@ export function usePdfDownload() {
     
     const logo = document.createElement('img');
     logo.src = "/lovable-uploads/54be63ea-83fd-4f4a-8c94-dba12936b674.png";
-    logo.style.height = '100px'; // Increased from 60px to 100px
-    logo.style.margin = '0 auto 15px auto';
+    logo.style.height = '100px'; // Keeping the larger size (100px)
+    logo.style.margin = '0 auto 5px auto'; // Reduced bottom margin from 15px to 5px
     
     header.appendChild(logo);
     clone.insertBefore(header, clone.firstChild);
@@ -84,6 +84,37 @@ export function usePdfDownload() {
         margin-top: 22px !important;
         font-size: 14px !important;
         letter-spacing: 0.03em !important;
+      }
+      
+      /* NOTES AND TERMS styling - different from H1/H2 */
+      .markdown-content h1:contains("NOTES AND TERMS"), h1:contains("Notes and Terms") {
+        color: #333333 !important;
+        font-size: 16px !important;
+        font-weight: bold !important;
+        text-transform: uppercase !important;
+        margin-top: 30px !important;
+        margin-bottom: 15px !important;
+        padding: 8px 0 !important;
+        border-top: 2px solid #e58c33 !important;
+        border-bottom: 2px solid #e58c33 !important;
+        letter-spacing: 0.05em !important;
+        text-align: center !important;
+        background-color: #f9f9f9 !important;
+      }
+      
+      /* Notes and Terms numbered items */
+      .markdown-content h3:contains("."), h3[id^="validity"], h3[id^="payment"], 
+      h3[id^="exclusions"], h3[id^="variations"], h3[id^="access"], 
+      h3[id^="weather"], h3[id^="warranty"], h3[id^="gst"],
+      h3[id^="site"], h3[id^="material"] {
+        color: #e58c33 !important;
+        font-size: 12px !important;
+        font-weight: bold !important;
+        text-transform: uppercase !important;
+        margin-top: 18px !important;
+        margin-bottom: 8px !important;
+        padding-bottom: 4px !important;
+        border-bottom: 1px dotted #e58c33 !important;
       }
       
       /* Table styles */
