@@ -38,8 +38,8 @@ export function usePdfDownload() {
     
     const logo = document.createElement('img');
     logo.src = "/lovable-uploads/54be63ea-83fd-4f4a-8c94-dba12936b674.png";
-    logo.style.height = '100px'; // Keeping the larger size (100px)
-    logo.style.margin = '0 auto 5px auto'; // Reduced bottom margin from 15px to 5px
+    logo.style.height = '100px';
+    logo.style.margin = '0 auto 2px auto'; // Reduced bottom margin from 5px to 2px
     
     header.appendChild(logo);
     clone.insertBefore(header, clone.firstChild);
@@ -86,20 +86,17 @@ export function usePdfDownload() {
         letter-spacing: 0.03em !important;
       }
       
-      /* NOTES AND TERMS styling - different from H1/H2 */
+      /* NOTES AND TERMS styling - same as regular H1/H2 headers */
       .markdown-content h1:contains("NOTES AND TERMS"), h1:contains("Notes and Terms") {
-        color: #333333 !important;
-        font-size: 16px !important;
+        color: #e58c33 !important;
+        font-size: 14px !important;
         font-weight: bold !important;
         text-transform: uppercase !important;
-        margin-top: 30px !important;
-        margin-bottom: 15px !important;
-        padding: 8px 0 !important;
-        border-top: 2px solid #e58c33 !important;
-        border-bottom: 2px solid #e58c33 !important;
-        letter-spacing: 0.05em !important;
-        text-align: center !important;
-        background-color: #f9f9f9 !important;
+        margin-top: 22px !important;
+        margin-bottom: 12px !important;
+        padding-bottom: 6px !important;
+        border-bottom: 1px solid #e58c33 !important;
+        letter-spacing: 0.03em !important;
       }
       
       /* Notes and Terms numbered items */
