@@ -26,38 +26,90 @@ export default function DocumentsStep() {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFiles = Array.from(e.target.files || []);
     
-    // Only allow PDF files
-    const nonPdfFiles = selectedFiles.filter(file => file.type !== "application/pdf");
-    if (nonPdfFiles.length > 0) {
-      toast.error("Only PDF files are allowed");
+    // Filter blank/empty files
+    const cleanedFiles = selectedFiles.filter(file => file && file.name && file.size > 0);
+
+    // Count existing files by type
+    const existingFiles = formData.files && Array.isArray(formData.files) 
+      ? formData.files.filter(f => f && f.name && f.size > 0) 
+      : [];
+    
+    const existingPdfFiles = existingFiles.filter((file: File) => file.type === "application/pdf");
+    const existingImageFiles = existingFiles.filter((file: File) => 
+      file.type === "image/jpeg" || file.type === "image/png");
+    
+    // Count new files by type
+    const newPdfFiles = cleanedFiles.filter(file => file.type === "application/pdf");
+    const newImageFiles = cleanedFiles.filter(file => 
+      file.type === "image/jpeg" || file.type === "image/png");
+    
+    // Check if any unsupported file types
+    const unsupportedFiles = cleanedFiles.filter(file => 
+      file.type !== "application/pdf" && 
+      file.type !== "image/jpeg" && 
+      file.type !== "image/png");
+    
+    if (unsupportedFiles.length > 0) {
+      toast.error("Only PDF, JPEG, or PNG files are allowed");
+      e.target.value = ''; // Reset the input
+      return;
+    }
+
+    // Enforce file type limitations
+    if (newPdfFiles.length > 0 && existingImageFiles.length > 0) {
+      toast.error("You can only upload either PDF or image files, not both");
       e.target.value = ''; // Reset the input
       return;
     }
     
-    // Only allow 1 file
-    if (selectedFiles.length > 1) {
+    if (newImageFiles.length > 0 && existingPdfFiles.length > 0) {
+      toast.error("You can only upload either PDF or image files, not both");
+      e.target.value = ''; // Reset the input
+      return;
+    }
+    
+    // Check PDF limit (max 1)
+    if ((existingPdfFiles.length + newPdfFiles.length) > 1) {
       toast.error("Only 1 PDF file is allowed");
       e.target.value = ''; // Reset the input
       return;
     }
     
-    // Filter blank/empty files
-    const cleanedFiles = selectedFiles.filter(file => file && file.name && file.size > 0);
+    // Check image limit (max 2)
+    if ((existingImageFiles.length + newImageFiles.length) > 2) {
+      toast.error("Maximum of 2 image files are allowed");
+      e.target.value = ''; // Reset the input
+      return;
+    }
+    
+    // All checks passed, update form data
+    const updatedFiles = [...existingFiles, ...cleanedFiles];
     updateFormData({
-      files: cleanedFiles
+      files: updatedFiles
     });
+    
+    e.target.value = ''; // Reset the input for next upload
+  };
+
+  const handleRemoveFile = (index: number) => {
+    const currentFiles = [...(formData.files || [])];
+    currentFiles.splice(index, 1);
+    updateFormData({ files: currentFiles });
   };
 
   const files = (formData.files && Array.isArray(formData.files))
     ? formData.files.filter(f => f && f.name && f.size > 0)
     : [];
 
+  const hasPdf = files.some((file: File) => file.type === "application/pdf");
+  const hasImages = files.some((file: File) => file.type === "image/jpeg" || file.type === "image/png");
+
   return (
     <div className="step-container">
       <div className="text-center mb-8">
-        <h1 className="text-2xl sm:text-3xl font-bold text-white mb-3">Attach Document</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold text-white mb-3">Attach Documents</h1>
         <p className="text-white/80 max-w-2xl mx-auto">
-          Please attach a single PDF document for your project.
+          Please attach either 1 PDF document, up to 2 images (JPEG/PNG), or you may continue without attaching files.
         </p>
       </div>
       <div className="max-w-2xl mx-auto">
@@ -65,13 +117,19 @@ export default function DocumentsStep() {
           <CardContent className="p-4">
             <div className="bg-white/10 rounded p-3 mb-4 border border-white/20 flex items-center gap-2 text-sm text-white/80">
               <AlertCircle className="h-4 w-4 text-white/80" />
-              <span>Only 1 PDF file is allowed</span>
+              <span>
+                {hasPdf 
+                  ? "Only 1 PDF file is allowed"
+                  : hasImages 
+                    ? "Up to 2 image files (JPEG/PNG) are allowed" 
+                    : "Choose either 1 PDF file or up to 2 image files (JPEG/PNG)"}
+              </span>
             </div>
             <input
               type="file"
               onChange={handleFileChange}
               className="block w-full bg-white rounded p-2 mb-4"
-              accept=".pdf"
+              accept=".pdf,.jpg,.jpeg,.png"
             />
             <ScrollArea className="h-[200px] rounded-md border border-white/20 bg-white/10 p-4">
               {files.length > 0 ? (
@@ -82,17 +140,29 @@ export default function DocumentsStep() {
                       className="flex items-center justify-between py-1 px-2 rounded-md bg-white/5"
                     >
                       <div className="flex items-center space-x-2 overflow-hidden">
-                        <File className="h-4 w-4 text-blue-500" />
+                        {file.type === "application/pdf" ? (
+                          <File className="h-4 w-4 text-red-500" />
+                        ) : (
+                          <Image className="h-4 w-4 text-construction-orange" />
+                        )}
                         <span className="text-white text-sm truncate">{file.name}</span>
                       </div>
-                      <span className="text-white/60 text-xs">
-                        {Math.round(file.size / 1024)} KB
-                      </span>
+                      <div className="flex items-center space-x-2">
+                        <span className="text-white/60 text-xs">
+                          {Math.round(file.size / 1024)} KB
+                        </span>
+                        <button 
+                          onClick={() => handleRemoveFile(idx)}
+                          className="text-white/60 hover:text-red-400 text-xs px-2 py-1"
+                        >
+                          ✕
+                        </button>
+                      </div>
                     </li>
                   ))}
                 </ul>
               ) : (
-                <p className="text-white/60 italic">No document attached yet.</p>
+                <p className="text-white/60 italic">No documents attached yet.</p>
               )}
             </ScrollArea>
           </CardContent>
