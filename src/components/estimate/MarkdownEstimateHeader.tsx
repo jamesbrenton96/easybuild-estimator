@@ -15,26 +15,6 @@ export default function MarkdownEstimateHeader({
   title = "Project Cost Estimate",
   projectDetails
 }: MarkdownEstimateHeaderProps) {
-  // Helper function to get the full correspondence type name
-  const getFullCorrespondenceType = (type: string) => {
-    switch (type?.toLowerCase()) {
-      case "accurate":
-        return "Accurate Estimate";
-      case "ballpark":
-        return "Ballpark Estimate";
-      case "quotation":
-        return "Fixed Price Quotation";
-      case "quote":
-        return "Quotation";
-      case "preliminary":
-        return "Preliminary Estimate";
-      case "proposal":
-        return "Proposal";
-      default:
-        return type || "Estimate";
-    }
-  };
-
   return (
     <div className="p-6 bg-white text-center">
       {/* Logo */}
@@ -65,7 +45,7 @@ export default function MarkdownEstimateHeader({
           
           <div className="correspondence-item flex mb-2">
             <div className="correspondence-label font-semibold w-32">Type:</div>
-            <div>{getFullCorrespondenceType("Quote")}</div>
+            <div>Quote</div>
           </div>
           
           <div className="correspondence-item flex mb-2">
