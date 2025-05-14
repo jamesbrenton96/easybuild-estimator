@@ -3,7 +3,7 @@ import { createCorrespondenceSection } from './markdown/correspondence';
 import { createSection } from './markdown/sections';
 import { createMaterialsTable, createLabourTable, createTimelineTable, createTotalSummaryTable } from './markdown/tables';
 
-export function createMarkdownDescription(formData: any): string {
+export function createMarkdownDescription(formData: any, showSources: boolean = true): string {
   let markdown = '';
   
   // Line 1: plain text project type (no #, no bold)
@@ -36,7 +36,7 @@ export function createMarkdownDescription(formData: any): string {
   // 5. Materials & Cost Breakdown
   if (Array.isArray(formData.materials)) {
     markdown += `# 5. Materials & Cost Breakdown\n\n`;
-    markdown += createMaterialsTable(formData.materials) + '\n\n';
+    markdown += createMaterialsTable(formData.materials, showSources) + '\n\n';
     markdown += `**Materials Sub-total (ex GST):** $${formData.materialsSubtotal || 0}\n`;
     markdown += `**GST 15 %:** $${formData.gst || 0}\n`;
     markdown += `**Materials Total (incl GST):** $${formData.materialsTotal || 0}\n`;
