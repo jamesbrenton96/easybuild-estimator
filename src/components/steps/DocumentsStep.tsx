@@ -75,17 +75,13 @@ export default function DocumentsStep() {
       return;
     }
     
-    // Check image files requirement (exactly 2)
+    // Check image files limit (max 2)
     if (newImageFiles.length > 0) {
       const totalImageCount = existingImageFiles.length + newImageFiles.length;
       if (totalImageCount > 2) {
-        toast.error("Exactly 2 image files are required");
+        toast.error("Maximum 2 image files are allowed");
         e.target.value = ''; // Reset the input
         return;
-      }
-      
-      if (totalImageCount < 2 && e.target.multiple) {
-        toast.info(`You need to select ${2 - existingImageFiles.length} more image files`);
       }
     }
     
@@ -112,14 +108,8 @@ export default function DocumentsStep() {
   const hasImages = files.some((file: File) => file.type === "image/jpeg" || file.type === "image/png");
   const imageCount = files.filter((file: File) => file.type === "image/jpeg" || file.type === "image/png").length;
 
-  // Validate before proceeding to next step
+  // No validation needed for next step, can proceed with 0-2 images or 0-1 PDF
   const handleNextStep = () => {
-    // If user has selected images but not exactly 2
-    if (hasImages && imageCount !== 2) {
-      toast.error("You must upload exactly 2 image files to continue");
-      return;
-    }
-    
     nextStep();
   };
 
@@ -131,8 +121,8 @@ export default function DocumentsStep() {
           {hasPdf ? 
             "You've uploaded 1 PDF document." :
             hasImages ? 
-              `You've uploaded ${imageCount} of 2 required image files.` :
-              "Please attach either exactly 2 images (JPEG/PNG), 1 PDF document, or continue without attaching files."
+              `You've uploaded ${imageCount} of maximum 2 image files.` :
+              "Please attach up to 2 images (JPEG/PNG), 1 PDF document, or continue without attaching files."
           }
         </p>
       </div>
@@ -145,8 +135,8 @@ export default function DocumentsStep() {
                 {hasPdf 
                   ? "Only 1 PDF file is allowed"
                   : hasImages 
-                    ? `${imageCount === 2 ? "You've uploaded the required 2 image files" : "Exactly 2 image files (JPEG/PNG) are required"}`
-                    : "Choose either 1 PDF file or exactly 2 image files (JPEG/PNG)"}
+                    ? `You've uploaded ${imageCount} of maximum 2 image files`
+                    : "Choose either 1 PDF file or up to 2 image files (JPEG/PNG)"}
               </span>
             </div>
             <input
