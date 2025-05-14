@@ -1,8 +1,23 @@
+
 import React, { createContext, useContext, useState, ReactNode, useEffect, useCallback } from "react";
+
+// Define types for our data structures
+export interface ContentData {
+  content: string;
+}
+
+export interface CorrespondenceData {
+  type?: string;
+  clientName?: string;
+  date?: string;
+  [key: string]: string | undefined;
+}
 
 interface EstimatorContextType {
   currentStep: number;
   setStep: (step: number) => void;
+  nextStep: () => void;
+  prevStep: () => void;
   formData: any;
   updateFormData: (data: any) => void;
   saveFormData: (data: any) => void;
@@ -36,6 +51,15 @@ export const EstimatorProvider = ({ children }: { children: ReactNode }) => {
     }
   }, []);
 
+  // Navigation functions
+  const nextStep = () => {
+    setCurrentStep(prev => prev + 1);
+  };
+
+  const prevStep = () => {
+    setCurrentStep(prev => Math.max(1, prev - 1));
+  };
+
   // Update form data in localStorage whenever it changes
   const updateFormData = useCallback((data: any) => {
     setFormData(prev => {
@@ -55,6 +79,8 @@ export const EstimatorProvider = ({ children }: { children: ReactNode }) => {
       value={{
         currentStep,
         setStep: setCurrentStep,
+        nextStep,
+        prevStep,
         formData,
         updateFormData,
         saveFormData,

@@ -69,8 +69,10 @@ export function usePdfDownload() {
     header.appendChild(logo);
     clone.insertBefore(header, clone.firstChild);
     
-    clone.style.fontFamily = 'Arial, sans-serif';
-    clone.style.fontSize = '10px';
+    // Cast the clone to HTMLElement to resolve the style property access issue
+    const htmlClone = clone as HTMLElement;
+    htmlClone.style.fontFamily = 'Arial, sans-serif';
+    htmlClone.style.fontSize = '10px';
     
     const style = document.createElement('style');
     style.textContent = `
