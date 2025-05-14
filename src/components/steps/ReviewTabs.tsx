@@ -11,14 +11,12 @@ import FallbackEstimate from "../estimate/FallbackEstimate";
 import html2pdf from "html2pdf.js";
 import { toast } from "sonner";
 import { useEstimator } from "@/context/EstimatorContext";
-import SourceToggle from "../estimate/SourceToggle";
 
 export function ReviewTabs({ estimationResults, setEstimationResults }: {
   estimationResults: any,
   setEstimationResults: (r: any) => void,
 }) {
   const [activeTab, setActiveTab] = useState("view");
-  const [showSources, setShowSources] = useState(true);
   const estimateRef = useRef<HTMLDivElement>(null);
   const { formData } = useEstimator();
   
@@ -36,12 +34,7 @@ export function ReviewTabs({ estimationResults, setEstimationResults }: {
     })
   };
 
-  // Process estimation results with or without sources
-  const processEstimationResults = useProcessEstimationResults(
-    estimationResults, 
-    projectDetails,
-    showSources
-  );
+  const processEstimationResults = useProcessEstimationResults(estimationResults, projectDetails);
 
   const handleSaveEdits = (editedContent: string) => {
     setEstimationResults({
@@ -66,7 +59,6 @@ export function ReviewTabs({ estimationResults, setEstimationResults }: {
       </TabsList>
       
       <TabsContent value="view">
-        <SourceToggle showSources={showSources} setShowSources={setShowSources} />
         <div ref={estimateRef} className="max-w-4xl mx-auto pdf-content bg-white p-0 rounded-lg shadow-lg">
           <style dangerouslySetInnerHTML={{ __html: `
             .pdf-content {

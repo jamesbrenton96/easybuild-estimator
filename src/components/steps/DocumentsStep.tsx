@@ -25,48 +25,18 @@ export default function DocumentsStep() {
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFiles = Array.from(e.target.files || []);
-    const existingFiles = Array.isArray(formData.files) ? formData.files : [];
     
-    // Check file types
-    const pdfFiles = selectedFiles.filter(file => file.type === "application/pdf");
-    const imageFiles = selectedFiles.filter(file => 
-      file.type === "image/jpeg" || file.type === "image/png"
-    );
-    const otherFiles = selectedFiles.filter(file => 
-      file.type !== "application/pdf" && 
-      file.type !== "image/jpeg" && 
-      file.type !== "image/png"
-    );
-    
-    // Handle invalid file types
-    if (otherFiles.length > 0) {
-      toast.error("Only PDF, JPEG, or PNG files are allowed");
+    // Only allow PDF files
+    const nonPdfFiles = selectedFiles.filter(file => file.type !== "application/pdf");
+    if (nonPdfFiles.length > 0) {
+      toast.error("Only PDF files are allowed");
       e.target.value = ''; // Reset the input
       return;
     }
     
-    // Check existing files to determine what's allowed
-    const existingPdfFiles = existingFiles.filter(file => file.type === "application/pdf");
-    const existingImageFiles = existingFiles.filter(file => 
-      file.type === "image/jpeg" || file.type === "image/png"
-    );
-    
-    // Enforce file type/count limits
-    if (pdfFiles.length > 0 && (existingPdfFiles.length > 0 || existingImageFiles.length > 0)) {
+    // Only allow 1 file
+    if (selectedFiles.length > 1) {
       toast.error("Only 1 PDF file is allowed");
-      e.target.value = ''; // Reset the input
-      return;
-    }
-    
-    if (imageFiles.length > 0 && existingPdfFiles.length > 0) {
-      toast.error("You can't mix PDF and image files");
-      e.target.value = ''; // Reset the input
-      return;
-    }
-    
-    // Check if adding image files would exceed the limit of 2
-    if (imageFiles.length + existingImageFiles.length > 2) {
-      toast.error("Maximum 2 image files are allowed");
       e.target.value = ''; // Reset the input
       return;
     }
@@ -74,16 +44,8 @@ export default function DocumentsStep() {
     // Filter blank/empty files
     const cleanedFiles = selectedFiles.filter(file => file && file.name && file.size > 0);
     updateFormData({
-      files: [...existingFiles, ...cleanedFiles]
+      files: cleanedFiles
     });
-  };
-
-  const handleRemoveFile = (index: number) => {
-    if (formData.files && Array.isArray(formData.files)) {
-      const updatedFiles = [...formData.files];
-      updatedFiles.splice(index, 1);
-      updateFormData({ files: updatedFiles });
-    }
   };
 
   const files = (formData.files && Array.isArray(formData.files))
@@ -93,9 +55,9 @@ export default function DocumentsStep() {
   return (
     <div className="step-container">
       <div className="text-center mb-8">
-        <h1 className="text-2xl sm:text-3xl font-bold text-white mb-3">Attach Documents</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold text-white mb-3">Attach Document</h1>
         <p className="text-white/80 max-w-2xl mx-auto">
-          Please attach either 1 PDF document or up to 2 images (JPEG/PNG) for your project.
+          Please attach a single PDF document for your project.
         </p>
       </div>
       <div className="max-w-2xl mx-auto">
@@ -103,13 +65,13 @@ export default function DocumentsStep() {
           <CardContent className="p-4">
             <div className="bg-white/10 rounded p-3 mb-4 border border-white/20 flex items-center gap-2 text-sm text-white/80">
               <AlertCircle className="h-4 w-4 text-white/80" />
-              <span>Upload either 1 PDF file OR up to 2 image files (JPEG, PNG)</span>
+              <span>Only 1 PDF file is allowed</span>
             </div>
             <input
               type="file"
               onChange={handleFileChange}
               className="block w-full bg-white rounded p-2 mb-4"
-              accept=".pdf,.jpg,.jpeg,.png"
+              accept=".pdf"
             />
             <ScrollArea className="h-[200px] rounded-md border border-white/20 bg-white/10 p-4">
               {files.length > 0 ? (
@@ -120,29 +82,17 @@ export default function DocumentsStep() {
                       className="flex items-center justify-between py-1 px-2 rounded-md bg-white/5"
                     >
                       <div className="flex items-center space-x-2 overflow-hidden">
-                        {file.type === "application/pdf" ? (
-                          <File className="h-4 w-4 text-blue-500" />
-                        ) : (
-                          <Image className="h-4 w-4 text-green-500" />
-                        )}
+                        <File className="h-4 w-4 text-blue-500" />
                         <span className="text-white text-sm truncate">{file.name}</span>
                       </div>
-                      <div className="flex items-center">
-                        <span className="text-white/60 text-xs mr-2">
-                          {Math.round(file.size / 1024)} KB
-                        </span>
-                        <button 
-                          onClick={() => handleRemoveFile(idx)}
-                          className="text-white/60 hover:text-white text-xs bg-white/10 hover:bg-white/20 rounded-full p-1"
-                        >
-                          ×
-                        </button>
-                      </div>
+                      <span className="text-white/60 text-xs">
+                        {Math.round(file.size / 1024)} KB
+                      </span>
                     </li>
                   ))}
                 </ul>
               ) : (
-                <p className="text-white/60 italic">No documents attached yet.</p>
+                <p className="text-white/60 italic">No document attached yet.</p>
               )}
             </ScrollArea>
           </CardContent>

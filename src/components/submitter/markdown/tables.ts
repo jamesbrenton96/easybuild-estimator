@@ -19,26 +19,16 @@ interface TimelineRow {
   duration: string;
 }
 
-export function createMaterialsTable(materials: MaterialRow[], showSources: boolean = true): string {
+export function createMaterialsTable(materials: MaterialRow[]): string {
   if (!materials?.length) return '';
   
-  if (showSources) {
-    return `| Item | Qty | Unit Price (NZD) | Total (NZD) | Source |
+  return `| Item | Qty | Unit Price (NZD) | Total (NZD) | Source |
 |------|----:|----------------:|------------:|--------|
 ${materials.map(m => 
   `| ${m.item} | ${m.qty} | ${m.unitPrice} | ${m.total} | ${m.source} |`
 ).join('\n')}
 
 `;
-  } else {
-    return `| Item | Qty | Unit Price (NZD) | Total (NZD) |
-|------|----:|----------------:|------------:|
-${materials.map(m => 
-  `| ${m.item} | ${m.qty} | ${m.unitPrice} | ${m.total} |`
-).join('\n')}
-
-`;
-  }
 }
 
 export function createLabourTable(labour: LabourRow[]): string {
