@@ -43,6 +43,10 @@ export default function ReviewDetails({ formData }: ReviewDetailsProps) {
     return <File className="h-5 w-5 text-blue-500" />;
   };
   
+  // Get correspondence type with the correct formatting
+  const correspondenceType = formData.subcategories?.correspondence?.type;
+  const fullCorrespondenceType = correspondenceType ? getFullCorrespondenceType(correspondenceType) : "Not specified";
+  
   return (
     <div className="bg-white rounded-lg p-6 mb-6 shadow-md">
       <div className="space-y-4">
@@ -51,12 +55,10 @@ export default function ReviewDetails({ formData }: ReviewDetailsProps) {
           <p className="text-gray-800 font-medium">{formData.projectType || "Not specified"}</p>
         </div>
         
-        {formData.subcategories?.correspondence?.type && (
+        {correspondenceType && (
           <div>
             <h3 className="text-gray-500 text-sm">Correspondence Type</h3>
-            <p className="text-gray-800 font-medium">
-              {getFullCorrespondenceType(formData.subcategories.correspondence.type)}
-            </p>
+            <p className="text-gray-800 font-medium">{fullCorrespondenceType}</p>
           </div>
         )}
         

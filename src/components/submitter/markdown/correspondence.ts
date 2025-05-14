@@ -13,10 +13,32 @@ export function createCorrespondenceSection(details: CorrespondenceDetails): str
     month: 'long',
     day: 'numeric'
   });
+  
+  // Helper function to get the full correspondence type name
+  const getFullCorrespondenceType = (type: string) => {
+    switch (type?.toLowerCase()) {
+      case "accurate":
+        return "Accurate Estimate";
+      case "ballpark":
+        return "Ballpark Estimate";
+      case "quotation":
+        return "Fixed Price Quotation";
+      case "quote":
+        return "Quotation";
+      case "preliminary":
+        return "Preliminary Estimate";
+      case "proposal":
+        return "Proposal";
+      default:
+        return type || "Estimate";
+    }
+  };
+
+  const fullCorrespondenceType = getFullCorrespondenceType(details.correspondenceType);
 
   return `# 1. Correspondence
 
-- **Correspondence Type:** ${details.correspondenceType}
+- **Correspondence Type:** ${fullCorrespondenceType}
 - **Client Name:** ${details.clientName}
 - **Project Address:** ${details.projectAddress}
 - **Current Date:** ${currentDate}
