@@ -32,6 +32,7 @@ export function usePdfDownload() {
       }
     };
     
+    // Clone the element to modify it without affecting the original
     const clone = element.cloneNode(true) as HTMLElement;
     
     // Hide material sources if toggled off
@@ -49,31 +50,35 @@ export function usePdfDownload() {
           rows.forEach(row => {
             const cells = row.querySelectorAll('th, td');
             if (cells.length >= 5) {
-              cells[4].style.display = 'none';
+              // Cast to HTMLElement before accessing style
+              const cell = cells[4] as HTMLElement;
+              cell.style.display = 'none';
             }
           });
         }
       });
     }
     
+    // Create header with logo
     const header = document.createElement('div');
     header.style.textAlign = 'center';
-    header.style.marginBottom = '5px'; // Further reduced margin
-    header.style.padding = '8px'; // Further reduced padding
+    header.style.marginBottom = '5px';
+    header.style.padding = '8px';
     
     const logo = document.createElement('img');
     logo.src = "/lovable-uploads/54be63ea-83fd-4f4a-8c94-dba12936b674.png";
     logo.style.height = '100px';
-    logo.style.margin = '0 auto 0 auto'; // No bottom margin
+    logo.style.margin = '0 auto 0 auto';
     
     header.appendChild(logo);
     clone.insertBefore(header, clone.firstChild);
     
-    // Cast the clone to HTMLElement to resolve the style property access issue
+    // Apply styles to clone
     const htmlClone = clone as HTMLElement;
     htmlClone.style.fontFamily = 'Arial, sans-serif';
     htmlClone.style.fontSize = '10px';
     
+    // Add CSS styles to document
     const style = document.createElement('style');
     style.textContent = `
       @page {
