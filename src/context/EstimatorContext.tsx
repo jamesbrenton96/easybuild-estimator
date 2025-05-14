@@ -1,165 +1,74 @@
+import React, { createContext, useContext, useState, ReactNode, useEffect, useCallback } from "react";
 
-import React, { createContext, useContext, useState, ReactNode } from 'react';
-
-// Define the types for our context
 interface EstimatorContextType {
   currentStep: number;
-  formData: FormData;
-  isLoading: boolean;
-  estimationResults: EstimationResults | null;
   setStep: (step: number) => void;
-  nextStep: () => void;
-  prevStep: () => void;
-  updateFormData: (data: Partial<FormData>) => void;
+  formData: any;
+  updateFormData: (data: any) => void;
+  saveFormData: (data: any) => void;
+  files: File[];
+  setFiles: (files: File[]) => void;
+  isLoading: boolean;
   setIsLoading: (loading: boolean) => void;
-  setEstimationResults: (results: EstimationResults | null) => void;
-  saveFormData: (data: FormData) => void;
-  getSavedFormData: () => FormData | null;
+  estimationResults: any;
+  setEstimationResults: (results: any) => void;
+  showMaterialSources: boolean;
+  setShowMaterialSources: (show: boolean) => void;
 }
 
-// Types for our form data
-export interface FormData {
-  projectType?: string;
-  description?: string;
-  location?: string;
-  files?: File[];
-  subcategories?: SubcategoryData;
-  [key: string]: any;
-}
+const EstimatorContext = createContext<EstimatorContextType>({} as EstimatorContextType);
 
-export interface ContentData {
-  content: string;
-}
+export const useEstimator = () => useContext(EstimatorContext);
 
-export interface CorrespondenceData {
-  type?: string;
-  clientName?: string;
-  date?: string;
-  [key: string]: string | undefined;
-}
+export const EstimatorProvider = ({ children }: { children: ReactNode }) => {
+  const [currentStep, setCurrentStep] = useState<number>(1);
+  const [formData, setFormData] = useState<any>({});
+  const [files, setFiles] = useState<File[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [estimationResults, setEstimationResults] = useState<any>(null);
+  const [showMaterialSources, setShowMaterialSources] = useState<boolean>(true);
 
-export interface SubcategoryData {
-  correspondence: CorrespondenceData;
-  projectName: ContentData;
-  overview: ContentData;
-  dimensions: ContentData;
-  materials: ContentData;
-  finish: ContentData;
-  locationDetails: ContentData;
-  timeframe: ContentData;
-  additionalWork: ContentData;
-  rates: ContentData;
-  margin: ContentData;
-  notes: ContentData;
-  [key: string]: ContentData | CorrespondenceData;
-}
+  // Load form data from localStorage on component mount
+  useEffect(() => {
+    const storedFormData = localStorage.getItem('formData');
+    if (storedFormData) {
+      setFormData(JSON.parse(storedFormData));
+    }
+  }, []);
 
-// Types for the estimation results
-export interface EstimationResults {
-  markdownContent?: string;
-  estimate?: any;
-  [key: string]: any;
-}
-
-// Create the context with default values
-const EstimatorContext = createContext<EstimatorContextType>({
-  currentStep: 1,
-  formData: {},
-  isLoading: false,
-  estimationResults: null,
-  setStep: () => {},
-  nextStep: () => {},
-  prevStep: () => {},
-  updateFormData: () => {},
-  setIsLoading: () => {},
-  setEstimationResults: () => {},
-  saveFormData: () => {},
-  getSavedFormData: () => null,
-});
-
-// Create a provider component
-export function EstimatorProvider({ children }: { children: ReactNode }) {
-  const [currentStep, setCurrentStep] = useState(1);
-  const [isLoading, setIsLoading] = useState(false);
-  const [estimationResults, setEstimationResults] = useState<EstimationResults | null>(null);
-  
-  // Check localStorage for saved form data on initial load
-  const initialFormData = localStorage.getItem('savedFormData') ? 
-    JSON.parse(localStorage.getItem('savedFormData') || '{}') : 
-    {
-      files: [],
-      subcategories: {
-        correspondence: {},
-        projectName: { content: "" },
-        overview: { content: "" },
-        dimensions: { content: "" },
-        materials: { content: "" },
-        finish: { content: "" },
-        locationDetails: { content: "" },
-        timeframe: { content: "" },
-        additionalWork: { content: "" },
-        rates: { content: "" },
-        margin: { content: "" },
-        notes: { content: "" }
-      }
-    };
-  
-  const [formData, setFormData] = useState<FormData>(initialFormData);
-
-  const setStep = (step: number) => {
-    setCurrentStep(step);
-  };
-
-  const nextStep = () => {
-    setCurrentStep((prev) => prev + 1);
-  };
-
-  const prevStep = () => {
-    setCurrentStep((prev) => Math.max(1, prev - 1));
-  };
-
-  const updateFormData = (data: Partial<FormData>) => {
-    setFormData((prev) => ({ ...prev, ...data }));
-  };
+  // Update form data in localStorage whenever it changes
+  const updateFormData = useCallback((data: any) => {
+    setFormData(prev => {
+      const updatedFormData = { ...prev, ...data };
+      localStorage.setItem('formData', JSON.stringify(updatedFormData));
+      return updatedFormData;
+    });
+  }, []);
 
   // Save form data to localStorage
-  const saveFormData = (data: FormData) => {
-    localStorage.setItem('savedFormData', JSON.stringify(data));
-  };
-  
-  // Get saved form data from localStorage
-  const getSavedFormData = (): FormData | null => {
-    const savedData = localStorage.getItem('savedFormData');
-    return savedData ? JSON.parse(savedData) : null;
+  const saveFormData = (data: any) => {
+    localStorage.setItem('formData', JSON.stringify(data));
   };
 
   return (
     <EstimatorContext.Provider
       value={{
         currentStep,
+        setStep: setCurrentStep,
         formData,
-        isLoading,
-        estimationResults,
-        setStep,
-        nextStep,
-        prevStep,
         updateFormData,
-        setIsLoading,
-        setEstimationResults,
         saveFormData,
-        getSavedFormData,
+        files,
+        setFiles,
+        isLoading,
+        setIsLoading,
+        estimationResults,
+        setEstimationResults,
+        showMaterialSources,
+        setShowMaterialSources,
       }}
     >
       {children}
     </EstimatorContext.Provider>
   );
-}
-
-// Custom hook to use the estimator context
-export function useEstimator() {
-  const context = useContext(EstimatorContext);
-  if (!context) {
-    throw new Error('useEstimator must be used within an EstimatorProvider');
-  }
-  return context;
-}
+};

@@ -1,7 +1,10 @@
 
 import html2pdf from "html2pdf.js";
+import { useEstimator } from "@/context/EstimatorContext";
 
 export function usePdfDownload() {
+  const { showMaterialSources } = useEstimator();
+  
   const handleDownloadPDF = () => {
     const element = document.querySelector('.pdf-content');
     if (!element) return;
@@ -30,6 +33,28 @@ export function usePdfDownload() {
     };
     
     const clone = element.cloneNode(true) as HTMLElement;
+    
+    // Hide material sources if toggled off
+    if (!showMaterialSources) {
+      const tables = clone.querySelectorAll('table');
+      tables.forEach(table => {
+        // Find tables with material sources (5th column)
+        const headers = table.querySelectorAll('th');
+        const isSourceTable = Array.from(headers).some(header => 
+          header.textContent?.toLowerCase().includes('source'));
+          
+        if (isSourceTable) {
+          // Hide the source column (5th column, index 4)
+          const rows = table.querySelectorAll('tr');
+          rows.forEach(row => {
+            const cells = row.querySelectorAll('th, td');
+            if (cells.length >= 5) {
+              cells[4].style.display = 'none';
+            }
+          });
+        }
+      });
+    }
     
     const header = document.createElement('div');
     header.style.textAlign = 'center';

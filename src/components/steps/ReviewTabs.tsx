@@ -18,7 +18,7 @@ export function ReviewTabs({ estimationResults, setEstimationResults }: {
 }) {
   const [activeTab, setActiveTab] = useState("view");
   const estimateRef = useRef<HTMLDivElement>(null);
-  const { formData } = useEstimator();
+  const { formData, showMaterialSources } = useEstimator();
   
   if (!estimationResults) return null;
 
@@ -173,6 +173,14 @@ export function ReviewTabs({ estimationResults, setEstimationResults }: {
               margin-bottom: 6px;
               line-height: 1.4;
             }
+
+            /* Source column visibility based on toggle */
+            ${!showMaterialSources ? `
+              table th:nth-child(5),
+              table td:nth-child(5) {
+                display: none;
+              }
+            ` : ''}
           `}} />
           {processEstimationResults}
         </div>
