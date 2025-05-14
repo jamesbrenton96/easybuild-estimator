@@ -1,5 +1,6 @@
 
 import { useCallback } from "react";
+import { getFullCorrespondenceType } from "./markdown/correspondence";
 
 export interface WebhookResponse {
   markdownContent?: string;
@@ -16,6 +17,12 @@ export function useWebhookEstimate() {
   const getEstimate = useCallback(async (payload: Record<string, any>): Promise<WebhookResponse> => {
     try {
       console.log("Preparing payload for webhook submission");
+      
+      // Format the correspondence type to its full name before sending
+      if (payload.subcategories?.correspondence?.type) {
+        const correspondenceType = payload.subcategories.correspondence.type;
+        payload.subcategories.correspondence.fullType = getFullCorrespondenceType(correspondenceType);
+      }
       
       // Check if there are any files in the payload
       const hasFiles = Array.isArray(payload.files) && payload.files.length > 0;
