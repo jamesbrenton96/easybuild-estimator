@@ -88,5 +88,5 @@ export function useProcessEstimationResults(
   }
   
   // Case 3: Fallback to displaying raw data
-  return <FallbackEstimate estimationResults={estimationResults} />;
+  return <FallbackEstimate errorDetails={estimationResults ? JSON.stringify(estimationResults) : "No estimation results available"} />;
 }
