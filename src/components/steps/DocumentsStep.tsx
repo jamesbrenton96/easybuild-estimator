@@ -75,11 +75,18 @@ export default function DocumentsStep() {
       return;
     }
     
-    // Check image limit (max 2)
-    if ((existingImageFiles.length + newImageFiles.length) > 2) {
-      toast.error("Maximum of 2 image files are allowed");
-      e.target.value = ''; // Reset the input
-      return;
+    // Check image files requirement (exactly 2)
+    if (newImageFiles.length > 0) {
+      const totalImageCount = existingImageFiles.length + newImageFiles.length;
+      if (totalImageCount > 2) {
+        toast.error("Exactly 2 image files are required");
+        e.target.value = ''; // Reset the input
+        return;
+      }
+      
+      if (totalImageCount < 2 && e.target.multiple) {
+        toast.info(`You need to select ${2 - existingImageFiles.length} more image files`);
+      }
     }
     
     // All checks passed, update form data
@@ -103,13 +110,30 @@ export default function DocumentsStep() {
 
   const hasPdf = files.some((file: File) => file.type === "application/pdf");
   const hasImages = files.some((file: File) => file.type === "image/jpeg" || file.type === "image/png");
+  const imageCount = files.filter((file: File) => file.type === "image/jpeg" || file.type === "image/png").length;
+
+  // Validate before proceeding to next step
+  const handleNextStep = () => {
+    // If user has selected images but not exactly 2
+    if (hasImages && imageCount !== 2) {
+      toast.error("You must upload exactly 2 image files to continue");
+      return;
+    }
+    
+    nextStep();
+  };
 
   return (
     <div className="step-container">
       <div className="text-center mb-8">
         <h1 className="text-2xl sm:text-3xl font-bold text-white mb-3">Attach Documents</h1>
         <p className="text-white/80 max-w-2xl mx-auto">
-          Please attach either 1 PDF document, up to 2 images (JPEG/PNG), or you may continue without attaching files.
+          {hasPdf ? 
+            "You've uploaded 1 PDF document." :
+            hasImages ? 
+              `You've uploaded ${imageCount} of 2 required image files.` :
+              "Please attach either exactly 2 images (JPEG/PNG), 1 PDF document, or continue without attaching files."
+          }
         </p>
       </div>
       <div className="max-w-2xl mx-auto">
@@ -121,8 +145,8 @@ export default function DocumentsStep() {
                 {hasPdf 
                   ? "Only 1 PDF file is allowed"
                   : hasImages 
-                    ? "Up to 2 image files (JPEG/PNG) are allowed" 
-                    : "Choose either 1 PDF file or up to 2 image files (JPEG/PNG)"}
+                    ? `${imageCount === 2 ? "You've uploaded the required 2 image files" : "Exactly 2 image files (JPEG/PNG) are required"}`
+                    : "Choose either 1 PDF file or exactly 2 image files (JPEG/PNG)"}
               </span>
             </div>
             <input
@@ -130,6 +154,7 @@ export default function DocumentsStep() {
               onChange={handleFileChange}
               className="block w-full bg-white rounded p-2 mb-4"
               accept=".pdf,.jpg,.jpeg,.png"
+              multiple={!hasPdf && imageCount < 2}
             />
             <ScrollArea className="h-[200px] rounded-md border border-white/20 bg-white/10 p-4">
               {files.length > 0 ? (
@@ -169,7 +194,7 @@ export default function DocumentsStep() {
         </Card>
         <div className={`flex ${isMobile ? "flex-col space-y-4" : "justify-between"}`}>
           <button onClick={prevStep} className={`btn-back ${isMobile ? "order-2" : ""}`}>Back</button>
-          <button onClick={nextStep} className={`btn-next ${isMobile ? "order-1" : ""}`}>Next</button>
+          <button onClick={handleNextStep} className={`btn-next ${isMobile ? "order-1" : ""}`}>Next</button>
         </div>
       </div>
     </div>
