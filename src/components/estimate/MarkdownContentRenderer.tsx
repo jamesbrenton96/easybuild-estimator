@@ -29,27 +29,25 @@ export default function MarkdownContentRenderer({ content }: { content: string }
           width: 100% !important;
         }
         
-        /* NOTES AND TERMS styling - different from regular h1/h2 */
-        .markdown-content h1:nth-of-type(n+5), .markdown-content h2:nth-of-type(n+9) {
-          color: #333333 !important;
-          font-size: 16px !important;
+        /* NOTES AND TERMS styling as regular H1 header */
+        .markdown-content h1:contains("NOTES AND TERMS"), .markdown-content h2:contains("NOTES AND TERMS") {
+          color: #e58c33 !important;
+          font-size: 14px !important;
           font-weight: bold !important;
           text-transform: uppercase !important;
-          margin-top: 30px !important;
-          margin-bottom: 15px !important;
-          padding: 8px 0 !important;
-          border-top: 2px solid #e58c33 !important;
-          border-bottom: 2px solid #e58c33 !important;
-          letter-spacing: 0.05em !important;
-          text-align: center !important;
-          background-color: #f9f9f9 !important;
+          margin-top: 22px !important;
+          margin-bottom: 12px !important;
+          padding: 0 0 6px 0 !important;
+          border-bottom: 1px solid #e58c33 !important;
+          letter-spacing: 0.03em !important;
+          width: 100% !important;
         }
         
         /* Numbered items in Notes and Terms section */
         .markdown-content h1 + p strong, .markdown-content h2 + p strong,
         .markdown-content p strong:nth-of-type(1):contains(".") {
           color: #e58c33 !important;
-          font-size: 12px !important;
+          font-size: 11px !important;
           font-weight: bold !important;
           display: block !important;
           text-transform: uppercase !important;
