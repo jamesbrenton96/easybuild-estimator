@@ -2,8 +2,11 @@
 import React from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { useEstimator } from "@/context/EstimatorContext";
 
 export default function MarkdownContentRenderer({ content }: { content: string }) {
+  const { showMaterialBreakdown } = useEstimator();
+  
   return (
     <div className="p-0 markdown-content text-gray-800">
       <style>{`
@@ -134,6 +137,26 @@ export default function MarkdownContentRenderer({ content }: { content: string }
           color: #333 !important;
           font-weight: bold !important;
         }
+        
+        /* Material breakdown visibility based on toggle */
+        ${!showMaterialBreakdown ? `
+          /* Hide material breakdown sections */
+          .material-breakdown-section,
+          h2:contains('Materials Breakdown'),
+          h2:contains('Materials & Cost Breakdown'),
+          h2:contains('Material Breakdown'),
+          h3:contains('Materials & Cost Breakdown'),
+          h3:contains('Material Breakdown'),
+          table:contains('Materials Breakdown') {
+            display: none !important;
+          }
+          
+          /* Allow material summary/totals to remain visible */
+          .material-summary,
+          tr.material-summary {
+            display: table-row !important;
+          }
+        ` : ''}
       `}</style>
       <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
     </div>

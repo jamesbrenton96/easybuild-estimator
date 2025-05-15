@@ -185,12 +185,22 @@ export function ReviewTabs({ estimationResults, setEstimationResults }: {
             
             /* Material breakdown visibility based on toggle */
             ${!showMaterialBreakdown ? `
+              /* Hide material breakdown sections */
               .material-breakdown-section,
+              div.material-breakdown-section,
+              h2:contains('Materials Breakdown'),
               h2:contains('Materials & Cost Breakdown'),
               h2:contains('Material Breakdown'),
               h3:contains('Materials & Cost Breakdown'),
               h3:contains('Material Breakdown'),
               table:contains('Materials Breakdown') {
+                display: none !important;
+              }
+              
+              /* Hide any heading followed by a material breakdown table */
+              .markdown-content h1 + table:not(.material-summary),
+              .markdown-content h2 + table:not(.material-summary),
+              .markdown-content h3 + table:not(.material-summary) {
                 display: none !important;
               }
               

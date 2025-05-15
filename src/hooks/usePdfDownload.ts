@@ -1,3 +1,4 @@
+
 import html2pdf from "html2pdf.js";
 import { useEstimator } from "@/context/EstimatorContext";
 
@@ -69,9 +70,11 @@ export function usePdfDownload() {
       // Find sections with material breakdown headings
       const materialHeadings = clone.querySelectorAll('h1, h2, h3, h4');
       materialHeadings.forEach(heading => {
+        const headingText = heading.textContent?.toLowerCase() || '';
         if (
-          heading.textContent?.toLowerCase().includes('materials & cost breakdown') ||
-          heading.textContent?.toLowerCase().includes('material breakdown')
+          headingText.includes('materials & cost breakdown') ||
+          headingText.includes('material breakdown') ||
+          headingText.includes('materials breakdown')
         ) {
           // Hide the heading
           (heading as HTMLElement).style.display = 'none';
@@ -90,6 +93,31 @@ export function usePdfDownload() {
               }
             }
             currentElement = currentElement.nextElementSibling;
+          }
+        }
+      });
+      
+      // Also look for tables that might be material breakdowns
+      const tables = clone.querySelectorAll('table');
+      tables.forEach(table => {
+        const tableText = table.textContent?.toLowerCase() || '';
+        // Check if this looks like a material breakdown table
+        if (tableText.includes('material') && 
+            !tableText.includes('subtotal') && 
+            !tableText.includes('total') &&
+            !table.classList.contains('material-summary')) {
+          // Check if the table is preceded by a heading about materials
+          let prevElement = table.previousElementSibling;
+          while (prevElement && prevElement.tagName !== 'H1' && prevElement.tagName !== 'H2' && 
+                 prevElement.tagName !== 'H3' && prevElement.tagName !== 'H4') {
+            prevElement = prevElement.previousElementSibling;
+          }
+          
+          if (prevElement) {
+            const headingText = prevElement.textContent?.toLowerCase() || '';
+            if (headingText.includes('material') && !headingText.includes('summary')) {
+              (table as HTMLElement).style.display = 'none';
+            }
           }
         }
       });
@@ -281,6 +309,7 @@ export function usePdfDownload() {
       /* Hide material breakdown sections if toggle is off */
       ${!showMaterialBreakdown ? `
         .material-breakdown-section,
+        h2:contains('Materials Breakdown'),
         h2:contains('Materials & Cost Breakdown'),
         h2:contains('Material Breakdown'),
         h3:contains('Materials & Cost Breakdown'),
