@@ -1,4 +1,3 @@
-
 import html2pdf from "html2pdf.js";
 import { useEstimator } from "@/context/EstimatorContext";
 
@@ -61,64 +60,45 @@ export function usePdfDownload() {
     
     // Hide material breakdown tables if toggled off, but keep the summary
     if (!showMaterialBreakdown) {
-      // Find material breakdown sections and hide them
-      const breakdownSections = clone.querySelectorAll('.material-breakdown-section');
-      breakdownSections.forEach(section => {
-        (section as HTMLElement).style.display = 'none';
-      });
-      
-      // Find sections with material breakdown headings
-      const materialHeadings = clone.querySelectorAll('h1, h2, h3, h4');
-      materialHeadings.forEach(heading => {
-        const headingText = heading.textContent?.toLowerCase() || '';
+      // Find specific material breakdown headers and hide them
+      const materialHeaders = clone.querySelectorAll('h1, h2');
+      materialHeaders.forEach(header => {
+        const headerText = header.textContent?.toUpperCase() || '';
         if (
-          headingText.includes('materials & cost breakdown') ||
-          headingText.includes('material breakdown') ||
-          headingText.includes('materials breakdown')
+          headerText.includes('MATERIALS AND COST BREAKDOWN') || 
+          headerText.includes('MATERIAL AND COST BREAKDOWN')
         ) {
-          // Hide the heading
-          (heading as HTMLElement).style.display = 'none';
+          // Hide the header
+          (header as HTMLElement).style.display = 'none';
           
-          // Find the next table or section that might be the breakdown
-          let currentElement = heading.nextElementSibling;
-          
-          // Look for the material breakdown table or div until we find a summary/total section
-          while (currentElement && 
-                 !(currentElement.textContent?.toLowerCase().includes('materials sub-total') || 
-                   currentElement.textContent?.toLowerCase().includes('materials subtotal'))) {
-            if (currentElement.tagName === 'TABLE' || currentElement.tagName === 'DIV') {
-              // Only hide if it doesn't have the material-summary class
-              if (!currentElement.classList.contains('material-summary')) {
-                (currentElement as HTMLElement).style.display = 'none';
+          // Find and hide the table after this header
+          let nextElement = header.nextElementSibling;
+          if (nextElement && nextElement.tagName === 'TABLE') {
+            (nextElement as HTMLElement).style.display = 'none';
+            
+            // Also hide the material calculation notes paragraph
+            let paragraphElement = nextElement.nextElementSibling;
+            if (paragraphElement && paragraphElement.tagName === 'P') {
+              if (paragraphElement.textContent?.includes('Material calculation notes')) {
+                (paragraphElement as HTMLElement).style.display = 'none';
               }
             }
-            currentElement = currentElement.nextElementSibling;
           }
         }
       });
       
-      // Also look for tables that might be material breakdowns
-      const tables = clone.querySelectorAll('table');
-      tables.forEach(table => {
-        const tableText = table.textContent?.toLowerCase() || '';
-        // Check if this looks like a material breakdown table
-        if (tableText.includes('material') && 
-            !tableText.includes('subtotal') && 
-            !tableText.includes('total') &&
-            !table.classList.contains('material-summary')) {
-          // Check if the table is preceded by a heading about materials
-          let prevElement = table.previousElementSibling;
-          while (prevElement && prevElement.tagName !== 'H1' && prevElement.tagName !== 'H2' && 
-                 prevElement.tagName !== 'H3' && prevElement.tagName !== 'H4') {
-            prevElement = prevElement.previousElementSibling;
-          }
-          
-          if (prevElement) {
-            const headingText = prevElement.textContent?.toLowerCase() || '';
-            if (headingText.includes('material') && !headingText.includes('summary')) {
-              (table as HTMLElement).style.display = 'none';
-            }
-          }
+      // Make sure material summary rows remain visible
+      const summaryRows = clone.querySelectorAll('tr');
+      summaryRows.forEach(row => {
+        const rowText = row.textContent?.toLowerCase() || '';
+        if (
+          rowText.includes('materials subtotal') ||
+          rowText.includes('gst') ||
+          rowText.includes('materials total') ||
+          rowText.includes('builder\'s margin') ||
+          rowText.includes('materials grand total')
+        ) {
+          (row as HTMLElement).style.display = 'table-row';
         }
       });
     }
@@ -306,21 +286,42 @@ export function usePdfDownload() {
         font-weight: bold !important;
       }
       
-      /* Hide material breakdown sections if toggle is off */
+      /* Material breakdown visibility */
       ${!showMaterialBreakdown ? `
-        .material-breakdown-section,
-        h2:contains('Materials Breakdown'),
-        h2:contains('Materials & Cost Breakdown'),
-        h2:contains('Material Breakdown'),
-        h3:contains('Materials & Cost Breakdown'),
-        h3:contains('Material Breakdown'),
-        div:contains('Material Breakdown') div {
+        /* Hide specific material breakdown sections */
+        h1:contains('MATERIALS AND COST BREAKDOWN'),
+        h2:contains('MATERIALS AND COST BREAKDOWN'),
+        h2:contains('Materials and Cost Breakdown'),
+        h2:contains('MATERIAL AND COST BREAKDOWN'),
+        h2:contains('Material and Cost Breakdown') {
           display: none !important;
         }
         
-        /* But keep the summary totals visible */
-        tr.material-summary,
-        .material-summary {
+        /* Hide tables under material breakdown headers */
+        h1:contains('MATERIALS AND COST BREAKDOWN') + table,
+        h2:contains('MATERIALS AND COST BREAKDOWN') + table,
+        h2:contains('Materials and Cost Breakdown') + table,
+        h2:contains('MATERIAL AND COST BREAKDOWN') + table,
+        h2:contains('Material and Cost Breakdown') + table {
+          display: none !important;
+        }
+        
+        /* Hide the material calculation notes after material breakdown tables */
+        h1:contains('MATERIALS AND COST BREAKDOWN') + table + p,
+        h2:contains('MATERIALS AND COST BREAKDOWN') + table + p,
+        h2:contains('Materials and Cost Breakdown') + table + p,
+        h2:contains('MATERIAL AND COST BREAKDOWN') + table + p,
+        h2:contains('Material and Cost Breakdown') + table + p,
+        p:contains('Material calculation notes') {
+          display: none !important;
+        }
+        
+        /* Make sure totals remain visible */
+        tr:contains('Materials Subtotal'),
+        tr:contains('Materials Total'),
+        tr:contains('GST'),
+        tr:contains('Builder\'s Margin'),
+        tr:contains('Materials Grand Total') {
           display: table-row !important;
         }
       ` : ''}

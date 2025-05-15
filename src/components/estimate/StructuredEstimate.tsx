@@ -126,6 +126,23 @@ export default function StructuredEstimate({ estimate }: StructuredEstimateProps
         </div>
       </div>
       
+      {/* Materials Summary (always visible) */}
+      {estimate.materials.summary && (
+        <div className="bg-white rounded-lg overflow-hidden shadow-lg mb-8 material-summary">
+          <div className="p-4 border-b border-gray-200 bg-gray-50">
+            <h2 className="text-gray-800 font-medium">Materials Summary</h2>
+          </div>
+          <div className="divide-y divide-gray-200">
+            {estimate.materials.summary.map((item: any, index: number) => (
+              <div key={index} className="p-4 flex justify-between items-center">
+                <span className="text-gray-700">{item.name}</span>
+                <span className="text-gray-800 font-medium">{formatCurrency(item.cost)}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+      
       {/* Materials Breakdown - only shown if toggle is enabled */}
       {showMaterialBreakdown && estimate.materials.breakdown && Array.isArray(estimate.materials.breakdown) && estimate.materials.breakdown.length > 0 && (
         <div className="bg-white rounded-lg overflow-hidden shadow-lg mb-8 material-breakdown-section">
@@ -144,25 +161,8 @@ export default function StructuredEstimate({ estimate }: StructuredEstimateProps
         </div>
       )}
       
-      {/* Materials Summary (always visible) */}
-      {estimate.materials.summary && (
-        <div className="bg-white rounded-lg overflow-hidden shadow-lg mb-8">
-          <div className="p-4 border-b border-gray-200 bg-gray-50">
-            <h2 className="text-gray-800 font-medium">Materials Summary</h2>
-          </div>
-          <div className="divide-y divide-gray-200 material-summary">
-            {estimate.materials.summary.map((item: any, index: number) => (
-              <div key={index} className="p-4 flex justify-between items-center">
-                <span className="text-gray-700">{item.name}</span>
-                <span className="text-gray-800 font-medium">{formatCurrency(item.cost)}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-      
       {/* Material Details & Calculations */}
-      {estimate.materialDetails && (
+      {showMaterialBreakdown && estimate.materialDetails && (
         <div className="bg-white rounded-lg overflow-hidden shadow-lg mb-8">
           <div className="p-4 border-b border-gray-200 bg-gray-50">
             <h2 className="text-gray-800 font-medium text-lg">Material Details & Calculations</h2>
