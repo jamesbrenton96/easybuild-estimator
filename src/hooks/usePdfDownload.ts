@@ -1,4 +1,3 @@
-
 import html2pdf from "html2pdf.js";
 import { useEstimator } from "@/context/EstimatorContext";
 
@@ -67,27 +66,28 @@ export function usePdfDownload() {
         (section as HTMLElement).style.display = 'none';
       });
       
-      // Find material section tables
-      const materialSections = clone.querySelectorAll('h2, h3, h4');
-      materialSections.forEach(section => {
+      // Find sections with material breakdown headings
+      const materialHeadings = clone.querySelectorAll('h1, h2, h3, h4');
+      materialHeadings.forEach(heading => {
         if (
-          section.textContent?.toLowerCase().includes('materials & cost breakdown') ||
-          section.textContent?.toLowerCase().includes('material breakdown')
+          heading.textContent?.toLowerCase().includes('materials & cost breakdown') ||
+          heading.textContent?.toLowerCase().includes('material breakdown')
         ) {
-          // Add class to section for targeting
-          section.classList.add('material-breakdown-section');
+          // Hide the heading
+          (heading as HTMLElement).style.display = 'none';
           
-          // Find the table following this header
-          let currentElement = section.nextElementSibling;
+          // Find the next table or section that might be the breakdown
+          let currentElement = heading.nextElementSibling;
           
-          // Look for the material breakdown table
+          // Look for the material breakdown table or div until we find a summary/total section
           while (currentElement && 
                  !(currentElement.textContent?.toLowerCase().includes('materials sub-total') || 
                    currentElement.textContent?.toLowerCase().includes('materials subtotal'))) {
-            if (currentElement.tagName === 'TABLE') {
-              // Hide the breakdown table
-              (currentElement as HTMLElement).style.display = 'none';
-              currentElement.classList.add('material-breakdown-section');
+            if (currentElement.tagName === 'TABLE' || currentElement.tagName === 'DIV') {
+              // Only hide if it doesn't have the material-summary class
+              if (!currentElement.classList.contains('material-summary')) {
+                (currentElement as HTMLElement).style.display = 'none';
+              }
             }
             currentElement = currentElement.nextElementSibling;
           }
@@ -280,12 +280,18 @@ export function usePdfDownload() {
       
       /* Hide material breakdown sections if toggle is off */
       ${!showMaterialBreakdown ? `
-        .material-breakdown-section {
+        .material-breakdown-section,
+        h2:contains('Materials & Cost Breakdown'),
+        h2:contains('Material Breakdown'),
+        h3:contains('Materials & Cost Breakdown'),
+        h3:contains('Material Breakdown'),
+        div:contains('Material Breakdown') div {
           display: none !important;
         }
         
         /* But keep the summary totals visible */
-        tr.material-summary {
+        tr.material-summary,
+        .material-summary {
           display: table-row !important;
         }
       ` : ''}

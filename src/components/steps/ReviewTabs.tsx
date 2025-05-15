@@ -185,12 +185,18 @@ export function ReviewTabs({ estimationResults, setEstimationResults }: {
             
             /* Material breakdown visibility based on toggle */
             ${!showMaterialBreakdown ? `
-              .material-breakdown-section {
+              .material-breakdown-section,
+              h2:contains('Materials & Cost Breakdown'),
+              h2:contains('Material Breakdown'),
+              h3:contains('Materials & Cost Breakdown'),
+              h3:contains('Material Breakdown'),
+              table:contains('Materials Breakdown') {
                 display: none !important;
               }
               
               /* Allow material summary/totals to remain visible */
-              .material-summary {
+              .material-summary,
+              tr.material-summary {
                 display: table-row !important;
               }
             ` : ''}

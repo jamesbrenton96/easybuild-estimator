@@ -126,7 +126,7 @@ export default function StructuredEstimate({ estimate }: StructuredEstimateProps
         </div>
       </div>
       
-      {/* Materials Breakdown */}
+      {/* Materials Breakdown - only shown if toggle is enabled */}
       {showMaterialBreakdown && estimate.materials.breakdown && Array.isArray(estimate.materials.breakdown) && estimate.materials.breakdown.length > 0 && (
         <div className="bg-white rounded-lg overflow-hidden shadow-lg mb-8 material-breakdown-section">
           <div className="p-4 border-b border-gray-200 bg-gray-50 flex items-center">
