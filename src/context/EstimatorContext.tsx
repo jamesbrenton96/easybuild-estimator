@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, ReactNode, useEffect, useCallback } from "react";
 
 // Define types for our data structures
@@ -29,6 +28,8 @@ interface EstimatorContextType {
   setEstimationResults: (results: any) => void;
   showMaterialSources: boolean;
   setShowMaterialSources: (show: boolean) => void;
+  showMaterialBreakdown: boolean;
+  setShowMaterialBreakdown: (show: boolean) => void;
 }
 
 const EstimatorContext = createContext<EstimatorContextType>({} as EstimatorContextType);
@@ -42,6 +43,7 @@ export const EstimatorProvider = ({ children }: { children: ReactNode }) => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [estimationResults, setEstimationResults] = useState<any>(null);
   const [showMaterialSources, setShowMaterialSources] = useState<boolean>(true);
+  const [showMaterialBreakdown, setShowMaterialBreakdown] = useState<boolean>(true);
 
   // Load form data from localStorage on component mount
   useEffect(() => {
@@ -92,6 +94,8 @@ export const EstimatorProvider = ({ children }: { children: ReactNode }) => {
         setEstimationResults,
         showMaterialSources,
         setShowMaterialSources,
+        showMaterialBreakdown,
+        setShowMaterialBreakdown,
       }}
     >
       {children}

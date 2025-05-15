@@ -2,12 +2,15 @@
 import React from "react";
 import { formatCurrency } from "@/lib/utils";
 import { Clock, Info, AlertTriangle } from "lucide-react";
+import { useEstimator } from "@/context/EstimatorContext";
 
 interface StructuredEstimateProps {
   estimate: any;
 }
 
 export default function StructuredEstimate({ estimate }: StructuredEstimateProps) {
+  const { showMaterialBreakdown } = useEstimator();
+  
   // Check if the estimate object has the expected structure
   const hasValidStructure = 
     estimate && 
@@ -124,8 +127,8 @@ export default function StructuredEstimate({ estimate }: StructuredEstimateProps
       </div>
       
       {/* Materials Breakdown */}
-      {estimate.materials.breakdown && Array.isArray(estimate.materials.breakdown) && estimate.materials.breakdown.length > 0 && (
-        <div className="bg-white rounded-lg overflow-hidden shadow-lg mb-8">
+      {showMaterialBreakdown && estimate.materials.breakdown && Array.isArray(estimate.materials.breakdown) && estimate.materials.breakdown.length > 0 && (
+        <div className="bg-white rounded-lg overflow-hidden shadow-lg mb-8 material-breakdown-table">
           <div className="p-4 border-b border-gray-200 bg-gray-50 flex items-center">
             <h2 className="text-gray-800 font-medium">Materials Breakdown</h2>
           </div>

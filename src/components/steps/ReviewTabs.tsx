@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from "react";
 import {
   Tabs, TabsContent, TabsList, TabsTrigger
@@ -18,7 +17,7 @@ export function ReviewTabs({ estimationResults, setEstimationResults }: {
 }) {
   const [activeTab, setActiveTab] = useState("view");
   const estimateRef = useRef<HTMLDivElement>(null);
-  const { formData, showMaterialSources } = useEstimator();
+  const { formData, showMaterialSources, showMaterialBreakdown } = useEstimator();
   
   if (!estimationResults) return null;
 
@@ -178,6 +177,13 @@ export function ReviewTabs({ estimationResults, setEstimationResults }: {
             ${!showMaterialSources ? `
               table th:nth-child(5),
               table td:nth-child(5) {
+                display: none;
+              }
+            ` : ''}
+            
+            /* Material breakdown visibility based on toggle */
+            ${!showMaterialBreakdown ? `
+              .material-breakdown-table {
                 display: none;
               }
             ` : ''}

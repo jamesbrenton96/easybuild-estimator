@@ -1,9 +1,8 @@
-
 import html2pdf from "html2pdf.js";
 import { useEstimator } from "@/context/EstimatorContext";
 
 export function usePdfDownload() {
-  const { showMaterialSources } = useEstimator();
+  const { showMaterialSources, showMaterialBreakdown } = useEstimator();
   
   const handleDownloadPDF = () => {
     const element = document.querySelector('.pdf-content');
@@ -55,6 +54,32 @@ export function usePdfDownload() {
               cell.style.display = 'none';
             }
           });
+        }
+      });
+    }
+    
+    // Hide material breakdown tables if toggled off, but keep the summary
+    if (!showMaterialBreakdown) {
+      // Find material section tables
+      const materialSections = clone.querySelectorAll('h2, h3, h4');
+      materialSections.forEach(section => {
+        if (
+          section.textContent?.toLowerCase().includes('materials & cost breakdown') ||
+          section.textContent?.toLowerCase().includes('material breakdown')
+        ) {
+          // Find the table following this header
+          let currentElement = section.nextElementSibling;
+          
+          // Look for the material breakdown table
+          while (currentElement && 
+                 !(currentElement.textContent?.toLowerCase().includes('materials sub-total') || 
+                   currentElement.textContent?.toLowerCase().includes('materials subtotal'))) {
+            if (currentElement.tagName === 'TABLE') {
+              // Hide the breakdown table
+              (currentElement as HTMLElement).style.display = 'none';
+            }
+            currentElement = currentElement.nextElementSibling;
+          }
         }
       });
     }
