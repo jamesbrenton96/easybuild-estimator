@@ -1,3 +1,4 @@
+
 import React, { useState, useRef } from "react";
 import {
   Tabs, TabsContent, TabsList, TabsTrigger
@@ -183,8 +184,13 @@ export function ReviewTabs({ estimationResults, setEstimationResults }: {
             
             /* Material breakdown visibility based on toggle */
             ${!showMaterialBreakdown ? `
-              .material-breakdown-table {
-                display: none;
+              .material-breakdown-section {
+                display: none !important;
+              }
+              
+              /* Allow material summary/totals to remain visible */
+              .material-summary {
+                display: table-row !important;
               }
             ` : ''}
           `}} />

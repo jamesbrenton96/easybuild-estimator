@@ -1,3 +1,4 @@
+
 import html2pdf from "html2pdf.js";
 import { useEstimator } from "@/context/EstimatorContext";
 
@@ -60,6 +61,12 @@ export function usePdfDownload() {
     
     // Hide material breakdown tables if toggled off, but keep the summary
     if (!showMaterialBreakdown) {
+      // Find material breakdown sections and hide them
+      const breakdownSections = clone.querySelectorAll('.material-breakdown-section');
+      breakdownSections.forEach(section => {
+        (section as HTMLElement).style.display = 'none';
+      });
+      
       // Find material section tables
       const materialSections = clone.querySelectorAll('h2, h3, h4');
       materialSections.forEach(section => {
@@ -67,6 +74,9 @@ export function usePdfDownload() {
           section.textContent?.toLowerCase().includes('materials & cost breakdown') ||
           section.textContent?.toLowerCase().includes('material breakdown')
         ) {
+          // Add class to section for targeting
+          section.classList.add('material-breakdown-section');
+          
           // Find the table following this header
           let currentElement = section.nextElementSibling;
           
@@ -77,6 +87,7 @@ export function usePdfDownload() {
             if (currentElement.tagName === 'TABLE') {
               // Hide the breakdown table
               (currentElement as HTMLElement).style.display = 'none';
+              currentElement.classList.add('material-breakdown-section');
             }
             currentElement = currentElement.nextElementSibling;
           }
@@ -266,6 +277,18 @@ export function usePdfDownload() {
         color: #333 !important;
         font-weight: bold !important;
       }
+      
+      /* Hide material breakdown sections if toggle is off */
+      ${!showMaterialBreakdown ? `
+        .material-breakdown-section {
+          display: none !important;
+        }
+        
+        /* But keep the summary totals visible */
+        tr.material-summary {
+          display: table-row !important;
+        }
+      ` : ''}
     `;
     
     clone.appendChild(style);
