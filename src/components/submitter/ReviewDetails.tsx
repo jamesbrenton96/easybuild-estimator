@@ -1,14 +1,32 @@
 
 import React from "react";
 import { FileText, Image, File } from "lucide-react";
-import { getFullCorrespondenceType } from "./markdown/correspondence";
 
 interface ReviewDetailsProps {
   formData: any;
-  showMaterialBreakdown?: boolean;
 }
 
-export default function ReviewDetails({ formData, showMaterialBreakdown }: ReviewDetailsProps) {
+export default function ReviewDetails({ formData }: ReviewDetailsProps) {
+  // Helper function to get the full correspondence type name
+  const getFullCorrespondenceType = (type: string) => {
+    switch (type?.toLowerCase()) {
+      case "accurate":
+        return "Accurate Estimate";
+      case "ballpark":
+        return "Ballpark Estimate";
+      case "quotation":
+        return "Fixed Price Quotation";
+      case "quote":
+        return "Quotation";
+      case "preliminary":
+        return "Preliminary Estimate";
+      case "proposal":
+        return "Proposal";
+      default:
+        return type || "Estimate";
+    }
+  };
+  
   // Ensure files array exists
   const files = formData.files || [];
   

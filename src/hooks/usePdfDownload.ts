@@ -1,8 +1,9 @@
+
 import html2pdf from "html2pdf.js";
 import { useEstimator } from "@/context/EstimatorContext";
 
 export function usePdfDownload() {
-  const { showMaterialSources, showMaterialBreakdown } = useEstimator();
+  const { showMaterialSources } = useEstimator();
   
   const handleDownloadPDF = () => {
     const element = document.querySelector('.pdf-content');
@@ -54,51 +55,6 @@ export function usePdfDownload() {
               cell.style.display = 'none';
             }
           });
-        }
-      });
-    }
-    
-    // Hide material breakdown tables if toggled off, but keep the summary
-    if (!showMaterialBreakdown) {
-      // Find specific material breakdown headers and hide them
-      const materialHeaders = clone.querySelectorAll('h1, h2');
-      materialHeaders.forEach(header => {
-        const headerText = header.textContent?.toUpperCase() || '';
-        if (
-          headerText.includes('MATERIALS AND COST BREAKDOWN') || 
-          headerText.includes('MATERIAL AND COST BREAKDOWN')
-        ) {
-          // Hide the header
-          (header as HTMLElement).style.display = 'none';
-          
-          // Find and hide the table after this header
-          let nextElement = header.nextElementSibling;
-          if (nextElement && nextElement.tagName === 'TABLE') {
-            (nextElement as HTMLElement).style.display = 'none';
-            
-            // Also hide the material calculation notes paragraph
-            let paragraphElement = nextElement.nextElementSibling;
-            if (paragraphElement && paragraphElement.tagName === 'P') {
-              if (paragraphElement.textContent?.includes('Material calculation notes')) {
-                (paragraphElement as HTMLElement).style.display = 'none';
-              }
-            }
-          }
-        }
-      });
-      
-      // Make sure material summary rows remain visible
-      const summaryRows = clone.querySelectorAll('tr');
-      summaryRows.forEach(row => {
-        const rowText = row.textContent?.toLowerCase() || '';
-        if (
-          rowText.includes('materials subtotal') ||
-          rowText.includes('gst') ||
-          rowText.includes('materials total') ||
-          rowText.includes('builder\'s margin') ||
-          rowText.includes('materials grand total')
-        ) {
-          (row as HTMLElement).style.display = 'table-row';
         }
       });
     }
@@ -285,46 +241,6 @@ export function usePdfDownload() {
         color: #333 !important;
         font-weight: bold !important;
       }
-      
-      /* Material breakdown visibility */
-      ${!showMaterialBreakdown ? `
-        /* Hide specific material breakdown sections */
-        h1:contains('MATERIALS AND COST BREAKDOWN'),
-        h2:contains('MATERIALS AND COST BREAKDOWN'),
-        h2:contains('Materials and Cost Breakdown'),
-        h2:contains('MATERIAL AND COST BREAKDOWN'),
-        h2:contains('Material and Cost Breakdown') {
-          display: none !important;
-        }
-        
-        /* Hide tables under material breakdown headers */
-        h1:contains('MATERIALS AND COST BREAKDOWN') + table,
-        h2:contains('MATERIALS AND COST BREAKDOWN') + table,
-        h2:contains('Materials and Cost Breakdown') + table,
-        h2:contains('MATERIAL AND COST BREAKDOWN') + table,
-        h2:contains('Material and Cost Breakdown') + table {
-          display: none !important;
-        }
-        
-        /* Hide the material calculation notes after material breakdown tables */
-        h1:contains('MATERIALS AND COST BREAKDOWN') + table + p,
-        h2:contains('MATERIALS AND COST BREAKDOWN') + table + p,
-        h2:contains('Materials and Cost Breakdown') + table + p,
-        h2:contains('MATERIAL AND COST BREAKDOWN') + table + p,
-        h2:contains('Material and Cost Breakdown') + table + p,
-        p:contains('Material calculation notes') {
-          display: none !important;
-        }
-        
-        /* Make sure totals remain visible */
-        tr:contains('Materials Subtotal'),
-        tr:contains('Materials Total'),
-        tr:contains('GST'),
-        tr:contains('Builder\'s Margin'),
-        tr:contains('Materials Grand Total') {
-          display: table-row !important;
-        }
-      ` : ''}
     `;
     
     clone.appendChild(style);

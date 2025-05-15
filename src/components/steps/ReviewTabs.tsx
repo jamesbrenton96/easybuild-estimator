@@ -18,7 +18,7 @@ export function ReviewTabs({ estimationResults, setEstimationResults }: {
 }) {
   const [activeTab, setActiveTab] = useState("view");
   const estimateRef = useRef<HTMLDivElement>(null);
-  const { formData, showMaterialSources, showMaterialBreakdown } = useEstimator();
+  const { formData, showMaterialSources } = useEstimator();
   
   if (!estimationResults) return null;
 
@@ -27,7 +27,6 @@ export function ReviewTabs({ estimationResults, setEstimationResults }: {
     clientName: formData?.clientName || formData?.subcategories?.correspondence?.clientName || "",
     projectAddress: formData?.projectAddress || formData?.location || "",
     projectType: formData?.projectType || "",
-    correspondenceType: formData?.subcategories?.correspondence?.type || "quote",
     date: new Date().toLocaleDateString('en-NZ', {
       year: 'numeric',
       month: 'long',
@@ -180,47 +179,6 @@ export function ReviewTabs({ estimationResults, setEstimationResults }: {
               table th:nth-child(5),
               table td:nth-child(5) {
                 display: none;
-              }
-            ` : ''}
-            
-            /* Material breakdown visibility based on toggle */
-            ${!showMaterialBreakdown ? `
-              /* Hide specific material breakdown sections */
-              h1:contains('MATERIALS AND COST BREAKDOWN'),
-              h2:contains('MATERIALS AND COST BREAKDOWN'),
-              h2:contains('Materials and Cost Breakdown'),
-              h2:contains('MATERIAL AND COST BREAKDOWN'),
-              h2:contains('Material and Cost Breakdown') {
-                display: none !important;
-              }
-              
-              /* Hide tables under material breakdown headers */
-              h1:contains('MATERIALS AND COST BREAKDOWN') + table,
-              h2:contains('MATERIALS AND COST BREAKDOWN') + table,
-              h2:contains('Materials and Cost Breakdown') + table,
-              h2:contains('MATERIAL AND COST BREAKDOWN') + table,
-              h2:contains('Material and Cost Breakdown') + table {
-                display: none !important;
-              }
-              
-              /* Hide the material calculation notes after material breakdown tables */
-              h1:contains('MATERIALS AND COST BREAKDOWN') + table + p,
-              h2:contains('MATERIALS AND COST BREAKDOWN') + table + p,
-              h2:contains('Materials and Cost Breakdown') + table + p,
-              h2:contains('MATERIAL AND COST BREAKDOWN') + table + p,
-              h2:contains('Material and Cost Breakdown') + table + p,
-              p:contains('Material calculation notes') {
-                display: none !important;
-              }
-              
-              /* Make sure summary totals remain visible */
-              tr:contains('Materials Subtotal'),
-              tr:contains('Materials Total'),
-              tr:contains('Materials Grand Total'),
-              tr:contains('GST'),
-              tr:contains('Builder\'s Margin'),
-              .material-summary {
-                display: table-row !important;
               }
             ` : ''}
           `}} />

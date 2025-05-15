@@ -2,11 +2,8 @@
 import React from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { useEstimator } from "@/context/EstimatorContext";
 
 export default function MarkdownContentRenderer({ content }: { content: string }) {
-  const { showMaterialBreakdown } = useEstimator();
-  
   return (
     <div className="p-0 markdown-content text-gray-800">
       <style>{`
@@ -137,50 +134,8 @@ export default function MarkdownContentRenderer({ content }: { content: string }
           color: #333 !important;
           font-weight: bold !important;
         }
-        
-        /* Material breakdown visibility based on toggle */
-        ${!showMaterialBreakdown ? `
-          /* Hide specific material breakdown sections */
-          h1:contains('MATERIALS AND COST BREAKDOWN'),
-          h2:contains('MATERIALS AND COST BREAKDOWN'),
-          h2:contains('Materials and Cost Breakdown'),
-          h2:contains('MATERIAL AND COST BREAKDOWN'),
-          h2:contains('Material and Cost Breakdown') {
-            display: none !important;
-          }
-          
-          /* Hide tables under material breakdown headers */
-          h1:contains('MATERIALS AND COST BREAKDOWN') + table,
-          h2:contains('MATERIALS AND COST BREAKDOWN') + table,
-          h2:contains('Materials and Cost Breakdown') + table,
-          h2:contains('MATERIAL AND COST BREAKDOWN') + table,
-          h2:contains('Material and Cost Breakdown') + table {
-            display: none !important;
-          }
-          
-          /* Hide the material calculation notes after material breakdown tables */
-          h1:contains('MATERIALS AND COST BREAKDOWN') + table + p,
-          h2:contains('MATERIALS AND COST BREAKDOWN') + table + p,
-          h2:contains('Materials and Cost Breakdown') + table + p,
-          h2:contains('MATERIAL AND COST BREAKDOWN') + table + p,
-          h2:contains('Material and Cost Breakdown') + table + p,
-          p:contains('Material calculation notes') {
-            display: none !important;
-          }
-          
-          /* Make sure summary totals remain visible */
-          tr:contains('Materials Subtotal'),
-          tr:contains('Materials Total'),
-          tr:contains('Materials Grand Total'),
-          tr:contains('GST'),
-          tr:contains('Builder\'s Margin'),
-          .material-summary {
-            display: table-row !important;
-          }
-        ` : ''}
       `}</style>
       <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
     </div>
   );
 }
-
