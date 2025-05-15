@@ -27,6 +27,7 @@ export function ReviewTabs({ estimationResults, setEstimationResults }: {
     clientName: formData?.clientName || formData?.subcategories?.correspondence?.clientName || "",
     projectAddress: formData?.projectAddress || formData?.location || "",
     projectType: formData?.projectType || "",
+    correspondenceType: formData?.subcategories?.correspondence?.type || "quote",
     date: new Date().toLocaleDateString('en-NZ', {
       year: 'numeric',
       month: 'long',

@@ -1,5 +1,6 @@
 
 import React from "react";
+import { getFullCorrespondenceType } from "../submitter/markdown/correspondence";
 
 interface MarkdownEstimateHeaderProps {
   title?: string;
@@ -8,6 +9,7 @@ interface MarkdownEstimateHeaderProps {
     projectAddress?: string;
     projectType?: string;
     date?: string;
+    correspondenceType?: string;
   };
 }
 
@@ -15,6 +17,10 @@ export default function MarkdownEstimateHeader({
   title = "Project Cost Estimate",
   projectDetails
 }: MarkdownEstimateHeaderProps) {
+  // Get the full correspondence type if it exists
+  const correspondenceType = projectDetails?.correspondenceType || "quote";
+  const fullCorrespondenceType = getFullCorrespondenceType(correspondenceType);
+  
   return (
     <div className="p-6 bg-white text-center">
       {/* Logo */}
@@ -45,7 +51,7 @@ export default function MarkdownEstimateHeader({
           
           <div className="correspondence-item flex mb-2">
             <div className="correspondence-label font-semibold w-32">Type:</div>
-            <div>Quote</div>
+            <div>{fullCorrespondenceType}</div>
           </div>
           
           <div className="correspondence-item flex mb-2">
