@@ -4,9 +4,10 @@ import { FileText, Image, File } from "lucide-react";
 
 interface ReviewDetailsProps {
   formData: any;
+  showMaterialBreakdown?: boolean;
 }
 
-export default function ReviewDetails({ formData }: ReviewDetailsProps) {
+export default function ReviewDetails({ formData, showMaterialBreakdown }: ReviewDetailsProps) {
   // Helper function to get the full correspondence type name
   const getFullCorrespondenceType = (type: string) => {
     switch (type?.toLowerCase()) {
