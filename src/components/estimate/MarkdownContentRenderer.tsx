@@ -4,6 +4,13 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
 export default function MarkdownContentRenderer({ content }: { content: string }) {
+  // Preprocess the content to ensure bullet points are properly formatted
+  const processedContent = content
+    // Make sure bullet points with hyphens have proper spacing
+    .replace(/^([\s]*)-\s*(.*?)$/gm, '$1- $2\n')
+    // Convert any sequences of multiple newlines to exactly two newlines for consistent spacing
+    .replace(/\n{3,}/g, '\n\n');
+
   return (
     <div className="p-0 markdown-content text-gray-800">
       <style>{`
@@ -97,7 +104,7 @@ export default function MarkdownContentRenderer({ content }: { content: string }
           color: #222 !important;
           position: relative !important;
           list-style-type: none !important;
-          margin-bottom: 8px !important; /* Add space between bullet points */
+          margin-bottom: 12px !important; /* Increase space between bullet points */
           display: block !important;
           clear: both !important;
         }
@@ -143,7 +150,7 @@ export default function MarkdownContentRenderer({ content }: { content: string }
           font-size: 10px !important;
           line-height: 1.3 !important;
           color: #222 !important;
-          display: block !important;  /* Ensure paragraphs display as blocks */
+          display: block !important;
         }
         
         .markdown-content strong, .markdown-content b {
@@ -156,14 +163,19 @@ export default function MarkdownContentRenderer({ content }: { content: string }
           white-space: normal !important;
         }
         
-        /* Ensure each bullet point appears on its own line */
+        /* Enhanced bullet point spacing for text with line breaks */
         .markdown-content p > br {
           display: block !important;
+          margin-bottom: 12px !important; /* Increased spacing */
           content: "" !important;
-          margin-bottom: 8px !important;
+        }
+        
+        /* Critical formatting fix: Ensure bullet points display properly */
+        .markdown-content p {
+          white-space: pre-wrap !important; /* This preserves whitespace and line breaks */
         }
       `}</style>
-      <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
+      <ReactMarkdown remarkPlugins={[remarkGfm]}>{processedContent}</ReactMarkdown>
     </div>
   );
 }

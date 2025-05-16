@@ -1,3 +1,4 @@
+
 export function createSection(sectionNumber: number, title: string, items: string[]): string {
   if (!items?.length) return '';
   
@@ -14,9 +15,10 @@ export function createSection(sectionNumber: number, title: string, items: strin
     return `- ${cleanedItem}`;
   });
   
+  // Join with TWO newlines to ensure proper spacing between bullet points
   return `# ${sectionNumber}. ${title}
 
-${formattedItems.join('\n')}
+${formattedItems.join('\n\n')}
 
 `;
 }

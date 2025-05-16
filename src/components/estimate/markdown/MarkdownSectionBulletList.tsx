@@ -31,9 +31,9 @@ export default function MarkdownSectionBulletList({
       );
     }
     
-    // Regular bullet point
+    // Regular bullet point - ensure each item is properly spaced
     return (
-      <li key={i} className="my-2 mb-3 relative">
+      <li key={i} className="my-2 mb-4 relative">
         {item}
       </li>
     );
@@ -42,7 +42,7 @@ export default function MarkdownSectionBulletList({
   return (
     <>
       {header}
-      <ul className="ml-6 list-disc space-y-2">
+      <ul className="ml-6 list-disc space-y-3">
         {processedPoints}
       </ul>
     </>
