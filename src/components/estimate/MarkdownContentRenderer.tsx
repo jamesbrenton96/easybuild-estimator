@@ -97,6 +97,9 @@ export default function MarkdownContentRenderer({ content }: { content: string }
           color: #222 !important;
           position: relative !important;
           list-style-type: none !important;
+          margin-bottom: 8px !important; /* Add space between bullet points */
+          display: block !important;
+          clear: both !important;
         }
         
         /* Bullet styling to match the screenshot */

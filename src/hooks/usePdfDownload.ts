@@ -187,6 +187,9 @@ export function usePdfDownload() {
         color: #222 !important;
         position: relative !important;
         list-style-type: none !important;
+        margin-bottom: 8px !important; /* Add space between bullet points */
+        display: block !important;
+        clear: both !important;
       }
       
       /* Custom bullet styling */
@@ -203,6 +206,7 @@ export function usePdfDownload() {
         padding: 3px 0 !important;
         font-size: 10px !important;
         color: #222 !important;
+        margin-bottom: 8px !important; /* Add space between numbered points */
       }
       
       /* Project title */

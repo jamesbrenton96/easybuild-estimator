@@ -33,7 +33,7 @@ export default function MarkdownSectionBulletList({
     
     // Regular bullet point
     return (
-      <li key={i} className="my-2">
+      <li key={i} className="my-2 mb-3 relative">
         {item}
       </li>
     );
