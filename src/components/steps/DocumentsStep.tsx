@@ -1,4 +1,3 @@
-
 import React from "react";
 import { useEstimator } from "@/context/EstimatorContext";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -11,7 +10,7 @@ export default function DocumentsStep() {
   const { formData, updateFormData, prevStep, nextStep } = useEstimator();
   const isMobile = useIsMobile();
   
-  const MAX_FILE_SIZE_MB = 5; // 5MB maximum file size
+  const MAX_FILE_SIZE_MB = 4; // 4MB maximum file size (reduced from 5MB)
   const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
 
   // Remove empty files on mount or field change
@@ -148,7 +147,7 @@ export default function DocumentsStep() {
                   ? "Only 1 PDF file is allowed"
                   : hasImages 
                     ? `You've uploaded ${imageCount} of maximum 2 image files`
-                    : "Choose either 1 PDF file or up to 2 image files (JPEG/PNG)"}
+                    : "Choose either 1 PDF file (max 4MB) or up to 2 image files (max 4MB each)"}
               </span>
             </div>
             <input

@@ -1,5 +1,6 @@
 
 import React, { createContext, useContext, useState, ReactNode, useEffect, useCallback } from "react";
+import { toast } from "sonner";
 
 // Define types for our data structures
 export interface ContentData {
@@ -29,6 +30,9 @@ interface EstimatorContextType {
   setEstimationResults: (results: any) => void;
   showMaterialSources: boolean;
   setShowMaterialSources: (show: boolean) => void;
+  hasSavedData: boolean;
+  loadSavedFormData: () => void;
+  clearSavedFormData: () => void;
 }
 
 const EstimatorContext = createContext<EstimatorContextType>({} as EstimatorContextType);
@@ -42,13 +46,52 @@ export const EstimatorProvider = ({ children }: { children: ReactNode }) => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [estimationResults, setEstimationResults] = useState<any>(null);
   const [showMaterialSources, setShowMaterialSources] = useState<boolean>(true);
+  const [hasSavedData, setHasSavedData] = useState<boolean>(false);
 
-  // Load form data from localStorage on component mount
+  // Check for saved form data on component mount
   useEffect(() => {
+    // First try to load regular form data
     const storedFormData = localStorage.getItem('formData');
     if (storedFormData) {
       setFormData(JSON.parse(storedFormData));
     }
+    
+    // Check if we have saved data from a failed generation
+    const savedFormData = localStorage.getItem('savedFormData');
+    if (savedFormData) {
+      const timestamp = localStorage.getItem('formDataTimestamp');
+      setHasSavedData(true);
+      
+      // Show notification about saved data if it exists
+      if (timestamp) {
+        const date = new Date(timestamp);
+        const formattedDate = date.toLocaleString();
+        toast.info(
+          `You have saved form data from ${formattedDate}. Click "Load Saved Data" to restore.`, 
+          { duration: 8000 }
+        );
+      }
+    }
+  }, []);
+
+  // Load saved form data from localStorage
+  const loadSavedFormData = useCallback(() => {
+    const savedFormData = localStorage.getItem('savedFormData');
+    if (savedFormData) {
+      const parsedData = JSON.parse(savedFormData);
+      setFormData(parsedData);
+      setCurrentStep(2); // Go to Basic Info step
+      toast.success('Saved data has been loaded successfully', { duration: 3000 });
+      setHasSavedData(false);
+    }
+  }, []);
+
+  // Clear saved form data
+  const clearSavedFormData = useCallback(() => {
+    localStorage.removeItem('savedFormData');
+    localStorage.removeItem('formDataTimestamp');
+    setHasSavedData(false);
+    toast.success('Saved data has been cleared', { duration: 3000 });
   }, []);
 
   // Navigation functions
@@ -92,6 +135,9 @@ export const EstimatorProvider = ({ children }: { children: ReactNode }) => {
         setEstimationResults,
         showMaterialSources,
         setShowMaterialSources,
+        hasSavedData,
+        loadSavedFormData,
+        clearSavedFormData,
       }}
     >
       {children}

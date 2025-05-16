@@ -1,6 +1,7 @@
 
 import { useState } from "react";
 import { useWebhookEstimate } from "./useWebhookEstimate";
+import { toast } from "sonner";
 
 interface UseFormSubmissionProps {
   formData: any;
@@ -21,6 +22,21 @@ const useFormSubmission = ({
   const [status, setStatus] = useState<"idle" | "success" | "fail">("idle");
 
   const { getEstimate } = useWebhookEstimate();
+
+  // Function to save form data to localStorage
+  const saveFormDataToStorage = (data: any) => {
+    try {
+      // Create a copy without file objects (they can't be serialized)
+      const saveData = { ...data };
+      if (saveData.files) {
+        delete saveData.files;
+      }
+      localStorage.setItem('savedFormData', JSON.stringify(saveData));
+      localStorage.setItem('formDataTimestamp', new Date().toISOString());
+    } catch (err) {
+      console.error("Error saving form data to localStorage:", err);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -48,6 +64,11 @@ const useFormSubmission = ({
       }
 
       const estimateResult = await getEstimate(submissionData);
+      
+      if (estimateResult.error) {
+        throw new Error(estimateResult.error);
+      }
+      
       setEstimationResults(estimateResult);
       setStatus("success");
       setUploadProgress(100);
@@ -56,9 +77,19 @@ const useFormSubmission = ({
         nextStep();
       }, 600);
     } catch (err: any) {
-      setError(err?.message || "An unknown error occurred.");
+      // Save form data when error occurs
+      saveFormDataToStorage(formData);
+      
+      const errorMessage = err?.message || "An unknown error occurred.";
+      setError(errorMessage);
       setStatus("fail");
       setIsLoading(false);
+      
+      // Display toast notification
+      toast.error(
+        "Estimate generation failed. Your data has been saved so you can try again later.", 
+        { duration: 5000 }
+      );
     } finally {
       setIsSubmitting(false);
     }

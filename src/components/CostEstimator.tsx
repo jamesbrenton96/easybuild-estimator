@@ -7,11 +7,12 @@ import BasicInfoStep from "./steps/BasicInfoStep";
 import DocumentsStep from "./steps/DocumentsStep";
 import SubmitStep from "./steps/SubmitStep";
 import ReviewStep from "./steps/ReviewStep";
-import { Loader2 } from "lucide-react";
+import { Loader2, RefreshCcw, AlertCircle } from "lucide-react";
 import { motion } from "framer-motion";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export default function CostEstimator() {
-  const { currentStep, isLoading } = useEstimator();
+  const { currentStep, isLoading, hasSavedData, loadSavedFormData, clearSavedFormData } = useEstimator();
   
   const renderStep = () => {
     switch (currentStep) {
@@ -50,6 +51,30 @@ export default function CostEstimator() {
 
   return (
     <div>
+      {hasSavedData && currentStep === 1 && (
+        <div className="mb-8 max-w-2xl mx-auto">
+          <Alert className="bg-construction-orange/20 border-construction-orange">
+            <AlertCircle className="h-4 w-4 text-construction-orange" />
+            <AlertDescription className="flex justify-between items-center">
+              <span className="text-white">You have saved data from a previous session.</span>
+              <div className="flex gap-2">
+                <button 
+                  onClick={loadSavedFormData}
+                  className="flex items-center gap-1 bg-construction-orange text-white px-3 py-1 rounded text-xs hover:bg-construction-orange/90 transition-colors"
+                >
+                  <RefreshCcw className="h-3 w-3" /> Load Saved Data
+                </button>
+                <button 
+                  onClick={clearSavedFormData}
+                  className="flex items-center gap-1 bg-white/10 text-white px-3 py-1 rounded text-xs hover:bg-white/20 transition-colors"
+                >
+                  Clear
+                </button>
+              </div>
+            </AlertDescription>
+          </Alert>
+        </div>
+      )}
       <StepIndicator />
       {renderStep()}
     </div>
