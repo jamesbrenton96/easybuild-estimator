@@ -97,7 +97,7 @@ export default function MarkdownContentRenderer({ content }: { content: string }
           color: #222 !important;
           position: relative !important;
           list-style-type: none !important;
-          margin-bottom: 12px !important; /* Add more space between bullet points */
+          margin-bottom: 12px !important; /* Space between bullet points */
           margin-top: 12px !important; /* Add space above bullet points too */
           display: block !important;
           clear: both !important;
@@ -127,7 +127,7 @@ export default function MarkdownContentRenderer({ content }: { content: string }
         /* Correspondence section */
         .correspondence-item {
           display: flex !important;
-          margin-bottom: 5px !important;
+          margin-bottom: 15px !important; /* Increased spacing between items */
           width: 100% !important;
         }
         

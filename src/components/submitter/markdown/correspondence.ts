@@ -36,7 +36,7 @@ export function createCorrespondenceSection(details: CorrespondenceDetails): str
   // Get the full correspondence type name
   const fullCorrespondenceType = getFullCorrespondenceType(details.correspondenceType);
 
-  // Create bullet points with newlines between them for proper spacing
+  // Create bullet points with dash format and newlines between them for proper spacing
   return `# 1. Correspondence
 
 - **Correspondence Type:** ${fullCorrespondenceType}

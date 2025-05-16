@@ -194,11 +194,12 @@ export function usePdfDownload() {
       
       /* Custom bullet styling */
       ul li:before {
-        content: "•" !important;
-        color: #e58c33 !important;
+        content: "-" !important; /* Changed to dash */
+        color: #333 !important; 
+        font-weight: bold !important;
         position: absolute !important;
-        left: -14px !important;
-        font-size: 14px !important;
+        left: -12px !important;
+        font-size: 12px !important;
         line-height: 10px !important;
       }
       
@@ -252,6 +253,11 @@ export function usePdfDownload() {
       .markdown-content strong, .markdown-content b {
         color: #333 !important;
         font-weight: bold !important;
+      }
+      
+      /* Ensure proper spacing between bullet points */
+      li + li {
+        margin-top: 12px !important;
       }
     `;
     

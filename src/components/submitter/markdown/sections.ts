@@ -7,7 +7,8 @@ export function createSection(sectionNumber: number, title: string, items: strin
     const trimmedItem = item.trim();
     // If item already starts with bullet point markers, don't add another one
     if (trimmedItem.startsWith('-') || trimmedItem.startsWith('*') || trimmedItem.startsWith('•')) {
-      return item;
+      // Convert to dash format for consistency
+      return `- ${trimmedItem.replace(/^[-*•]\s*/, "")}`;
     }
     // Otherwise add bullet point marker
     return `- ${item}`;

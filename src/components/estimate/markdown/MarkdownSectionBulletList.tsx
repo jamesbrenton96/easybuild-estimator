@@ -31,10 +31,13 @@ export default function MarkdownSectionBulletList({
       );
     }
     
-    // Regular bullet point
+    // Regular bullet point - ensure dash format
+    const cleanedItem = item.replace(/^[\*•]\s*/, "");
+    const formattedItem = item.startsWith("-") ? item : `- ${cleanedItem}`;
+    
     return (
       <li key={i} className="my-2 mb-8 relative">
-        {item}
+        {formattedItem}
       </li>
     );
   });

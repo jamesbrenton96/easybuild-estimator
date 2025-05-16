@@ -14,11 +14,16 @@ export function bulletSection(sectionTitle: string, content: string) {
       .filter(l => l.length > 0 && !l.includes("Total Project Cost") && !l.includes("TOTAL PROJECT COST"));
     if (!lines.length) return heading + body;
     
-    // Format and join the lines with a blank line between each bullet point
+    // Format as dashes consistently and join with double newlines for proper spacing
     return (
       heading +
       "\n" +
-      lines.map(l => (l.includes('section-number') ? l : `- ${l.replace(/^\-?\s*/, "")}`)).join("\n\n") +
+      lines.map(l => {
+        if (l.includes('section-number')) return l;
+        // Convert any existing bullet types to dash format
+        const cleaned = l.replace(/^[\*\-•]\s*/, "");
+        return `- ${cleaned}`;
+      }).join('\n\n') +
       "\n"
     );
   });
