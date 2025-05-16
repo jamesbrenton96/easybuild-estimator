@@ -143,11 +143,24 @@ export default function MarkdownContentRenderer({ content }: { content: string }
           font-size: 10px !important;
           line-height: 1.3 !important;
           color: #222 !important;
+          display: block !important;  /* Ensure paragraphs display as blocks */
         }
         
         .markdown-content strong, .markdown-content b {
           color: #333 !important;
           font-weight: bold !important;
+        }
+        
+        /* Fix for bullet points in SCOPE OF WORKS, DIMENSIONS sections */
+        .markdown-content h1 + p, .markdown-content h2 + p {
+          white-space: normal !important;
+        }
+        
+        /* Ensure each bullet point appears on its own line */
+        .markdown-content p > br {
+          display: block !important;
+          content: "" !important;
+          margin-bottom: 8px !important;
         }
       `}</style>
       <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>

@@ -247,11 +247,20 @@ export function usePdfDownload() {
       /* Override any orange text with standard color */
       .markdown-content p {
         color: #333 !important;
+        display: block !important;
+        margin-bottom: 8px !important;
       }
       
       .markdown-content strong, .markdown-content b {
         color: #333 !important;
         font-weight: bold !important;
+      }
+      
+      /* Ensure each bullet point appears on its own line with proper spacing */
+      p > br {
+        display: block !important;
+        content: "" !important;
+        margin-bottom: 8px !important;
       }
     `;
     

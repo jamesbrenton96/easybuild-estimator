@@ -16,7 +16,7 @@ export function bulletSection(sectionTitle: string, content: string) {
     return (
       heading +
       "\n" +
-      lines.map(l => (l.includes('section-number') ? l : `- ${l.replace(/^\-?\s*/, "")}`)).join("\n") +
+      lines.map(l => (l.includes('section-number') ? l : `- ${l.replace(/^\-?\s*/, "")}`)).join("\n\n") +
       "\n"
     );
   });
