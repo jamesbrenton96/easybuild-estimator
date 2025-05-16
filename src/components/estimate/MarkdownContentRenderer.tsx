@@ -95,6 +95,18 @@ export default function MarkdownContentRenderer({ content }: { content: string }
           line-height: 1.3 !important;
           width: 100% !important;
           color: #222 !important;
+          position: relative !important;
+          list-style-type: none !important;
+        }
+        
+        /* Bullet styling to match the screenshot */
+        .markdown-content ul li:before {
+          content: "•" !important;
+          color: #e58c33 !important;
+          position: absolute !important;
+          left: -14px !important;
+          font-size: 14px !important;
+          line-height: 10px !important;
         }
         
         /* Project title */

@@ -10,6 +10,9 @@ import { toast } from "sonner";
 export default function DocumentsStep() {
   const { formData, updateFormData, prevStep, nextStep } = useEstimator();
   const isMobile = useIsMobile();
+  
+  const MAX_FILE_SIZE_MB = 5; // 5MB maximum file size
+  const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
 
   // Remove empty files on mount or field change
   React.useEffect(() => {
@@ -28,6 +31,15 @@ export default function DocumentsStep() {
     
     // Filter blank/empty files
     const cleanedFiles = selectedFiles.filter(file => file && file.name && file.size > 0);
+
+    // Check file size limits
+    const oversizedFiles = cleanedFiles.filter(file => file.size > MAX_FILE_SIZE_BYTES);
+    if (oversizedFiles.length > 0) {
+      const fileNames = oversizedFiles.map(f => f.name).join(', ');
+      toast.error(`Files exceeding ${MAX_FILE_SIZE_MB}MB limit: ${fileNames}`);
+      e.target.value = ''; // Reset the input
+      return;
+    }
 
     // Count existing files by type
     const existingFiles = formData.files && Array.isArray(formData.files) 

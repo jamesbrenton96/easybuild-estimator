@@ -185,16 +185,24 @@ export function usePdfDownload() {
         padding: 3px 0 !important;
         font-size: 10px !important;
         color: #222 !important;
+        position: relative !important;
+        list-style-type: none !important;
+      }
+      
+      /* Custom bullet styling */
+      ul li:before {
+        content: "•" !important;
+        color: #e58c33 !important;
+        position: absolute !important;
+        left: -14px !important;
+        font-size: 14px !important;
+        line-height: 10px !important;
       }
       
       ol li {
         padding: 3px 0 !important;
         font-size: 10px !important;
         color: #222 !important;
-      }
-      
-      ul li::marker {
-        color: #e58c33 !important;
       }
       
       /* Project title */
