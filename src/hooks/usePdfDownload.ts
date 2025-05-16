@@ -35,17 +35,6 @@ export function usePdfDownload() {
     // Clone the element to modify it without affecting the original
     const clone = element.cloneNode(true) as HTMLElement;
     
-    // Preprocess the content to ensure bullet points are properly formatted
-    const contentNodes = clone.querySelectorAll('p');
-    contentNodes.forEach(node => {
-      if (node.innerHTML.includes('- ')) {
-        // Convert single newlines after bullet points to proper spacing
-        node.innerHTML = node.innerHTML
-          .replace(/(-\s*[^<\n]+)(?:\n|<br\s*\/?>)/g, '$1<br><br>')
-          .replace(/<br><br><br>/g, '<br><br>'); // Normalize multiple breaks
-      }
-    });
-    
     // Hide material sources if toggled off
     if (!showMaterialSources) {
       const tables = clone.querySelectorAll('table');
@@ -198,7 +187,7 @@ export function usePdfDownload() {
         color: #222 !important;
         position: relative !important;
         list-style-type: none !important;
-        margin-bottom: 12px !important; /* Increased spacing between bullets */
+        margin-bottom: 8px !important; /* Add space between bullet points */
         display: block !important;
         clear: both !important;
       }
@@ -217,7 +206,7 @@ export function usePdfDownload() {
         padding: 3px 0 !important;
         font-size: 10px !important;
         color: #222 !important;
-        margin-bottom: 12px !important; /* Increased spacing between numbered points */
+        margin-bottom: 8px !important; /* Add space between numbered points */
       }
       
       /* Project title */
@@ -256,28 +245,13 @@ export function usePdfDownload() {
       }
       
       /* Override any orange text with standard color */
-      .markdown-content p, p {
+      .markdown-content p {
         color: #333 !important;
-        display: block !important;
-        margin-bottom: 12px !important; /* Increased space after paragraphs */
-        white-space: pre-wrap !important; /* This preserves whitespace and line breaks */
       }
       
-      .markdown-content strong, .markdown-content b, strong, b {
+      .markdown-content strong, .markdown-content b {
         color: #333 !important;
         font-weight: bold !important;
-      }
-      
-      /* Ensure proper bullet point spacing and separation */
-      br {
-        display: block !important;
-        content: "" !important;
-        margin-bottom: 12px !important;
-      }
-      
-      /* Fix for text with bullet points */
-      p {
-        margin-bottom: 12px !important;
       }
     `;
     
