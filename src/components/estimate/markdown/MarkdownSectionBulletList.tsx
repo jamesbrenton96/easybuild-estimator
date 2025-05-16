@@ -22,7 +22,7 @@ export default function MarkdownSectionBulletList({
       const text = numberMatch[2];
       
       return (
-        <li key={i} className="flex items-start mb-3 list-none -ml-6">
+        <li key={i} className="flex items-start mb-8 list-none -ml-6">
           <span className="inline-flex items-center justify-center w-7 h-7 bg-construction-orange text-white rounded-full mr-2 font-bold text-sm flex-shrink-0">
             {number}
           </span>
@@ -33,7 +33,7 @@ export default function MarkdownSectionBulletList({
     
     // Regular bullet point
     return (
-      <li key={i} className="my-2 mb-3 relative">
+      <li key={i} className="my-2 mb-8 relative">
         {item}
       </li>
     );
@@ -42,7 +42,7 @@ export default function MarkdownSectionBulletList({
   return (
     <>
       {header}
-      <ul className="ml-6 list-disc space-y-2">
+      <ul className="ml-6 list-disc space-y-6">
         {processedPoints}
       </ul>
     </>

@@ -13,10 +13,12 @@ export function bulletSection(sectionTitle: string, content: string) {
       .map(l => l.trim())
       .filter(l => l.length > 0 && !l.includes("Total Project Cost") && !l.includes("TOTAL PROJECT COST"));
     if (!lines.length) return heading + body;
+    
+    // Format and join the lines with a blank line between each bullet point
     return (
       heading +
       "\n" +
-      lines.map(l => (l.includes('section-number') ? l : `- ${l.replace(/^\-?\s*/, "")}`)).join("\n") +
+      lines.map(l => (l.includes('section-number') ? l : `- ${l.replace(/^\-?\s*/, "")}`)).join("\n\n") +
       "\n"
     );
   });

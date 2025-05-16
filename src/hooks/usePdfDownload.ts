@@ -187,7 +187,7 @@ export function usePdfDownload() {
         color: #222 !important;
         position: relative !important;
         list-style-type: none !important;
-        margin-bottom: 8px !important; /* Add space between bullet points */
+        margin-bottom: 16px !important; /* Add more space between bullet points */
         display: block !important;
         clear: both !important;
       }
@@ -206,7 +206,7 @@ export function usePdfDownload() {
         padding: 3px 0 !important;
         font-size: 10px !important;
         color: #222 !important;
-        margin-bottom: 8px !important; /* Add space between numbered points */
+        margin-bottom: 16px !important; /* Add space between numbered points */
       }
       
       /* Project title */
@@ -221,7 +221,7 @@ export function usePdfDownload() {
       /* Correspondence section */
       .correspondence-item {
         display: flex !important;
-        margin-bottom: 5px !important;
+        margin-bottom: 16px !important; /* Increased spacing */
       }
       
       .correspondence-label {
