@@ -2,54 +2,8 @@
 import React from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { useEstimator } from "@/context/EstimatorContext";
 
 export default function MarkdownContentRenderer({ content }: { content: string }) {
-  const {
-    showMaterialSources,
-    showMaterialCalculations,
-    showLaborBreakdown,
-    showTimeline,
-    showNotesAndTerms,
-    showCorrespondence,
-  } = useEstimator();
-
-  // Function to filter content based on visibility settings
-  const filterContent = (markdown: string) => {
-    let filteredContent = markdown;
-
-    // Hide correspondence section
-    if (!showCorrespondence) {
-      filteredContent = filteredContent.replace(/## Correspondence[\s\S]*?(?=##|$)/g, '');
-    }
-
-    // Hide material calculations notes
-    if (!showMaterialCalculations) {
-      filteredContent = filteredContent.replace(/Material calculation notes:[\s\S]*?(?=##|\n\n|$)/g, '');
-    }
-
-    // Hide labor breakdown table
-    if (!showLaborBreakdown) {
-      filteredContent = filteredContent.replace(/## Labor.*?Breakdown[\s\S]*?(?=##|$)/g, '');
-      filteredContent = filteredContent.replace(/\| Task \| Hours[\s\S]*?(?=##|\n\n|$)/g, '');
-    }
-
-    // Hide timeline section
-    if (!showTimeline) {
-      filteredContent = filteredContent.replace(/## Project Timeline[\s\S]*?(?=##|$)/g, '');
-      filteredContent = filteredContent.replace(/\| Phase \| Duration[\s\S]*?(?=##|\n\n|$)/g, '');
-    }
-
-    // Hide notes and terms section
-    if (!showNotesAndTerms) {
-      filteredContent = filteredContent.replace(/## Notes and Terms[\s\S]*?(?=##|$)/g, '');
-    }
-
-    return filteredContent;
-  };
-
-  const processedContent = filterContent(content);
-
   return (
     <div className="p-0 markdown-content text-gray-800">
       <style>{`
@@ -143,16 +97,16 @@ export default function MarkdownContentRenderer({ content }: { content: string }
           color: #222 !important;
           position: relative !important;
           list-style-type: none !important;
-          margin-bottom: 12px !important;
-          margin-top: 12px !important;
+          margin-bottom: 12px !important; /* Space between bullet points */
+          margin-top: 12px !important; /* Add space above bullet points too */
           display: block !important;
           clear: both !important;
         }
         
         /* Bullet styling to match the screenshot */
         .markdown-content ul li:before {
-          content: "-" !important;
-          color: #333 !important;
+          content: "•" !important;
+          color: #e58c33 !important;
           position: absolute !important;
           left: -14px !important;
           font-size: 14px !important;
@@ -173,7 +127,7 @@ export default function MarkdownContentRenderer({ content }: { content: string }
         /* Correspondence section */
         .correspondence-item {
           display: flex !important;
-          margin-bottom: 15px !important;
+          margin-bottom: 15px !important; /* Increased spacing between items */
           width: 100% !important;
         }
         
@@ -196,16 +150,8 @@ export default function MarkdownContentRenderer({ content }: { content: string }
           color: #333 !important;
           font-weight: bold !important;
         }
-        
-        /* Hide material sources if toggled off */
-        ${!showMaterialSources ? `
-          .markdown-content table th:nth-child(5),
-          .markdown-content table td:nth-child(5) {
-            display: none;
-          }
-        ` : ''}
       `}</style>
-      <ReactMarkdown remarkPlugins={[remarkGfm]}>{processedContent}</ReactMarkdown>
+      <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
     </div>
   );
 }

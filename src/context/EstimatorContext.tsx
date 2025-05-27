@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, ReactNode, useEffect, useCallback } from "react";
 import { toast } from "sonner";
 
@@ -29,16 +30,6 @@ interface EstimatorContextType {
   setEstimationResults: (results: any) => void;
   showMaterialSources: boolean;
   setShowMaterialSources: (show: boolean) => void;
-  showMaterialCalculations: boolean;
-  setShowMaterialCalculations: (show: boolean) => void;
-  showLaborBreakdown: boolean;
-  setShowLaborBreakdown: (show: boolean) => void;
-  showTimeline: boolean;
-  setShowTimeline: (show: boolean) => void;
-  showNotesAndTerms: boolean;
-  setShowNotesAndTerms: (show: boolean) => void;
-  showCorrespondence: boolean;
-  setShowCorrespondence: (show: boolean) => void;
   hasSavedData: boolean;
   loadSavedFormData: () => void;
   clearSavedFormData: () => void;
@@ -55,11 +46,6 @@ export const EstimatorProvider = ({ children }: { children: ReactNode }) => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [estimationResults, setEstimationResults] = useState<any>(null);
   const [showMaterialSources, setShowMaterialSources] = useState<boolean>(true);
-  const [showMaterialCalculations, setShowMaterialCalculations] = useState<boolean>(true);
-  const [showLaborBreakdown, setShowLaborBreakdown] = useState<boolean>(true);
-  const [showTimeline, setShowTimeline] = useState<boolean>(true);
-  const [showNotesAndTerms, setShowNotesAndTerms] = useState<boolean>(true);
-  const [showCorrespondence, setShowCorrespondence] = useState<boolean>(true);
   const [hasSavedData, setHasSavedData] = useState<boolean>(false);
 
   // Check for saved form data on component mount
@@ -149,16 +135,6 @@ export const EstimatorProvider = ({ children }: { children: ReactNode }) => {
         setEstimationResults,
         showMaterialSources,
         setShowMaterialSources,
-        showMaterialCalculations,
-        setShowMaterialCalculations,
-        showLaborBreakdown,
-        setShowLaborBreakdown,
-        showTimeline,
-        setShowTimeline,
-        showNotesAndTerms,
-        setShowNotesAndTerms,
-        showCorrespondence,
-        setShowCorrespondence,
         hasSavedData,
         loadSavedFormData,
         clearSavedFormData,
