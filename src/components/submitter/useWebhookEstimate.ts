@@ -1,4 +1,3 @@
-
 import { useCallback } from "react";
 import { getFullCorrespondenceType } from "./markdown/correspondence";
 
@@ -31,35 +30,34 @@ export function useWebhookEstimate() {
         // Create FormData for multipart/form-data submission
         const formData = new FormData();
         
-        // Add all files to the form data with proper indexing
+        // Add all files to the form data with exact naming pattern: file_0, file_1, file_2, file_3
         payload.files.forEach((file: File, index: number) => {
           if (file instanceof File) {
-            console.log(`Uploading file ${index + 1}: ${file.name}, Type: ${file.type}, Size: ${file.size} bytes`);
-            // Use consistent naming pattern for files
+            console.log(`Adding file ${index}: ${file.name} as file_${index}`);
             formData.append(`file_${index}`, file, file.name);
           }
         });
         
-        // Add file metadata
+        // Add file count
         formData.append('fileCount', String(payload.files.length));
         
-        // Add individual file details for easier processing
-        const fileDetails = payload.files.map((file: File, index: number) => ({
-          index,
-          name: file.name,
-          type: file.type,
-          size: file.size
-        }));
-        formData.append('fileDetails', JSON.stringify(fileDetails));
-        
-        // Create a copy of the payload without the files for the meta field
+        // Create a clean copy of the payload without the files for the meta field
         const metaData = { ...payload };
         delete metaData.files;
         
-        // Add the rest of the form data as a JSON string in the 'meta' field
+        // Add the rest of the form data as JSON in the 'meta' field
         formData.append('meta', JSON.stringify(metaData));
         
-        console.log(`Sending multipart/form-data to webhook with ${payload.files.length} files`);
+        console.log(`Sending ${payload.files.length} files to webhook with names: ${payload.files.map((_, i) => `file_${i}`).join(', ')}`);
+        
+        // Debug: Log what we're sending
+        for (let [key, value] of formData.entries()) {
+          if (value instanceof File) {
+            console.log(`FormData contains: ${key} = File(${value.name}, ${value.size} bytes)`);
+          } else {
+            console.log(`FormData contains: ${key} = ${typeof value === 'string' ? value.substring(0, 100) + '...' : value}`);
+          }
+        }
         
         // Send the form data without setting Content-Type (browser will set it correctly with boundary)
         const response = await fetch(webhookUrl, {
