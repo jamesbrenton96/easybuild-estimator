@@ -31,16 +31,26 @@ export function useWebhookEstimate() {
         // Create FormData for multipart/form-data submission
         const formData = new FormData();
         
-        // Add all files to the form data instead of just the first one
+        // Add all files to the form data with proper indexing
         payload.files.forEach((file: File, index: number) => {
           if (file instanceof File) {
             console.log(`Uploading file ${index + 1}: ${file.name}, Type: ${file.type}, Size: ${file.size} bytes`);
-            formData.append(`file${index}`, file, file.name);
+            // Use consistent naming pattern for files
+            formData.append(`file_${index}`, file, file.name);
           }
         });
         
-        // Optional: Add filenames as a separate field
+        // Add file metadata
         formData.append('fileCount', String(payload.files.length));
+        
+        // Add individual file details for easier processing
+        const fileDetails = payload.files.map((file: File, index: number) => ({
+          index,
+          name: file.name,
+          type: file.type,
+          size: file.size
+        }));
+        formData.append('fileDetails', JSON.stringify(fileDetails));
         
         // Create a copy of the payload without the files for the meta field
         const metaData = { ...payload };
@@ -49,7 +59,7 @@ export function useWebhookEstimate() {
         // Add the rest of the form data as a JSON string in the 'meta' field
         formData.append('meta', JSON.stringify(metaData));
         
-        console.log("Sending multipart/form-data to webhook");
+        console.log(`Sending multipart/form-data to webhook with ${payload.files.length} files`);
         
         // Send the form data without setting Content-Type (browser will set it correctly with boundary)
         const response = await fetch(webhookUrl, {
