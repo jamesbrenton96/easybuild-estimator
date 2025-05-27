@@ -1,9 +1,15 @@
-
 import html2pdf from "html2pdf.js";
 import { useEstimator } from "@/context/EstimatorContext";
 
 export function usePdfDownload() {
-  const { showMaterialSources } = useEstimator();
+  const { 
+    showMaterialSources, 
+    showMaterialCalculations,
+    showLaborBreakdown,
+    showTimeline,
+    showNotesAndTerms,
+    showCorrespondence 
+  } = useEstimator();
   
   const handleDownloadPDF = () => {
     const element = document.querySelector('.pdf-content');
@@ -35,22 +41,97 @@ export function usePdfDownload() {
     // Clone the element to modify it without affecting the original
     const clone = element.cloneNode(true) as HTMLElement;
     
+    // Hide sections based on visibility settings
+    if (!showCorrespondence) {
+      const correspondenceElements = clone.querySelectorAll('h2, h1');
+      correspondenceElements.forEach(element => {
+        if (element.textContent?.toLowerCase().includes('correspondence')) {
+          let nextElement = element.nextElementSibling;
+          element.remove();
+          while (nextElement && !nextElement.tagName.match(/^H[1-6]$/)) {
+            const toRemove = nextElement;
+            nextElement = nextElement.nextElementSibling;
+            toRemove.remove();
+          }
+        }
+      });
+    }
+
+    if (!showMaterialCalculations) {
+      const textNodes = clone.querySelectorAll('p, div');
+      textNodes.forEach(node => {
+        if (node.textContent?.includes('Material calculation notes:')) {
+          let nextElement = node.nextElementSibling;
+          node.remove();
+          while (nextElement && !nextElement.tagName.match(/^H[1-6]$/)) {
+            const toRemove = nextElement;
+            nextElement = nextElement.nextElementSibling;
+            toRemove.remove();
+          }
+        }
+      });
+    }
+
+    if (!showLaborBreakdown) {
+      const laborElements = clone.querySelectorAll('h2, h1');
+      laborElements.forEach(element => {
+        if (element.textContent?.toLowerCase().includes('labor') && 
+            element.textContent?.toLowerCase().includes('breakdown')) {
+          let nextElement = element.nextElementSibling;
+          element.remove();
+          while (nextElement && !nextElement.tagName.match(/^H[1-6]$/)) {
+            const toRemove = nextElement;
+            nextElement = nextElement.nextElementSibling;
+            toRemove.remove();
+          }
+        }
+      });
+    }
+
+    if (!showTimeline) {
+      const timelineElements = clone.querySelectorAll('h2, h1');
+      timelineElements.forEach(element => {
+        if (element.textContent?.toLowerCase().includes('timeline')) {
+          let nextElement = element.nextElementSibling;
+          element.remove();
+          while (nextElement && !nextElement.tagName.match(/^H[1-6]$/)) {
+            const toRemove = nextElement;
+            nextElement = nextElement.nextElementSibling;
+            toRemove.remove();
+          }
+        }
+      });
+    }
+
+    if (!showNotesAndTerms) {
+      const notesElements = clone.querySelectorAll('h2, h1');
+      notesElements.forEach(element => {
+        if (element.textContent?.toLowerCase().includes('notes') && 
+            element.textContent?.toLowerCase().includes('terms')) {
+          let nextElement = element.nextElementSibling;
+          element.remove();
+          while (nextElement && !nextElement.tagName.match(/^H[1-6]$/)) {
+            const toRemove = nextElement;
+            nextElement = nextElement.nextElementSibling;
+            toRemove.remove();
+          }
+        }
+      });
+    }
+    
     // Hide material sources if toggled off
     if (!showMaterialSources) {
       const tables = clone.querySelectorAll('table');
       tables.forEach(table => {
-        // Find tables with material sources (5th column)
         const headers = table.querySelectorAll('th');
         const isSourceTable = Array.from(headers).some(header => 
           header.textContent?.toLowerCase().includes('source'));
           
         if (isSourceTable) {
-          // Hide the source column (5th column, index 4)
           const rows = table.querySelectorAll('tr');
           rows.forEach(row => {
             const cells = row.querySelectorAll('th, td');
             if (cells.length >= 5) {
-              // Cast to HTMLElement before accessing style
               const cell = cells[4] as HTMLElement;
               cell.style.display = 'none';
             }
