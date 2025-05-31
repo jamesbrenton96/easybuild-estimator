@@ -1,3 +1,4 @@
+
 import React from "react";
 import { useEstimator } from "@/context/EstimatorContext";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -10,8 +11,10 @@ export default function DocumentsStep() {
   const { formData, updateFormData, prevStep, nextStep } = useEstimator();
   const isMobile = useIsMobile();
   
-  const MAX_FILE_SIZE_MB = 4; // 4MB maximum file size (reduced from 5MB)
+  const MAX_FILE_SIZE_MB = 10; // 10MB maximum individual file size
   const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
+  const MAX_TOTAL_SIZE_MB = 20; // 20MB maximum total size for all files
+  const MAX_TOTAL_SIZE_BYTES = MAX_TOTAL_SIZE_MB * 1024 * 1024;
 
   // Remove empty files on mount or field change
   React.useEffect(() => {
@@ -31,7 +34,7 @@ export default function DocumentsStep() {
     // Filter blank/empty files
     const cleanedFiles = selectedFiles.filter(file => file && file.name && file.size > 0);
 
-    // Check file size limits
+    // Check individual file size limits
     const oversizedFiles = cleanedFiles.filter(file => file.size > MAX_FILE_SIZE_BYTES);
     if (oversizedFiles.length > 0) {
       const fileNames = oversizedFiles.map(f => f.name).join(', ');
@@ -86,14 +89,26 @@ export default function DocumentsStep() {
       return;
     }
     
-    // Check image files limit (max 2)
+    // Check image files limit (max 4)
     if (newImageFiles.length > 0) {
       const totalImageCount = existingImageFiles.length + newImageFiles.length;
-      if (totalImageCount > 2) {
-        toast.error("Maximum 2 image files are allowed");
+      if (totalImageCount > 4) {
+        toast.error("Maximum 4 image files are allowed");
         e.target.value = ''; // Reset the input
         return;
       }
+    }
+    
+    // Check total size limit (20MB)
+    const existingTotalSize = existingFiles.reduce((total: number, file: File) => total + file.size, 0);
+    const newTotalSize = cleanedFiles.reduce((total, file) => total + file.size, 0);
+    const combinedTotalSize = existingTotalSize + newTotalSize;
+    
+    if (combinedTotalSize > MAX_TOTAL_SIZE_BYTES) {
+      const totalSizeMB = (combinedTotalSize / (1024 * 1024)).toFixed(2);
+      toast.error(`Total file size (${totalSizeMB}MB) exceeds the ${MAX_TOTAL_SIZE_MB}MB limit`);
+      e.target.value = ''; // Reset the input
+      return;
     }
     
     // All checks passed, update form data
@@ -118,8 +133,12 @@ export default function DocumentsStep() {
   const hasPdf = files.some((file: File) => file.type === "application/pdf");
   const hasImages = files.some((file: File) => file.type === "image/jpeg" || file.type === "image/png");
   const imageCount = files.filter((file: File) => file.type === "image/jpeg" || file.type === "image/png").length;
+  
+  // Calculate total size of all files
+  const totalSizeBytes = files.reduce((total: number, file: File) => total + file.size, 0);
+  const totalSizeMB = (totalSizeBytes / (1024 * 1024)).toFixed(2);
 
-  // No validation needed for next step, can proceed with 0-2 images or 0-1 PDF
+  // No validation needed for next step, can proceed with 0-4 images or 0-1 PDF
   const handleNextStep = () => {
     nextStep();
   };
@@ -132,8 +151,8 @@ export default function DocumentsStep() {
           {hasPdf ? 
             "You've uploaded 1 PDF document." :
             hasImages ? 
-              `You've uploaded ${imageCount} of maximum 2 image files.` :
-              "Please attach up to 2 images (JPEG/PNG), 1 PDF document, or continue without attaching files."
+              `You've uploaded ${imageCount} of maximum 4 image files.` :
+              "Please attach up to 4 images (JPEG/PNG), 1 PDF document, or continue without attaching files."
           }
         </p>
       </div>
@@ -146,8 +165,8 @@ export default function DocumentsStep() {
                 {hasPdf 
                   ? "Only 1 PDF file is allowed"
                   : hasImages 
-                    ? `You've uploaded ${imageCount} of maximum 2 image files`
-                    : "Choose either 1 PDF file (max 4MB) or up to 2 image files (max 4MB each)"}
+                    ? `You've uploaded ${imageCount} of maximum 4 image files (${totalSizeMB}MB of 20MB total)`
+                    : "Choose either 1 PDF file (max 10MB) or up to 4 image files (max 10MB each, 20MB total)"}
               </span>
             </div>
             <input
@@ -155,7 +174,7 @@ export default function DocumentsStep() {
               onChange={handleFileChange}
               className="block w-full bg-white rounded p-2 mb-4"
               accept=".pdf,.jpg,.jpeg,.png"
-              multiple={!hasPdf && imageCount < 2}
+              multiple={!hasPdf && imageCount < 4}
             />
             <ScrollArea className="h-[200px] rounded-md border border-white/20 bg-white/10 p-4">
               {files.length > 0 ? (
@@ -175,7 +194,7 @@ export default function DocumentsStep() {
                       </div>
                       <div className="flex items-center space-x-2">
                         <span className="text-white/60 text-xs">
-                          {Math.round(file.size / 1024)} KB
+                          {(file.size / (1024 * 1024)).toFixed(2)} MB
                         </span>
                         <button 
                           onClick={() => handleRemoveFile(idx)}
@@ -191,6 +210,11 @@ export default function DocumentsStep() {
                 <p className="text-white/60 italic">No documents attached yet.</p>
               )}
             </ScrollArea>
+            {files.length > 0 && (
+              <div className="mt-2 text-xs text-white/60 text-center">
+                Total size: {totalSizeMB}MB of 20MB maximum
+              </div>
+            )}
           </CardContent>
         </Card>
         <div className={`flex ${isMobile ? "flex-col space-y-4" : "justify-between"}`}>
