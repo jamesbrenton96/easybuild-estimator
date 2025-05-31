@@ -13,6 +13,10 @@ export interface WebhookResponse {
 // This hook handles calling the webhook and parsing the result
 export function useWebhookEstimate() {
   const webhookUrl = "https://hook.us2.make.com/niu1dp65y66kc2r3j56xdcl607sp8fyr";
+  
+  // Maximum total payload size (8MB to be safe with webhook limits)
+  const MAX_TOTAL_SIZE_MB = 8;
+  const MAX_TOTAL_SIZE_BYTES = MAX_TOTAL_SIZE_MB * 1024 * 1024;
 
   const getEstimate = useCallback(async (payload: Record<string, any>): Promise<WebhookResponse> => {
     try {
@@ -28,6 +32,19 @@ export function useWebhookEstimate() {
       const hasFiles = Array.isArray(payload.files) && payload.files.length > 0;
       
       if (hasFiles) {
+        // Validate total file size before processing
+        let totalSize = 0;
+        payload.files.forEach((file: File) => {
+          totalSize += file.size;
+        });
+        
+        console.log(`Total file size: ${totalSize} bytes (${(totalSize / 1024 / 1024).toFixed(2)} MB)`);
+        
+        if (totalSize > MAX_TOTAL_SIZE_BYTES) {
+          const totalSizeMB = (totalSize / 1024 / 1024).toFixed(2);
+          throw new Error(`Total file size (${totalSizeMB}MB) exceeds the ${MAX_TOTAL_SIZE_MB}MB limit. Please reduce file sizes or number of files.`);
+        }
+        
         // Create FormData for multipart/form-data submission
         const formData = new FormData();
         
@@ -52,13 +69,6 @@ export function useWebhookEstimate() {
         // Add the rest of the form data as a JSON string in the 'meta' field
         formData.append('meta', JSON.stringify(metaData));
         
-        // Calculate total payload size for debugging
-        let totalSize = 0;
-        payload.files.forEach((file: File) => {
-          totalSize += file.size;
-        });
-        console.log(`Total file size: ${totalSize} bytes (${(totalSize / 1024 / 1024).toFixed(2)} MB)`);
-        
         console.log(`Sending FormData with ${payload.files.length} files to webhook`);
         console.log('FormData entries:', Array.from(formData.entries()).map(([key, value]) => ({
           key,
@@ -67,20 +77,49 @@ export function useWebhookEstimate() {
           fileName: value instanceof File ? value.name : undefined
         })));
         
-        // Send the form data without setting Content-Type (browser will set it correctly with boundary)
-        const response = await fetch(webhookUrl, {
-          method: "POST",
-          body: formData
-        });
+        // Send the form data with a longer timeout for large uploads
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 second timeout
         
-        if (!response.ok) {
-          console.error(`Webhook response not ok: ${response.status} ${response.statusText}`);
-          const responseText = await response.text();
-          console.error(`Response body: ${responseText}`);
-          throw new Error(`Webhook error: ${response.status} ${response.statusText} - ${responseText}`);
+        try {
+          const response = await fetch(webhookUrl, {
+            method: "POST",
+            body: formData,
+            signal: controller.signal
+          });
+          
+          clearTimeout(timeoutId);
+          
+          if (!response.ok) {
+            console.error(`Webhook response not ok: ${response.status} ${response.statusText}`);
+            const responseText = await response.text();
+            console.error(`Response body: ${responseText}`);
+            
+            // Provide more specific error messages
+            if (response.status === 413) {
+              throw new Error(`File upload too large. Your webhook rejected the ${(totalSize / 1024 / 1024).toFixed(2)}MB upload. Try reducing file sizes.`);
+            } else if (response.status === 400) {
+              throw new Error(`Bad request: ${response.statusText}. This might be due to file size or format issues.`);
+            }
+            
+            throw new Error(`Webhook error: ${response.status} ${response.statusText} - ${responseText}`);
+          }
+          
+          return handleWebhookResponse(response);
+        } catch (fetchError: any) {
+          clearTimeout(timeoutId);
+          
+          if (fetchError.name === 'AbortError') {
+            throw new Error('Upload timeout - files may be too large or connection too slow. Try reducing file sizes.');
+          }
+          
+          // Check for network-related errors
+          if (fetchError.message.includes('Load failed') || fetchError.message.includes('network')) {
+            throw new Error(`Network error during upload. This often happens with large files (${(totalSize / 1024 / 1024).toFixed(2)}MB). Try reducing file sizes or check your connection.`);
+          }
+          
+          throw fetchError;
         }
-        
-        return handleWebhookResponse(response);
       } else {
         // If no files, send a regular JSON payload
         console.log("No files present, sending regular JSON payload");
