@@ -52,7 +52,20 @@ export function useWebhookEstimate() {
         // Add the rest of the form data as a JSON string in the 'meta' field
         formData.append('meta', JSON.stringify(metaData));
         
+        // Calculate total payload size for debugging
+        let totalSize = 0;
+        payload.files.forEach((file: File) => {
+          totalSize += file.size;
+        });
+        console.log(`Total file size: ${totalSize} bytes (${(totalSize / 1024 / 1024).toFixed(2)} MB)`);
+        
         console.log(`Sending FormData with ${payload.files.length} files to webhook`);
+        console.log('FormData entries:', Array.from(formData.entries()).map(([key, value]) => ({
+          key,
+          valueType: typeof value,
+          isFile: value instanceof File,
+          fileName: value instanceof File ? value.name : undefined
+        })));
         
         // Send the form data without setting Content-Type (browser will set it correctly with boundary)
         const response = await fetch(webhookUrl, {
@@ -62,7 +75,9 @@ export function useWebhookEstimate() {
         
         if (!response.ok) {
           console.error(`Webhook response not ok: ${response.status} ${response.statusText}`);
-          throw new Error(`Webhook error: ${response.status} ${response.statusText}`);
+          const responseText = await response.text();
+          console.error(`Response body: ${responseText}`);
+          throw new Error(`Webhook error: ${response.status} ${response.statusText} - ${responseText}`);
         }
         
         return handleWebhookResponse(response);
@@ -85,6 +100,11 @@ export function useWebhookEstimate() {
       }
     } catch (error: any) {
       console.error("Webhook submission error:", error);
+      console.error("Error details:", {
+        message: error?.message,
+        stack: error?.stack,
+        name: error?.name
+      });
       return { 
         error: error?.message || "Unknown error with estimate generation.",
         markdownContent: null
