@@ -31,15 +31,18 @@ export function useWebhookEstimate() {
         // Create FormData for multipart/form-data submission
         const formData = new FormData();
         
-        // Add all files to the form data instead of just the first one
+        console.log(`Processing ${payload.files.length} files for webhook submission`);
+        
+        // Add all files with the exact naming convention your webhook expects
         payload.files.forEach((file: File, index: number) => {
-          if (file instanceof File) {
-            console.log(`Uploading file ${index + 1}: ${file.name}, Type: ${file.type}, Size: ${file.size} bytes`);
-            formData.append(`file${index}`, file, file.name);
+          if (file instanceof File && file.size > 0) {
+            const fieldName = `file_${index}`;
+            console.log(`Adding file ${index}: ${file.name} as ${fieldName}, Type: ${file.type}, Size: ${file.size} bytes`);
+            formData.append(fieldName, file, file.name);
           }
         });
         
-        // Optional: Add filenames as a separate field
+        // Add file count for webhook processing
         formData.append('fileCount', String(payload.files.length));
         
         // Create a copy of the payload without the files for the meta field
@@ -49,7 +52,7 @@ export function useWebhookEstimate() {
         // Add the rest of the form data as a JSON string in the 'meta' field
         formData.append('meta', JSON.stringify(metaData));
         
-        console.log("Sending multipart/form-data to webhook");
+        console.log(`Sending FormData with ${payload.files.length} files to webhook`);
         
         // Send the form data without setting Content-Type (browser will set it correctly with boundary)
         const response = await fetch(webhookUrl, {
@@ -57,7 +60,10 @@ export function useWebhookEstimate() {
           body: formData
         });
         
-        if (!response.ok) throw new Error(`Webhook error: ${response.status} ${response.statusText}`);
+        if (!response.ok) {
+          console.error(`Webhook response not ok: ${response.status} ${response.statusText}`);
+          throw new Error(`Webhook error: ${response.status} ${response.statusText}`);
+        }
         
         return handleWebhookResponse(response);
       } else {
@@ -78,7 +84,7 @@ export function useWebhookEstimate() {
         return handleWebhookResponse(response);
       }
     } catch (error: any) {
-      console.error("Webhook error:", error);
+      console.error("Webhook submission error:", error);
       return { 
         error: error?.message || "Unknown error with estimate generation.",
         markdownContent: null
