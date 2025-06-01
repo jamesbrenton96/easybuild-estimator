@@ -7,6 +7,7 @@ import BasicInfoStep from "./steps/BasicInfoStep";
 import DocumentsStep from "./steps/DocumentsStep";
 import SubmitStep from "./steps/SubmitStep";
 import ReviewStep from "./steps/ReviewStep";
+import { DraftManager } from "./drafts/DraftManager";
 import { Loader2, RefreshCcw, AlertCircle } from "lucide-react";
 import { motion } from "framer-motion";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -75,6 +76,14 @@ export default function CostEstimator() {
           </Alert>
         </div>
       )}
+      
+      {/* Add Draft Manager - only show on first 3 steps */}
+      {currentStep <= 3 && (
+        <div className="mb-6 text-center">
+          <DraftManager />
+        </div>
+      )}
+      
       <StepIndicator />
       {renderStep()}
     </div>

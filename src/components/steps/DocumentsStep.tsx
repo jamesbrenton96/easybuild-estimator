@@ -13,7 +13,7 @@ export default function DocumentsStep() {
   
   const MAX_FILE_SIZE_MB = 10; // 10MB maximum individual file size
   const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
-  const MAX_TOTAL_SIZE_MB = 20; // 20MB maximum total size for all files
+  const MAX_TOTAL_SIZE_MB = 10; // 10MB maximum total size for all files (reduced from 20MB)
   const MAX_TOTAL_SIZE_BYTES = MAX_TOTAL_SIZE_MB * 1024 * 1024;
 
   // Remove empty files on mount or field change
@@ -99,7 +99,7 @@ export default function DocumentsStep() {
       }
     }
     
-    // Check total size limit (20MB)
+    // Check total size limit (10MB)
     const existingTotalSize = existingFiles.reduce((total: number, file: File) => total + file.size, 0);
     const newTotalSize = cleanedFiles.reduce((total, file) => total + file.size, 0);
     const combinedTotalSize = existingTotalSize + newTotalSize;
@@ -165,8 +165,8 @@ export default function DocumentsStep() {
                 {hasPdf 
                   ? "Only 1 PDF file is allowed"
                   : hasImages 
-                    ? `You've uploaded ${imageCount} of maximum 4 image files (${totalSizeMB}MB of 20MB total)`
-                    : "Choose either 1 PDF file (max 10MB) or up to 4 image files (max 10MB each, 20MB total)"}
+                    ? `You've uploaded ${imageCount} of maximum 4 image files (${totalSizeMB}MB of 10MB total)`
+                    : "Choose either 1 PDF file (max 10MB) or up to 4 image files (max 10MB each, 10MB total)"}
               </span>
             </div>
             <input
@@ -212,7 +212,7 @@ export default function DocumentsStep() {
             </ScrollArea>
             {files.length > 0 && (
               <div className="mt-2 text-xs text-white/60 text-center">
-                Total size: {totalSizeMB}MB of 20MB maximum
+                Total size: {totalSizeMB}MB of 10MB maximum
               </div>
             )}
           </CardContent>
