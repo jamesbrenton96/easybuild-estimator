@@ -1,4 +1,3 @@
-
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -138,6 +137,16 @@ const Intro = () => {
                     AI is brilliant, but it's only as good as the information you give it. The more specific you are 
                     about materials, site conditions, and project details, the better your estimate will be. 
                     Vague input = dodgy estimate.
+                  </p>
+                </div>
+
+                <div className="bg-white/5 p-5 rounded-lg border border-white/10">
+                  <h3 className="font-semibold text-white mb-2">8. Save Your Work</h3>
+                  <p className="text-sm text-white/80">
+                    If the tool hits any errors, your estimate should automatically save and you can reload it when you 
+                    refresh the page. But to be safe, hit the "Drafts" button at the top of your "Basic Information" page 
+                    to save a backup. This way if your browser crashes or you need to come back later to finish the job, 
+                    you won't lose all your work.
                   </p>
                 </div>
               </div>
