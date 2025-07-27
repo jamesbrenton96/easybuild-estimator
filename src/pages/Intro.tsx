@@ -32,7 +32,7 @@ const Intro = () => {
         >
           <div className="text-center mb-8">
             <h1 className="text-2xl sm:text-3xl font-bold text-white mb-4">
-              Welcome to Quote Quickly AI by Brenton Building
+              Welcome to Quote Quickly AI by Brenton Building - DEMO
             </h1>
             <div className="w-20 h-1 bg-construction-orange mx-auto mb-6"></div>
           </div>
