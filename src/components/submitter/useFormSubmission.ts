@@ -1,6 +1,5 @@
-
 import { useState } from "react";
-import { useWebhookEstimate } from "./useWebhookEstimate";
+import { useSupabaseSubmission } from "@/hooks/useSupabaseSubmission";
 import { toast } from "sonner";
 
 interface UseFormSubmissionProps {
@@ -10,18 +9,20 @@ interface UseFormSubmissionProps {
   nextStep: () => void;
 }
 
-const useFormSubmission = ({
+export default function useFormSubmission({
   formData,
   setIsLoading,
   setEstimationResults,
   nextStep,
-}: UseFormSubmissionProps) => {
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
+}: UseFormSubmissionProps) {
   const [error, setError] = useState<string | null>(null);
-  const [status, setStatus] = useState<"idle" | "success" | "fail">("idle");
+  const [status, setStatus] = useState<string>("");
 
-  const { getEstimate } = useWebhookEstimate();
+  const { 
+    isSubmitting, 
+    uploadProgress, 
+    submitProjectData 
+  } = useSupabaseSubmission();
 
   // Function to save form data to localStorage
   const saveFormDataToStorage = (data: any) => {
@@ -40,58 +41,61 @@ const useFormSubmission = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
-    setIsSubmitting(true);
+
+    if (!formData || typeof formData !== "object") {
+      setError("Invalid form data");
+      return;
+    }
+
     setError(null);
-    setStatus("idle");
-    setUploadProgress(20);
+    setStatus("Preparing submission...");
+    setIsLoading(true);
 
     try {
-      // Create a copy of the form data
-      const submissionData = { ...formData };
+      setStatus("Uploading files and generating estimate...");
       
-      // Validate files - no need to convert to base64 anymore
-      if (Array.isArray(submissionData.files) && submissionData.files.length > 0) {
-        setUploadProgress(30);
-        
-        // Log file information for debugging
-        console.log(`Processing ${submissionData.files.length} files`);
-        submissionData.files.forEach((file: File, index: number) => {
-          console.log(`File ${index + 1}: ${file.name}, Type: ${file.type}, Size: ${file.size} bytes`);
-        });
-        
-        setUploadProgress(60);
-      }
+      // Map form data to submission format
+      const submissionData = {
+        projectName: formData.projectName,
+        projectType: formData.projectType,
+        description: formData.description,
+        locationDetails: formData.locationDetails,
+        dimensions: formData.dimensions,
+        materials: formData.materials,
+        finishDetails: formData.finishDetails,
+        timeframe: formData.timeframe,
+        rates: formData.rates,
+        margin: formData.margin,
+        additionalWork: formData.additionalWork,
+        notes: formData.notes,
+        correspondence: formData.correspondence,
+        files: formData.files || []
+      };
 
-      const estimateResult = await getEstimate(submissionData);
+      const result = await submitProjectData(submissionData);
       
-      if (estimateResult.error) {
-        throw new Error(estimateResult.error);
-      }
-      
-      setEstimationResults(estimateResult);
-      setStatus("success");
-      setUploadProgress(100);
-      setTimeout(() => {
-        setIsLoading(false);
-        nextStep();
-      }, 600);
-    } catch (err: any) {
-      // Save form data when error occurs
-      saveFormDataToStorage(formData);
-      
-      const errorMessage = err?.message || "An unknown error occurred.";
+      setStatus("Complete!");
+
+      setEstimationResults({
+        markdownContent: result.markdownContent,
+        submissionId: result.submissionId,
+        estimateId: result.estimateId,
+        processingTime: result.processingTime
+      });
+
+      toast.success("Estimate generated successfully!");
+      nextStep();
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "An unexpected error occurred";
+      console.error("Submission error:", error);
       setError(errorMessage);
-      setStatus("fail");
-      setIsLoading(false);
+      setStatus("Error occurred");
+      toast.error(`Failed to generate estimate: ${errorMessage}`);
       
-      // Display toast notification
-      toast.error(
-        "Estimate generation failed. Your data has been saved so you can try again later.", 
-        { duration: 5000 }
-      );
+      // Save form data to storage on error
+      saveFormDataToStorage(formData);
     } finally {
-      setIsSubmitting(false);
+      setIsLoading(false);
     }
   };
 
@@ -102,6 +106,4 @@ const useFormSubmission = ({
     handleSubmit,
     status,
   };
-};
-
-export default useFormSubmission;
+}

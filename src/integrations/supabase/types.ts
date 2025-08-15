@@ -14,7 +14,154 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      estimates: {
+        Row: {
+          created_at: string
+          id: string
+          llm_model: string | null
+          markdown_content: string | null
+          processing_time_ms: number | null
+          structured_data: Json | null
+          submission_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          llm_model?: string | null
+          markdown_content?: string | null
+          processing_time_ms?: number | null
+          structured_data?: Json | null
+          submission_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          llm_model?: string | null
+          markdown_content?: string | null
+          processing_time_ms?: number | null
+          structured_data?: Json | null
+          submission_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "estimates_submission_id_fkey"
+            columns: ["submission_id"]
+            isOneToOne: false
+            referencedRelation: "project_submissions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_files: {
+        Row: {
+          created_at: string
+          file_name: string
+          file_size: number
+          file_type: string
+          id: string
+          storage_path: string
+          submission_id: string
+          upload_completed: boolean | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          file_name: string
+          file_size: number
+          file_type: string
+          id?: string
+          storage_path: string
+          submission_id: string
+          upload_completed?: boolean | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          file_name?: string
+          file_size?: number
+          file_type?: string
+          id?: string
+          storage_path?: string
+          submission_id?: string
+          upload_completed?: boolean | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_files_submission_id_fkey"
+            columns: ["submission_id"]
+            isOneToOne: false
+            referencedRelation: "project_submissions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_submissions: {
+        Row: {
+          additional_work: Json | null
+          correspondence: Json | null
+          created_at: string
+          description: string | null
+          dimensions: Json | null
+          finish_details: Json | null
+          id: string
+          location_details: Json | null
+          margin: Json | null
+          materials: Json | null
+          notes: string | null
+          project_name: string | null
+          project_type: Database["public"]["Enums"]["project_type"] | null
+          rates: Json | null
+          status: Database["public"]["Enums"]["estimate_status"] | null
+          timeframe: Json | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          additional_work?: Json | null
+          correspondence?: Json | null
+          created_at?: string
+          description?: string | null
+          dimensions?: Json | null
+          finish_details?: Json | null
+          id?: string
+          location_details?: Json | null
+          margin?: Json | null
+          materials?: Json | null
+          notes?: string | null
+          project_name?: string | null
+          project_type?: Database["public"]["Enums"]["project_type"] | null
+          rates?: Json | null
+          status?: Database["public"]["Enums"]["estimate_status"] | null
+          timeframe?: Json | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          additional_work?: Json | null
+          correspondence?: Json | null
+          created_at?: string
+          description?: string | null
+          dimensions?: Json | null
+          finish_details?: Json | null
+          id?: string
+          location_details?: Json | null
+          margin?: Json | null
+          materials?: Json | null
+          notes?: string | null
+          project_name?: string | null
+          project_type?: Database["public"]["Enums"]["project_type"] | null
+          rates?: Json | null
+          status?: Database["public"]["Enums"]["estimate_status"] | null
+          timeframe?: Json | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -23,7 +170,13 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      estimate_status: "pending" | "processing" | "completed" | "failed"
+      project_type:
+        | "residential_construction"
+        | "commercial_construction"
+        | "renovation"
+        | "landscaping"
+        | "other"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +303,15 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      estimate_status: ["pending", "processing", "completed", "failed"],
+      project_type: [
+        "residential_construction",
+        "commercial_construction",
+        "renovation",
+        "landscaping",
+        "other",
+      ],
+    },
   },
 } as const
