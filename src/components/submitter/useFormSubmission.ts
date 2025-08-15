@@ -16,7 +16,7 @@ export default function useFormSubmission({
   nextStep,
 }: UseFormSubmissionProps) {
   const [error, setError] = useState<string | null>(null);
-  const [status, setStatus] = useState<string>("");
+  const [status, setStatus] = useState<"idle" | "success" | "fail">("idle");
 
   const { 
     isSubmitting, 
@@ -48,12 +48,10 @@ export default function useFormSubmission({
     }
 
     setError(null);
-    setStatus("Preparing submission...");
+    setStatus("idle");
     setIsLoading(true);
 
     try {
-      setStatus("Uploading files and generating estimate...");
-      
       // Map form data to submission format
       const submissionData = {
         projectName: formData.projectName,
@@ -74,7 +72,7 @@ export default function useFormSubmission({
 
       const result = await submitProjectData(submissionData);
       
-      setStatus("Complete!");
+      setStatus("success");
 
       setEstimationResults({
         markdownContent: result.markdownContent,
@@ -89,7 +87,7 @@ export default function useFormSubmission({
       const errorMessage = error instanceof Error ? error.message : "An unexpected error occurred";
       console.error("Submission error:", error);
       setError(errorMessage);
-      setStatus("Error occurred");
+      setStatus("fail");
       toast.error(`Failed to generate estimate: ${errorMessage}`);
       
       // Save form data to storage on error
