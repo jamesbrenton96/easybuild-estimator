@@ -1,6 +1,8 @@
 
 import React, { createContext, useContext, useState, ReactNode, useEffect, useCallback } from "react";
 import { toast } from "sonner";
+import { useStorageConsent } from "@/hooks/useStorageConsent";
+import { StorageConsent } from "@/components/privacy/StorageConsent";
 
 // Define types for our data structures
 export interface ContentData {
@@ -47,19 +49,29 @@ export const EstimatorProvider = ({ children }: { children: ReactNode }) => {
   const [estimationResults, setEstimationResults] = useState<any>(null);
   const [showMaterialSources, setShowMaterialSources] = useState<boolean>(true);
   const [hasSavedData, setHasSavedData] = useState<boolean>(false);
+  const [showConsentDialog, setShowConsentDialog] = useState<boolean>(false);
+  
+  const { hasConsent, isLoading: consentLoading, safeGetItem, safeSetItem, safeRemoveItem } = useStorageConsent();
 
   // Check for saved form data on component mount
   useEffect(() => {
+    if (consentLoading || hasConsent === null) return;
+    
+    if (hasConsent === false) {
+      setShowConsentDialog(true);
+      return;
+    }
+    
     // First try to load regular form data
-    const storedFormData = localStorage.getItem('formData');
+    const storedFormData = safeGetItem('formData');
     if (storedFormData) {
       setFormData(JSON.parse(storedFormData));
     }
     
     // Check if we have saved data from a failed generation
-    const savedFormData = localStorage.getItem('savedFormData');
+    const savedFormData = safeGetItem('savedFormData');
     if (savedFormData) {
-      const timestamp = localStorage.getItem('formDataTimestamp');
+      const timestamp = safeGetItem('formDataTimestamp');
       setHasSavedData(true);
       
       // Show notification about saved data if it exists
@@ -72,11 +84,13 @@ export const EstimatorProvider = ({ children }: { children: ReactNode }) => {
         );
       }
     }
-  }, []);
+  }, [hasConsent, consentLoading, safeGetItem]);
 
   // Load saved form data from localStorage
   const loadSavedFormData = useCallback(() => {
-    const savedFormData = localStorage.getItem('savedFormData');
+    if (!hasConsent) return;
+    
+    const savedFormData = safeGetItem('savedFormData');
     if (savedFormData) {
       const parsedData = JSON.parse(savedFormData);
       setFormData(parsedData);
@@ -84,15 +98,17 @@ export const EstimatorProvider = ({ children }: { children: ReactNode }) => {
       toast.success('Saved data has been loaded successfully', { duration: 3000 });
       setHasSavedData(false);
     }
-  }, []);
+  }, [hasConsent, safeGetItem]);
 
   // Clear saved form data
   const clearSavedFormData = useCallback(() => {
-    localStorage.removeItem('savedFormData');
-    localStorage.removeItem('formDataTimestamp');
+    if (!hasConsent) return;
+    
+    safeRemoveItem('savedFormData');
+    safeRemoveItem('formDataTimestamp');
     setHasSavedData(false);
     toast.success('Saved data has been cleared', { duration: 3000 });
-  }, []);
+  }, [hasConsent, safeRemoveItem]);
 
   // Navigation functions
   const nextStep = () => {
@@ -107,40 +123,57 @@ export const EstimatorProvider = ({ children }: { children: ReactNode }) => {
   const updateFormData = useCallback((data: any) => {
     setFormData(prev => {
       const updatedFormData = { ...prev, ...data };
-      localStorage.setItem('formData', JSON.stringify(updatedFormData));
+      if (hasConsent) {
+        safeSetItem('formData', JSON.stringify(updatedFormData));
+      }
       return updatedFormData;
     });
-  }, []);
+  }, [hasConsent, safeSetItem]);
 
   // Save form data to localStorage
   const saveFormData = (data: any) => {
-    localStorage.setItem('formData', JSON.stringify(data));
+    if (hasConsent) {
+      safeSetItem('formData', JSON.stringify(data));
+    }
+  };
+
+  const handleConsentResponse = (granted: boolean) => {
+    setShowConsentDialog(false);
+    if (!granted) {
+      toast.info('Local storage disabled. Your progress won\'t be saved between sessions.', { duration: 5000 });
+    }
   };
 
   return (
-    <EstimatorContext.Provider
-      value={{
-        currentStep,
-        setStep: setCurrentStep,
-        nextStep,
-        prevStep,
-        formData,
-        updateFormData,
-        saveFormData,
-        files,
-        setFiles,
-        isLoading,
-        setIsLoading,
-        estimationResults,
-        setEstimationResults,
-        showMaterialSources,
-        setShowMaterialSources,
-        hasSavedData,
-        loadSavedFormData,
-        clearSavedFormData,
-      }}
-    >
-      {children}
-    </EstimatorContext.Provider>
+    <>
+      <EstimatorContext.Provider
+        value={{
+          currentStep,
+          setStep: setCurrentStep,
+          nextStep,
+          prevStep,
+          formData,
+          updateFormData,
+          saveFormData,
+          files,
+          setFiles,
+          isLoading,
+          setIsLoading,
+          estimationResults,
+          setEstimationResults,
+          showMaterialSources,
+          setShowMaterialSources,
+          hasSavedData,
+          loadSavedFormData,
+          clearSavedFormData,
+        }}
+      >
+        {children}
+      </EstimatorContext.Provider>
+      
+      {showConsentDialog && (
+        <StorageConsent onConsent={handleConsentResponse} />
+      )}
+    </>
   );
 };

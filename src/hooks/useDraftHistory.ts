@@ -1,6 +1,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { toast } from 'sonner';
+import { useStorageConsent } from '@/hooks/useStorageConsent';
 
 export interface DraftItem {
   id: string;
@@ -13,6 +14,7 @@ export interface DraftItem {
 export const useDraftHistory = () => {
   const [drafts, setDrafts] = useState<DraftItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const { hasConsent, safeGetItem, safeSetItem } = useStorageConsent();
 
   // Load drafts from localStorage on mount
   useEffect(() => {
@@ -20,8 +22,10 @@ export const useDraftHistory = () => {
   }, []);
 
   const loadDrafts = useCallback(() => {
+    if (!hasConsent) return;
+    
     try {
-      const storedDrafts = localStorage.getItem('projectDrafts');
+      const storedDrafts = safeGetItem('projectDrafts');
       if (storedDrafts) {
         const parsedDrafts = JSON.parse(storedDrafts);
         setDrafts(parsedDrafts.sort((a: DraftItem, b: DraftItem) => 
@@ -31,9 +35,14 @@ export const useDraftHistory = () => {
     } catch (error) {
       console.error('Error loading drafts:', error);
     }
-  }, []);
+  }, [hasConsent, safeGetItem]);
 
   const saveDraft = useCallback((name: string, formData: any) => {
+    if (!hasConsent) {
+      toast.error('Storage consent required to save drafts');
+      return null;
+    }
+    
     try {
       setIsLoading(true);
       
@@ -56,7 +65,7 @@ export const useDraftHistory = () => {
 
       const updatedDrafts = [newDraft, ...drafts].slice(0, 20); // Keep max 20 drafts
       setDrafts(updatedDrafts);
-      localStorage.setItem('projectDrafts', JSON.stringify(updatedDrafts));
+      safeSetItem('projectDrafts', JSON.stringify(updatedDrafts));
       
       toast.success('Draft saved successfully');
       return draftId;
@@ -67,7 +76,7 @@ export const useDraftHistory = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [drafts]);
+  }, [hasConsent, drafts, safeSetItem]);
 
   const loadDraft = useCallback((draftId: string) => {
     const draft = drafts.find(d => d.id === draftId);
@@ -79,18 +88,22 @@ export const useDraftHistory = () => {
   }, [drafts]);
 
   const deleteDraft = useCallback((draftId: string) => {
+    if (!hasConsent) return;
+    
     try {
       const updatedDrafts = drafts.filter(d => d.id !== draftId);
       setDrafts(updatedDrafts);
-      localStorage.setItem('projectDrafts', JSON.stringify(updatedDrafts));
+      safeSetItem('projectDrafts', JSON.stringify(updatedDrafts));
       toast.success('Draft deleted');
     } catch (error) {
       console.error('Error deleting draft:', error);
       toast.error('Failed to delete draft');
     }
-  }, [drafts]);
+  }, [hasConsent, drafts, safeSetItem]);
 
   const renameDraft = useCallback((draftId: string, newName: string) => {
+    if (!hasConsent) return;
+    
     try {
       const updatedDrafts = drafts.map(draft => 
         draft.id === draftId 
@@ -98,13 +111,13 @@ export const useDraftHistory = () => {
           : draft
       );
       setDrafts(updatedDrafts);
-      localStorage.setItem('projectDrafts', JSON.stringify(updatedDrafts));
+      safeSetItem('projectDrafts', JSON.stringify(updatedDrafts));
       toast.success('Draft renamed');
     } catch (error) {
       console.error('Error renaming draft:', error);
       toast.error('Failed to rename draft');
     }
-  }, [drafts]);
+  }, [hasConsent, drafts, safeSetItem]);
 
   return {
     drafts,

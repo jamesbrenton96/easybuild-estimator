@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useSupabaseSubmission } from "@/hooks/useSupabaseSubmission";
+import { useStorageConsent } from "@/hooks/useStorageConsent";
 import { toast } from "sonner";
 
 interface UseFormSubmissionProps {
@@ -23,17 +24,24 @@ export default function useFormSubmission({
     uploadProgress, 
     submitProjectData 
   } = useSupabaseSubmission();
+  
+  const { hasConsent, safeSetItem } = useStorageConsent();
 
   // Function to save form data to localStorage
   const saveFormDataToStorage = (data: any) => {
+    if (!hasConsent) {
+      console.log("Storage consent not granted, skipping form data save");
+      return;
+    }
+    
     try {
       // Create a copy without file objects (they can't be serialized)
       const saveData = { ...data };
       if (saveData.files) {
         delete saveData.files;
       }
-      localStorage.setItem('savedFormData', JSON.stringify(saveData));
-      localStorage.setItem('formDataTimestamp', new Date().toISOString());
+      safeSetItem('savedFormData', JSON.stringify(saveData));
+      safeSetItem('formDataTimestamp', new Date().toISOString());
     } catch (err) {
       console.error("Error saving form data to localStorage:", err);
     }
