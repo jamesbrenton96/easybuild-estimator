@@ -13,7 +13,7 @@ const Intro = () => {
   return (
     <div className="min-h-screen bg-construction-dark pb-16">
       <header className="w-full py-6 px-4">
-        <div className="container mx-auto flex justify-between items-center">
+        <div className="container mx-auto flex justify-center items-center relative">
           <motion.img
             src="/lovable-uploads/bee065c6-a438-40bf-b1e3-4e1183bbda1d.png"
             alt="Quote Quickly AI by Brenton Building"
@@ -27,7 +27,7 @@ const Intro = () => {
               onClick={signOut}
               variant="outline"
               size="sm"
-              className="bg-white/10 border-white/20 text-white hover:bg-white/20"
+              className="absolute right-0 bg-white/10 border-white/20 text-white hover:bg-white/20"
             >
               <LogOut className="w-4 h-4 mr-2" />
               Sign Out
