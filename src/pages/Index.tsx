@@ -11,7 +11,7 @@ const Index = () => {
         <div className="container mx-auto flex justify-center items-center">
           <motion.img
             src="/lovable-uploads/bee065c6-a438-40bf-b1e3-4e1183bbda1d.png"
-            alt="Quote Quickly AI by Brenton Building"
+            alt="Brenton Building Estimator"
             className="h-40 sm:h-56 w-auto" 
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -27,7 +27,7 @@ const Index = () => {
       </main>
       
       <footer className="mt-16 text-center text-white/50 text-sm">
-        <p>© {new Date().getFullYear()} Quote Quickly AI by Brenton Building. All rights reserved.</p>
+        <p>© {new Date().getFullYear()} Brenton Building Estimator. All rights reserved.</p>
       </footer>
     </div>
   );

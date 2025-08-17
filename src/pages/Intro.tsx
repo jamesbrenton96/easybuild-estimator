@@ -1,38 +1,24 @@
-
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Info, Lightbulb, AlertTriangle, LogOut } from "lucide-react";
-import { useAuth } from "@/hooks/useAuth";
+import { ArrowRight, Info, Lightbulb, AlertTriangle } from "lucide-react";
 
 const Intro = () => {
   const navigate = useNavigate();
-  const { user, signOut } = useAuth();
 
   return (
     <div className="min-h-screen bg-construction-dark pb-16">
       <header className="w-full py-6 px-4">
-        <div className="container mx-auto flex justify-center items-center relative">
+        <div className="container mx-auto flex justify-center items-center">
           <motion.img
             src="/lovable-uploads/bee065c6-a438-40bf-b1e3-4e1183bbda1d.png"
-            alt="Quote Quickly AI by Brenton Building"
+            alt="Brenton Building Estimator"
             className="h-24 sm:h-32 w-auto"
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           />
-          {user && (
-            <Button
-              onClick={signOut}
-              variant="outline"
-              size="sm"
-              className="absolute right-0 bg-white/10 border-white/20 text-white hover:bg-white/20"
-            >
-              <LogOut className="w-4 h-4 mr-2" />
-              Sign Out
-            </Button>
-          )}
         </div>
       </header>
       
@@ -45,7 +31,7 @@ const Intro = () => {
         >
           <div className="text-center mb-8">
             <h1 className="text-2xl sm:text-3xl font-bold text-white mb-4">
-              Welcome to Quote Quickly AI by Brenton Building - DEMO
+              Welcome to the Brenton Building Estimator
             </h1>
             <div className="w-20 h-1 bg-construction-orange mx-auto mb-6"></div>
           </div>
@@ -179,7 +165,7 @@ const Intro = () => {
       </main>
       
       <footer className="mt-16 text-center text-white/50 text-sm">
-        <p>© {new Date().getFullYear()} Quote Quickly AI by Brenton Building. All rights reserved.</p>
+        <p>© {new Date().getFullYear()} Brenton Building Estimator. All rights reserved.</p>
       </footer>
     </div>
   );

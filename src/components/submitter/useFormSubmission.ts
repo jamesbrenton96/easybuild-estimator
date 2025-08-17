@@ -1,6 +1,6 @@
+
 import { useState } from "react";
-import { useSupabaseSubmission } from "@/hooks/useSupabaseSubmission";
-import { useStorageConsent } from "@/hooks/useStorageConsent";
+import { useWebhookEstimate } from "./useWebhookEstimate";
 import { toast } from "sonner";
 
 interface UseFormSubmissionProps {
@@ -10,38 +10,29 @@ interface UseFormSubmissionProps {
   nextStep: () => void;
 }
 
-export default function useFormSubmission({
+const useFormSubmission = ({
   formData,
   setIsLoading,
   setEstimationResults,
   nextStep,
-}: UseFormSubmissionProps) {
+}: UseFormSubmissionProps) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [status, setStatus] = useState<"idle" | "success" | "fail">("idle");
 
-  const { 
-    isSubmitting, 
-    uploadProgress, 
-    submitProjectData 
-  } = useSupabaseSubmission();
-  
-  const { hasConsent, safeSetItem } = useStorageConsent();
+  const { getEstimate } = useWebhookEstimate();
 
   // Function to save form data to localStorage
   const saveFormDataToStorage = (data: any) => {
-    if (!hasConsent) {
-      console.log("Storage consent not granted, skipping form data save");
-      return;
-    }
-    
     try {
       // Create a copy without file objects (they can't be serialized)
       const saveData = { ...data };
       if (saveData.files) {
         delete saveData.files;
       }
-      safeSetItem('savedFormData', JSON.stringify(saveData));
-      safeSetItem('formDataTimestamp', new Date().toISOString());
+      localStorage.setItem('savedFormData', JSON.stringify(saveData));
+      localStorage.setItem('formDataTimestamp', new Date().toISOString());
     } catch (err) {
       console.error("Error saving form data to localStorage:", err);
     }
@@ -49,59 +40,58 @@ export default function useFormSubmission({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (!formData || typeof formData !== "object") {
-      setError("Invalid form data");
-      return;
-    }
-
+    setIsLoading(true);
+    setIsSubmitting(true);
     setError(null);
     setStatus("idle");
-    setIsLoading(true);
+    setUploadProgress(20);
 
     try {
-      // Map form data to submission format
-      const submissionData = {
-        projectName: formData.projectName,
-        projectType: formData.projectType,
-        description: formData.description,
-        locationDetails: formData.locationDetails,
-        dimensions: formData.dimensions,
-        materials: formData.materials,
-        finishDetails: formData.finishDetails,
-        timeframe: formData.timeframe,
-        rates: formData.rates,
-        margin: formData.margin,
-        additionalWork: formData.additionalWork,
-        notes: formData.notes,
-        correspondence: formData.correspondence,
-        files: formData.files || []
-      };
-
-      const result = await submitProjectData(submissionData);
+      // Create a copy of the form data
+      const submissionData = { ...formData };
       
+      // Validate files - no need to convert to base64 anymore
+      if (Array.isArray(submissionData.files) && submissionData.files.length > 0) {
+        setUploadProgress(30);
+        
+        // Log file information for debugging
+        console.log(`Processing ${submissionData.files.length} files`);
+        submissionData.files.forEach((file: File, index: number) => {
+          console.log(`File ${index + 1}: ${file.name}, Type: ${file.type}, Size: ${file.size} bytes`);
+        });
+        
+        setUploadProgress(60);
+      }
+
+      const estimateResult = await getEstimate(submissionData);
+      
+      if (estimateResult.error) {
+        throw new Error(estimateResult.error);
+      }
+      
+      setEstimationResults(estimateResult);
       setStatus("success");
-
-      setEstimationResults({
-        markdownContent: result.markdownContent,
-        submissionId: result.submissionId,
-        estimateId: result.estimateId,
-        processingTime: result.processingTime
-      });
-
-      toast.success("Estimate generated successfully!");
-      nextStep();
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "An unexpected error occurred";
-      console.error("Submission error:", error);
+      setUploadProgress(100);
+      setTimeout(() => {
+        setIsLoading(false);
+        nextStep();
+      }, 600);
+    } catch (err: any) {
+      // Save form data when error occurs
+      saveFormDataToStorage(formData);
+      
+      const errorMessage = err?.message || "An unknown error occurred.";
       setError(errorMessage);
       setStatus("fail");
-      toast.error(`Failed to generate estimate: ${errorMessage}`);
-      
-      // Save form data to storage on error
-      saveFormDataToStorage(formData);
-    } finally {
       setIsLoading(false);
+      
+      // Display toast notification
+      toast.error(
+        "Estimate generation failed. Your data has been saved so you can try again later.", 
+        { duration: 5000 }
+      );
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -112,4 +102,6 @@ export default function useFormSubmission({
     handleSubmit,
     status,
   };
-}
+};
+
+export default useFormSubmission;
