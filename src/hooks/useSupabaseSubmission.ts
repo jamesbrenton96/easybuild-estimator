@@ -81,6 +81,7 @@ export const useSupabaseSubmission = () => {
       const { data: submission, error: submissionError } = await supabase
         .from('project_submissions')
         .insert({
+          user_id: user.id,
           project_name: data.projectName,
           project_type: data.projectType ? mapProjectTypeToEnum(data.projectType) : 'other',
           description: data.description,
