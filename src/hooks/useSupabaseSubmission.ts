@@ -3,6 +3,49 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { toast } from 'sonner';
 
+// Map frontend construction types to database enum values
+const mapProjectTypeToEnum = (projectType: string): 'residential_construction' | 'commercial_construction' | 'renovation' | 'landscaping' | 'other' => {
+  switch (projectType) {
+    case 'House Extension':
+    case 'House Renovation':
+    case 'Electrical':
+    case 'Plumbing':
+    case 'Carpentry / Framing':
+    case 'Roofing':
+    case 'Painting & Decorating':
+    case 'Tiling':
+    case 'Plastering / Gib Stopping':
+    case 'Bricklaying / Blockwork':
+    case 'HVAC':
+    case 'Insulation':
+    case 'Flooring':
+    case 'Windows & Glazing':
+    case 'Cabinetry / Joinery':
+    case 'Waterproofing':
+    case 'Smart Home / Automation':
+      return 'renovation';
+    
+    case 'New Build':
+      return 'residential_construction';
+    
+    case 'Deck / Landscaping':
+    case 'Earthworks / Excavation':
+    case 'Drainage':
+      return 'landscaping';
+    
+    case 'Concreting':
+    case 'Welding / Metalwork':
+    case 'Fencing / Gates':
+    case 'Demolition':
+    case 'Scaffolding':
+    case 'Solar Installation':
+    case 'Site Prep & Cleanup':
+    case 'All Trades Included':
+    default:
+      return 'other';
+  }
+};
+
 interface SubmissionData {
   projectName?: string;
   projectType?: string;
@@ -39,7 +82,7 @@ export const useSupabaseSubmission = () => {
         .from('project_submissions')
         .insert({
           project_name: data.projectName,
-          project_type: data.projectType as 'residential_construction' | 'commercial_construction' | 'renovation' | 'landscaping' | 'other',
+          project_type: data.projectType ? mapProjectTypeToEnum(data.projectType) : 'other',
           description: data.description,
           location_details: data.locationDetails,
           dimensions: data.dimensions,
